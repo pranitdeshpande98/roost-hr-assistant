@@ -1,6 +1,6 @@
 # Roost: Multilingual AI HR Assistant
 
-> **Status:** 🚧 Phase 1: project foundation
+> **Status:** ✅ Phase 1 complete · 🚧 Phase 2: requirements and architecture
 
 Roost is a production-style AI assistant for **Hollow Creek Poultry Co.**, a
 fictional poultry processor with three plants and a corporate office. It helps
@@ -84,7 +84,7 @@ docs/             requirements and architecture decisions
 
 ## Roadmap
 
-- [ ] Phase 1: Project foundation and tooling
+- [x] Phase 1: Project foundation and tooling
 - [ ] Phase 2: Requirements and architecture
 - [ ] Phase 3: Data pipeline (handbook ingestion)
 - [ ] Phase 4: Model selection
