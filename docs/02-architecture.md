@@ -139,4 +139,4 @@ in [`docs/adr/`](adr/).
 | 0005 | Embeddings and vector store | Accepted |
 | 0006 | Multilingual approach | Accepted |
 | 0007 | Relational database | Accepted |
-| 0008 | Channel adapters (kiosk, approver console, Teams) | Pending |
+| 0008 | Channel adapters (kiosk, approver console, Teams) | Accepted |
