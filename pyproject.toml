@@ -2,6 +2,7 @@
 name = "roost"
 version = "0.1.0"
 description = "Multilingual AI HR assistant: handbook Q&A, vacation requests, guardrails and evals."
+readme = "README.md"
 requires-python = ">=3.12,<3.13"
 authors = [{ name = "Pranit Deshpande" }]
 dependencies = []
