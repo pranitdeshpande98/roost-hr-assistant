@@ -10,7 +10,7 @@
 
 Roost must run at $0 during development (no GPU, free tiers), but be ready for
 production load by changing configuration, not code. Free tiers in October 2026
-are tightly rate limited (e.g. Groq free: 30 requests/min, 8K tokens/min,
+are tightly rate limited (e.g. Groq free: 30 requests/min, 1,000 requests/day,
 200K tokens/day per model) and their model rosters change frequently. Some
 free tiers use prompts to improve the provider's products, which is
 unacceptable for real HR data. Groq, OpenRouter and Gemini all expose
@@ -24,7 +24,7 @@ OpenAI-compatible APIs.
 |---|---|---|
 | Single provider | Simplest | Rate limits or outages take the assistant down; violates NFR-10 |
 | **Primary + fallback, routed by task** | Survives throttling and outages; per-model quotas stack; cheap tasks use small models | Must evaluate and monitor more than one model |
-| Local model only (Ollama, CPU) | No data leaves the machine | Too slow on CPU for 3 s first-token target; weak tool calling at small sizes |
+| Local model only (Ollama, CPU) | No data leaves the machine | Too slow on CPU for the 3 s first-token target; weak tool calling at small sizes |
 
 ### Client library
 
@@ -54,6 +54,24 @@ OpenAI-compatible APIs.
    excluded.
 7. **Unit tests never call a real LLM.** They use a deterministic fake that
    implements the same interface.
+
+## Candidate models for Phase 4 evaluation
+
+Shortlisted from public leaderboards (Arena human-preference rankings) and
+current free-tier availability. Public leaderboards do not measure tool calling
+on our tools, grounding in our handbook, or Spanish and Vietnamese quality,
+so the final choice is made by our own evals.
+
+| Role | Candidate | Free access for evaluation | Notes |
+|---|---|---|---|
+| agent | gpt-oss-120b | Groq | Apache-2.0; strong reasoning |
+| agent | Qwen 27B (current version on Groq) | Groq | Open weights; multilingual focus |
+| agent | Gemma 4 31B | OpenRouter or Gemini API | Apache-2.0; highest Arena ranking of the three at release; free access paths are for evaluation only (see rule 6) |
+| fast | gpt-oss-20b | Groq | Small and fast |
+| fast | Gemma 4 small variant | OpenRouter or Gemini API | Evaluation only (see rule 6) |
+
+If a model that is only freely available through a training-on-data tier wins,
+production requires a paid host with a no-training policy.
 
 ## Consequences
 
