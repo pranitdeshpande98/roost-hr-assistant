@@ -128,6 +128,24 @@ and the channel layer is designed so Teams plugs in without changing the agent.
 | FR-46 | HR admins can view conversation logs within the 45-day window. | P1 |
 | FR-47 | Employees can rate answers (thumbs up/down). | P1 |
 
+### 4.7 Records, observability and quality signals
+
+Four separate stores, each with its own purpose, retention and access:
+
+| Store | Contents | Retention | Access |
+|---|---|---|---|
+| Conversation transcripts | Full messages and cited sections | 45 days (FR-45), unless under legal hold (FR-48) | HR admins |
+| Audit log | Actions only: requests, approvals, denials, cancellations, HR summaries sent, PIN resets, legal holds | Permanent, append-only (FR-24) | HR, auditors |
+| Traces and telemetry | Latency, tokens, cost, tools called, guardrail decisions, errors, fallbacks; PII redacted | 30 days | Engineering |
+| Quality signals | Ratings, "I don't know" answers, guardrail blocks, fallbacks, failed tool validations | Aggregated | Engineering, HR |
+
+| ID | Requirement | Priority |
+|---|---|---|
+| FR-48 | HR admins can place a legal hold on a conversation, which pauses its 45-day deletion until released. Placing and releasing a hold is recorded in the audit log. | P0 |
+| FR-49 | Sensitive-topic content (FR-30) is stored only in the transcript. Traces, dashboards and analytics record only the sensitive-topic category, never the message content. Sensitive conversations are never added to eval datasets. | P0 |
+| FR-50 | A production conversation becomes an eval case only after PII is removed and an HR admin approves it. | P1 |
+| FR-51 | Track production quality signals: "I don't know" rate by topic, ratings by language, tool-validation failures, fallback-provider usage, and guardrail triggers by category. | P1 |
+
 ## 5. Non-functional requirements
 
 | ID | Category | Requirement |
@@ -191,6 +209,7 @@ and the channel layer is designed so Teams plugs in without changing the agent.
 | Free-tier rate limits or outages | Degraded service | Provider fallback, caching, graceful-degradation message |
 | No access to a Microsoft 365 tenant | Teams channel delayed | Channel adapter design; kiosk + approver console cover the MVP |
 | Weak Vietnamese/Spanish quality | Poor experience for plant workers | Multilingual embeddings, language-specific eval sets |
+| Sensitive disclosures leak into logs, dashboards or test data | Privacy violation, loss of employee trust | Category-only telemetry (FR-49), PII redaction (NFR-05), reviewed eval promotion (FR-50) |
 | Coworker knows an employee number and guesses the PIN | Someone acts as another employee | 6-digit PIN, common-PIN blocklist, lockout, per-kiosk rate limit, confirmation step, audit log |
 
 ## 9. Traceability

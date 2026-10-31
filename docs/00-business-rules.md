@@ -191,7 +191,7 @@ personal crises get the employee's HR contact and the ethics hotline.
 | Accounts | Everyone except drivers has email or Teams. Drivers use the kiosk and visit plant HR in person. |
 | Handbook language | English is the binding version. Spanish and Vietnamese answers say they are translations. |
 | Disclaimer | A short footer on every reply: informational only, HR's decision is final |
-| Chat logs | Kept 45 days, visible only to HR admins |
+| Chat logs | Kept 45 days unless under legal hold (decision 7), visible only to HR admins |
 | Audit trail | Requests and approvals kept permanently |
 | Handbook updates | HR uploads new versions |
 
@@ -205,3 +205,6 @@ personal crises get the employee's HR contact and the ethics hotline.
 | 4 | Requests with less than 14 days' notice | Not submitted; employee talks to their supervisor |
 | 5 | Attendance points as a balance | Policy explained; point totals never shown |
 | 6 | Kiosk PIN strength (employee numbers are widely known) | 6-digit PIN; common patterns and birth dates blocked; 15-minute lockout after 5 failed attempts; per-kiosk rate limit; PINs stored hashed (Argon2); set and reset only by plant HR in person; new PIN required at first sign-in |
+| 7 | Conversations needed beyond 45 days (disputes, investigations) | HR admins can place a legal hold that pauses deletion until released; placing and releasing holds is recorded in the audit log |
+| 8 | Sensitive content in logs and analytics | Transcripts follow the normal 45-day policy; traces, dashboards and analytics store only the sensitive-topic category, never the content; sensitive conversations are never used in eval datasets |
+| 9 | Using production conversations to improve quality | A conversation becomes an eval case only after PII is removed and an HR admin approves it |
