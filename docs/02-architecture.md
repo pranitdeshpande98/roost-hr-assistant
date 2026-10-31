@@ -132,7 +132,7 @@ in [`docs/adr/`](adr/).
 
 | ADR | Decision | Status |
 |---|---|---|
-| 0001 | Record architecture decisions | Pending |
+| 0001 | Record architecture decisions | Accepted |
 | 0002 | Modular monolith in Python | Pending |
 | 0003 | Agent framework | Pending |
 | 0004 | LLM provider strategy | Pending |
