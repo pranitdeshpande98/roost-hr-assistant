@@ -1,6 +1,6 @@
 # Roost: Multilingual AI HR Assistant
 
-> **Status:** ✅ Phase 1 complete · 🚧 Phase 2: requirements and architecture
+> **Status:** ✅ Phase 2 complete · 🚧 Phase 3: data pipeline
 
 Roost is a production-style AI assistant for **Hollow Creek Poultry Co.**, a
 fictional poultry processor with three plants and a corporate office. It helps
@@ -25,6 +25,21 @@ fictional poultry processor with three plants and a corporate office. It helps
   or the ethics hotline instead of answering them
 - **Never reveal** balances, pay, or other financial data
 - Run on **plant kiosks** (employee number + PIN) and **Microsoft Teams**
+
+## Documentation
+
+| Document | What it covers |
+|---|---|
+| [Business rules](docs/00-business-rules.md) | Approved HR rules the assistant follows |
+| [Requirements](docs/01-requirements.md) | Functional and non-functional requirements with traceable IDs |
+| [Architecture](docs/02-architecture.md) | System design, components and key flows |
+| [Decision records](docs/adr/) | Why each major technology was chosen |
+
+**Key architecture decisions:** modular monolith in Python/FastAPI · LangGraph
+orchestration with Pydantic data contracts · OpenAI-compatible LLM providers
+with fallback · local multilingual embeddings with pgvector hybrid search ·
+PostgreSQL with an append-only audit log · server-rendered kiosk with
+channel adapters for Teams.
 
 ## Tech stack (so far)
 
@@ -85,7 +100,7 @@ docs/             requirements and architecture decisions
 ## Roadmap
 
 - [x] Phase 1: Project foundation and tooling
-- [ ] Phase 2: Requirements and architecture
+- [x] Phase 2: Requirements and architecture
 - [ ] Phase 3: Data pipeline (handbook ingestion)
 - [ ] Phase 4: Model selection
 - [ ] Phase 5: Core logic (RAG and vacation agent)
