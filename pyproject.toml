@@ -9,3 +9,91 @@ dependencies = []
 [build-system]
 requires = ["uv_build>=0.11.8,<0.12"]
 build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "mypy>=2.4.1",
+    "pre-commit>=4.7.0",
+    "pytest>=9.2.0",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.17.3",
+]
+
+# ─────────────────────────── Ruff (lint + format) ───────────────────────────
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",   # pycodestyle errors and warnings
+    "F",        # pyflakes: unused imports, undefined names
+    "I",        # isort: import ordering
+    "N",        # pep8-naming
+    "UP",       # pyupgrade: modern Python syntax
+    "B",        # flake8-bugbear: likely bugs
+    "S",        # flake8-bandit: security issues
+    "C4",       # comprehension improvements
+    "SIM",      # simplifications
+    "DTZ",      # timezone-aware datetimes only
+    "T20",      # no print() — use logging
+    "PT",       # pytest style
+    "ARG",      # unused arguments
+    "RUF",      # ruff-specific rules
+]
+ignore = [
+    "E501",     # line length is handled by the formatter
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "S101",     # assert is how pytest works
+    "ARG",      # fixtures often look like unused arguments
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["roost"]
+
+[tool.ruff.format]
+quote-style = "double"
+line-ending = "lf"
+docstring-code-format = true
+
+# ─────────────────────────── mypy (type checking) ───────────────────────────
+[tool.mypy]
+python_version = "3.12"
+files = ["src"]
+mypy_path = "src"
+strict = true
+warn_unreachable = true
+pretty = true
+
+# ─────────────────────────── pytest ───────────────────────────
+[tool.pytest.ini_options]
+minversion = "9.0"
+testpaths = ["tests"]
+addopts = [
+    "-ra",                    # summary of skipped/failed tests
+    "--strict-markers",       # typo in a marker name = error
+    "--strict-config",        # typo in this config = error
+    "--import-mode=importlib" # recommended for src/ layouts
+]
+markers = [
+    "integration: tests that touch a database, network or external service",
+]
+xfail_strict = true
+
+# ─────────────────────────── coverage ───────────────────────────
+[tool.coverage.run]
+source = ["roost"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
+exclude_also = [
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "@overload",
+]
