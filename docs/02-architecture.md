@@ -134,7 +134,7 @@ in [`docs/adr/`](adr/).
 |---|---|---|
 | 0001 | Record architecture decisions | Accepted |
 | 0002 | Modular monolith in Python | Accepted |
-| 0003 | Agent framework | Pending |
+| 0003 | Agent framework | Accepted |
 | 0004 | LLM provider strategy | Pending |
 | 0005 | Embeddings and vector store | Pending |
 | 0006 | Multilingual approach | Pending |
