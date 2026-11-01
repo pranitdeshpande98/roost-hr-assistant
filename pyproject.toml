@@ -5,7 +5,9 @@ description = "Multilingual AI HR assistant: handbook Q&A, vacation requests, gu
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 authors = [{ name = "Pranit Deshpande" }]
-dependencies = []
+dependencies = [
+    "pydantic-settings>=2.16.2",
+]
 
 [build-system]
 requires = ["uv_build>=0.11.8,<0.12"]
@@ -50,6 +52,8 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = [
     "S101",     # assert is how pytest works
+    "S105",     # hard-coded test passwords are fake by design
+    "S106",
     "ARG",      # fixtures often look like unused arguments
 ]
 
@@ -63,6 +67,7 @@ docstring-code-format = true
 
 # ─────────────────────────── mypy (type checking) ───────────────────────────
 [tool.mypy]
+plugins = ["pydantic.mypy"]
 python_version = "3.12"
 files = ["src"]
 mypy_path = "src"
