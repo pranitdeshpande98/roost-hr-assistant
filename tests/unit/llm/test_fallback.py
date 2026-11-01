@@ -32,7 +32,18 @@ def test_falls_back_when_primary_is_unavailable(caplog: pytest.LogCaptureFixture
     assert result.model == "f"
     assert fallback.requests[0].messages == HELLO
     assert fallback.requests[0].temperature == 0.3  # settings pass through unchanged
-    assert "Primary p unavailable" in caplog.text
+    assert "p unavailable" in caplog.text
+
+
+def test_walks_the_chain_until_a_model_answers() -> None:
+    first = ScriptedChatModel([LLMUnavailableError("429")], name="a")
+    second = ScriptedChatModel([LLMUnavailableError("no choices")], name="b")
+    third = ScriptedChatModel([text_reply("from c", model="c")], name="c")
+
+    result = FallbackChatModel(first, second, third).chat(HELLO)
+
+    assert result.model == "c"
+    assert len(second.requests) == 1
 
 
 def test_does_not_fall_back_on_request_errors() -> None:
@@ -44,7 +55,17 @@ def test_does_not_fall_back_on_request_errors() -> None:
     assert fallback.requests == []
 
 
-def test_raises_when_both_fail() -> None:
+def test_request_error_midway_stops_the_chain() -> None:
+    first = ScriptedChatModel([LLMUnavailableError("429")], name="a")
+    second = ScriptedChatModel([LLMRequestError("HTTP 404")], name="b")
+    third = ScriptedChatModel([text_reply("unused")], name="c")
+
+    with pytest.raises(LLMRequestError, match="404"):
+        FallbackChatModel(first, second, third).chat(HELLO)
+    assert third.requests == []
+
+
+def test_raises_the_last_error_when_every_model_fails() -> None:
     primary = ScriptedChatModel([LLMUnavailableError("down")], name="p")
     fallback = ScriptedChatModel([LLMUnavailableError("also down")], name="f")
 
@@ -52,7 +73,12 @@ def test_raises_when_both_fail() -> None:
         FallbackChatModel(primary, fallback).chat(HELLO)
 
 
-def test_name_shows_both_models() -> None:
-    model = FallbackChatModel(ScriptedChatModel([], name="p"), ScriptedChatModel([], name="f"))
+def test_needs_at_least_one_fallback() -> None:
+    with pytest.raises(ValueError, match="at least one fallback"):
+        FallbackChatModel(ScriptedChatModel([], name="p"))
 
-    assert model.name == "p -> f"
+
+def test_name_shows_the_whole_chain() -> None:
+    models = [ScriptedChatModel([], name=n) for n in ("a", "b", "c")]
+
+    assert FallbackChatModel(*models).name == "a -> b -> c"

@@ -144,7 +144,7 @@ def main(argv: list[str] | None = None) -> int:
     table = report(args.out)
     sys.stdout.write(table)
     (args.out / "summary.md").parent.mkdir(parents=True, exist_ok=True)
-    (args.out / "summary.md").write_text(table, encoding="utf-8")
+    (args.out / "summary.md").write_text(table, encoding="utf-8", newline="\n")
     return 0
 
 

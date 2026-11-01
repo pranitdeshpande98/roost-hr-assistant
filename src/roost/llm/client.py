@@ -3,13 +3,20 @@
 import json
 import logging
 import time
+from collections.abc import Sequence
 from typing import Any, cast
 
 import openai
 from openai.types.chat import ChatCompletionMessageParam, ChatCompletionToolParam
 
-from roost.llm.errors import LLMError, LLMRequestError, LLMResponseError, LLMUnavailableError
-from roost.llm.providers import PROVIDERS, LLMSettings, ProviderSpec, get_llm_settings
+from roost.llm.errors import LLMRequestError, LLMResponseError, LLMUnavailableError
+from roost.llm.providers import (
+    PROVIDERS,
+    LLMSettings,
+    ProviderSpec,
+    get_llm_settings,
+    parse_model_ref,
+)
 from roost.llm.types import ChatMessage, ChatModel, ChatResult, ToolCall, ToolSpec, Usage
 
 logger = logging.getLogger(__name__)
@@ -126,7 +133,10 @@ class OpenAICompatibleChatModel:
         latency_ms = (time.perf_counter() - started) * 1000
 
         if not completion.choices:
-            raise LLMResponseError(f"{self.name}: response had no choices")
+            # OpenRouter reports some upstream failures as HTTP 200 with an "error" object
+            # and no choices. That is a provider outage, not a bad answer: fall back.
+            detail = (completion.model_extra or {}).get("error")
+            raise LLMUnavailableError(f"{self.name}: response had no choices ({detail})")
         choice = completion.choices[0]
         calls = tuple(
             ToolCall(
@@ -151,19 +161,20 @@ class OpenAICompatibleChatModel:
 
 
 class FallbackChatModel:
-    """Use the primary model; if it is unavailable, answer with the fallback instead.
+    """Try each model in order; move to the next only when one is unavailable.
 
-    Only transient failures fall back. A bad request or bad key is raised at once,
-    because the fallback would hide a bug that needs fixing.
+    Only transient failures fall through. A bad request or bad key is raised at once,
+    because a fallback would hide a bug that needs fixing.
     """
 
-    def __init__(self, primary: ChatModel, fallback: ChatModel) -> None:
-        self._primary = primary
-        self._fallback = fallback
+    def __init__(self, primary: ChatModel, *fallbacks: ChatModel) -> None:
+        if not fallbacks:
+            raise ValueError("FallbackChatModel needs at least one fallback model")
+        self._models = (primary, *fallbacks)
 
     @property
     def name(self) -> str:
-        return f"{self._primary.name} -> {self._fallback.name}"
+        return " -> ".join(model.name for model in self._models)
 
     def chat(
         self,
@@ -173,21 +184,26 @@ class FallbackChatModel:
         temperature: float = 0.0,
         max_tokens: int | None = None,
     ) -> ChatResult:
-        try:
-            return self._primary.chat(
-                messages, tools=tools, temperature=temperature, max_tokens=max_tokens
-            )
-        except LLMUnavailableError as exc:
-            logger.warning(
-                "Primary %s unavailable (%s); using %s",
-                self._primary.name,
-                exc,
-                self._fallback.name,
-            )
-        try:
-            return self._fallback.chat(
-                messages, tools=tools, temperature=temperature, max_tokens=max_tokens
-            )
-        except LLMError:
-            logger.exception("Fallback %s also failed", self._fallback.name)
-            raise
+        last_error: LLMUnavailableError | None = None
+        for model in self._models:
+            try:
+                return model.chat(
+                    messages, tools=tools, temperature=temperature, max_tokens=max_tokens
+                )
+            except LLMUnavailableError as exc:
+                logger.warning("%s unavailable (%s); trying the next model", model.name, exc)
+                last_error = exc
+        logger.error("Every model in %s is unavailable", self.name)
+        raise last_error or LLMUnavailableError(f"{self.name}: no model answered")
+
+
+def build_chat_model(refs: Sequence[str], *, settings: LLMSettings | None = None) -> ChatModel:
+    """A model, or a fallback chain, from refs like "groq:openai/gpt-oss-120b"."""
+    if not refs:
+        raise LLMRequestError("no models configured")
+    models = [
+        OpenAICompatibleChatModel.create(*parse_model_ref(ref), settings=settings) for ref in refs
+    ]
+    if len(models) == 1:
+        return models[0]
+    return FallbackChatModel(models[0], *models[1:])

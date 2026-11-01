@@ -4,7 +4,7 @@ import pytest
 from pydantic import ValidationError
 
 from roost.llm.errors import LLMRequestError
-from roost.llm.providers import PROVIDERS, LLMSettings
+from roost.llm.providers import PROVIDERS, LLMSettings, parse_model_ref
 from roost.llm.types import ChatMessage, ToolSpec
 
 
@@ -45,3 +45,37 @@ def test_api_key_for_returns_secret_without_leaking_it() -> None:
 
     assert key.get_secret_value() == "gsk-secret"
     assert "gsk-secret" not in repr(settings)
+
+
+@pytest.mark.parametrize(
+    ("ref", "parsed"),
+    [
+        ("groq:openai/gpt-oss-120b", ("groq", "openai/gpt-oss-120b")),
+        # Split on the FIRST colon only: free-model ids contain one too.
+        (
+            " openrouter:nvidia/nemotron-3-ultra-550b-a55b:free ",
+            ("openrouter", "nvidia/nemotron-3-ultra-550b-a55b:free"),
+        ),
+    ],
+)
+def test_parse_model_ref(ref: str, parsed: tuple[str, str]) -> None:
+    assert parse_model_ref(ref) == parsed
+
+
+@pytest.mark.parametrize("ref", ["openai/gpt-oss-120b", "groq:", "nope:model", ""])
+def test_parse_model_ref_rejects_bad_refs(ref: str) -> None:
+    with pytest.raises(LLMRequestError, match="bad model ref"):
+        parse_model_ref(ref)
+
+
+def test_default_agent_chain_is_three_valid_refs() -> None:
+    refs = LLMSettings(_env_file=None).agent_model_refs
+
+    assert len(refs) == 3
+    assert [parse_model_ref(r)[0] for r in refs] == ["groq", "groq", "openrouter"]
+
+
+def test_agent_models_can_be_overridden() -> None:
+    settings = LLMSettings(_env_file=None, agent_models=" groq:a , groq:b ,")
+
+    assert settings.agent_model_refs == ["groq:a", "groq:b"]

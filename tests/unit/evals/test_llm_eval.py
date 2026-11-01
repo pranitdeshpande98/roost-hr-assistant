@@ -208,13 +208,52 @@ def test_load_records_of_missing_file_is_empty(tmp_path: Path) -> None:
     assert load_records(tmp_path / "nothing.jsonl") == []
 
 
-def test_report_shows_pass_rates_per_model() -> None:
+def test_records_are_written_with_lf_line_endings(tmp_path: Path) -> None:
+    path = tmp_path / "m.jsonl"
+
+    append_record(path, _record())
+    append_record(path, _record(case_id="vacation-notice-en"))
+
+    raw = path.read_bytes()
+    assert b"\r" not in raw  # meaningful on Windows, where text mode would write CRLF
+    assert raw.count(b"\n") == 2
+
+
+def test_report_shows_pass_rates_speed_and_tokens() -> None:
     scores = [
-        score_record(_record()),
-        score_record(_record(answer="You need two weeks [§6.4].")),
+        score_record(_record(latency_ms=1000, prompt_tokens=900, completion_tokens=100)),
+        score_record(
+            _record(
+                answer="You need two weeks [§6.4].",
+                latency_ms=3000,
+                prompt_tokens=1100,
+                completion_tokens=100,
+            )
+        ),
     ]
 
     table = format_llm_report(scores).splitlines()
 
-    assert table[0].startswith("| model | cases | errors | searched |")
-    assert table[2] == "| fake/m | 2 | 0% | 100% | 50% | 100% | 100% |"
+    assert table[0] == (
+        "| model | cases | errors | searched | right language | valid cites | "
+        "correct section | median s | p90 s | tokens/case |"
+    )
+    assert table[2] == "| fake/m | 2 | 0% | 100% | 50% | 100% | 100% | 1.0 | 3.0 | 1100 |"
+
+
+def test_report_ignores_failed_cases_for_speed() -> None:
+    scores = [
+        score_record(_record(latency_ms=2000)),
+        score_record(_record(answer=None, error="no choices", latency_ms=0)),
+    ]
+
+    row = format_llm_report(scores).splitlines()[2]
+
+    assert row.endswith("| 2.0 | 2.0 | 0 |")
+    assert "| 50% |" in row  # one of two cases errored
+
+
+def test_report_marks_models_with_no_answers() -> None:
+    row = format_llm_report([score_record(_record(answer=None, error="x"))]).splitlines()[2]
+
+    assert row.endswith("| - | - | - |")

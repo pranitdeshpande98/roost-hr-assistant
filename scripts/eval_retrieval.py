@@ -80,10 +80,12 @@ def main(argv: list[str] | None = None) -> int:
 
     args.out.mkdir(parents=True, exist_ok=True)
     stem = args.dataset.stem
-    (args.out / f"{stem}.md").write_text(table, encoding="utf-8")
+    (args.out / f"{stem}.md").write_text(table, encoding="utf-8", newline="\n")
     per_case = [asdict(o) for o in outcomes]
     (args.out / f"{stem}_cases.json").write_text(
-        json.dumps(per_case, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+        json.dumps(per_case, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+        newline="\n",
     )
     logger.info("Wrote %s/%s.md and %s_cases.json", args.out, stem, stem)
     return 0

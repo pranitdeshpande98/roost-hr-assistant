@@ -8,7 +8,7 @@ import httpx2
 import openai
 import pytest
 
-from roost.llm.client import OpenAICompatibleChatModel
+from roost.llm.client import OpenAICompatibleChatModel, build_chat_model
 from roost.llm.errors import LLMRequestError, LLMResponseError, LLMUnavailableError
 from roost.llm.providers import PROVIDERS, LLMSettings
 from roost.llm.types import ChatMessage, ToolCall, ToolSpec
@@ -179,3 +179,49 @@ def test_create_builds_a_named_model() -> None:
     model = OpenAICompatibleChatModel.create("openrouter", "some/model", settings=settings)
 
     assert model.name == "openrouter/some/model"
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        # OpenRouter's shape when the upstream provider fails mid-request: HTTP 200, no answer.
+        {
+            "id": "gen-1",
+            "object": "chat.completion",
+            "created": 0,
+            "model": "m",
+            "choices": [],
+            "error": {"message": "Provider returned error", "code": 502},
+        },
+        {"id": "gen-2", "object": "chat.completion", "created": 0, "model": "m"},
+    ],
+)
+def test_reply_without_choices_is_treated_as_an_outage(body: dict[str, Any]) -> None:
+    model = _model(_reply_with(body))
+
+    with pytest.raises(LLMUnavailableError, match="no choices"):
+        model.chat([ChatMessage(role="user", content="Hi")])
+
+
+def test_build_chat_model_with_one_ref_returns_that_model() -> None:
+    settings = LLMSettings(_env_file=None, groq_api_key="gsk-test")
+
+    model = build_chat_model(["groq:openai/gpt-oss-120b"], settings=settings)
+
+    assert model.name == "groq/openai/gpt-oss-120b"
+
+
+def test_build_chat_model_with_several_refs_returns_a_chain() -> None:
+    settings = LLMSettings(_env_file=None, groq_api_key="gsk", openrouter_api_key="sk-or")
+    refs = ["groq:openai/gpt-oss-120b", "openrouter:nvidia/nemotron-3-ultra-550b-a55b:free"]
+
+    model = build_chat_model(refs, settings=settings)
+
+    assert model.name == (
+        "groq/openai/gpt-oss-120b -> openrouter/nvidia/nemotron-3-ultra-550b-a55b:free"
+    )
+
+
+def test_build_chat_model_needs_at_least_one_ref() -> None:
+    with pytest.raises(LLMRequestError, match="no models configured"):
+        build_chat_model([], settings=LLMSettings(_env_file=None))

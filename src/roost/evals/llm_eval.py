@@ -79,6 +79,8 @@ class LLMCaseScore(BaseModel):
     language_match: bool  # answered in the question's language
     cites_retrieved: bool  # cited at least one section, and only sections it was given
     cites_expected: bool  # at least one citation is a correct answer section
+    latency_ms: float  # total model time for the case (all turns)
+    total_tokens: int
 
 
 def format_sections(sections: Sequence[SectionText]) -> str:
@@ -180,6 +182,8 @@ def score_record(record: LLMCaseRecord) -> LLMCaseScore:
         language_match=not errored and detect_language(record.answer or "") == record.language,
         cites_retrieved=bool(cited) and set(cited) <= set(record.retrieved_sections),
         cites_expected=bool(set(cited) & set(record.expected_sections)),
+        latency_ms=record.latency_ms,
+        total_tokens=record.prompt_tokens + record.completion_tokens,
     )
 
 
@@ -197,7 +201,8 @@ def load_records(path: Path) -> list[LLMCaseRecord]:
 def append_record(path: Path, record: LLMCaseRecord) -> None:
     """Save one record immediately, so an interrupted run loses at most one case."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("a", encoding="utf-8") as handle:
+    # newline="\n": LF on every OS, so Windows runs don't trip the line-ending hook.
+    with path.open("a", encoding="utf-8", newline="\n") as handle:
         handle.write(record.model_dump_json() + "\n")
 
 
@@ -206,8 +211,19 @@ def append_record(path: Path, record: LLMCaseRecord) -> None:
 _CHECKS = ("used_tool", "language_match", "cites_retrieved", "cites_expected")
 
 
+def _percentile(values: Sequence[float], fraction: float) -> float:
+    """Nearest-rank percentile; simple and exact for the small samples we have."""
+    ordered = sorted(values)
+    index = max(0, min(len(ordered) - 1, round(fraction * len(ordered)) - 1))
+    return ordered[index]
+
+
 def format_llm_report(scores: Iterable[LLMCaseScore]) -> str:
-    """Markdown table: one row per model, % of cases passing each check."""
+    """Markdown table: one row per model, % passing each check, then speed and tokens.
+
+    Speed and tokens use only the cases that produced an answer, so failures that return
+    instantly do not make a model look fast.
+    """
     by_model: dict[str, list[LLMCaseScore]] = {}
     for score in scores:
         by_model.setdefault(score.model, []).append(score)
@@ -220,11 +236,25 @@ def format_llm_report(scores: Iterable[LLMCaseScore]) -> str:
         "right language",
         "valid cites",
         "correct section",
+        "median s",
+        "p90 s",
+        "tokens/case",
     ]
     lines = ["| " + " | ".join(header) + " |", "|" + "---|" * len(header)]
     for model, rows in by_model.items():
         total = len(rows)
         cells = [model, str(total), f"{sum(r.errored for r in rows) / total:.0%}"]
         cells += [f"{sum(getattr(r, check) for r in rows) / total:.0%}" for check in _CHECKS]
+        answered = [r for r in rows if not r.errored]
+        if answered:
+            seconds = [r.latency_ms / 1000 for r in answered]
+            tokens = sum(r.total_tokens for r in answered) / len(answered)
+            cells += [
+                f"{_percentile(seconds, 0.5):.1f}",
+                f"{_percentile(seconds, 0.9):.1f}",
+                f"{tokens:.0f}",
+            ]
+        else:
+            cells += ["-", "-", "-"]
         lines.append("| " + " | ".join(cells) + " |")
     return "\n".join(lines) + "\n"
