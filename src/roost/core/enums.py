@@ -60,3 +60,10 @@ class HandbookStatus(StrEnum):
     DRAFT = "draft"
     PUBLISHED = "published"
     RETIRED = "retired"
+
+
+class Channel(StrEnum):
+    """Where a conversation happens: a plant kiosk or Microsoft Teams."""
+
+    KIOSK = "kiosk"
+    TEAMS = "teams"
