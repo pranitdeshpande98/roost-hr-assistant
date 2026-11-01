@@ -32,7 +32,7 @@ data/processed/*
 
 # ── ML / model caches ──────────────────
 .cache/
-models/
+/models/
 
 # ── Eval & run outputs ─────────────────
 
