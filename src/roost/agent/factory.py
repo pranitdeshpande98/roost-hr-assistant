@@ -18,6 +18,7 @@ from roost.llm.providers import get_llm_settings
 from roost.llm.types import ChatModel
 from roost.rag.embeddings import EMBEDDING_MODELS, Embedder, SentenceTransformerEmbedder
 from roost.tools.handbook import HANDBOOK_EMBEDDING_MODEL, HandbookSearchTool, database_search
+from roost.tools.payroll import PayScheduleTool
 from roost.tools.vacation import vacation_tools
 
 
@@ -42,5 +43,11 @@ def build_agent(
     )
     search = database_search(session_factory, query_embedder)
     messages = default_messages()
-    tools = ToolRegistry([HandbookSearchTool(search), *vacation_tools(session_factory, messages)])
+    tools = ToolRegistry(
+        [
+            HandbookSearchTool(search),
+            *vacation_tools(session_factory, messages),
+            PayScheduleTool(session_factory),
+        ]
+    )
     return build_graph(chat_model, tools, messages=messages, checkpointer=checkpointer, clock=clock)
