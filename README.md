@@ -1,6 +1,6 @@
 # Roost: Multilingual AI HR Assistant
 
-> **Status:** ✅ Phase 4 complete · 🚧 Phase 5: core logic (RAG and vacation agent)
+> **Status:** ✅ Phase 5 complete · 🚧 Phase 6: evaluations
 
 Roost is a production-style AI assistant for **Hollow Creek Poultry Co.**, a
 fictional poultry processor with three plants and a corporate office. It helps
@@ -42,6 +42,23 @@ with a fallback chain · local multilingual embeddings (bge-m3) with pgvector
 vector search · PostgreSQL with an append-only audit log · server-rendered kiosk
 with channel adapters for Teams.
 
+## How the agent works (Phase 5)
+
+```text
+employee message ─► call_model ──(tool call?)──► run_tools ──► call_model ...
+                        │ no                        │
+                        ▼                           └─ vacation change? check rules ─► PAUSE: "Please confirm…"
+                    finalize ─► answer + translation notice + disclaimer      employee replies YES ─► save
+```
+
+- **Handbook answers** come only from `search_handbook` (bge-m3 retrieval), with `[§x.y]` citations.
+- **Vacation rules V-01 to V-09** run in plain Python, never in the LLM, and are re-checked at save
+  time under a per-team lock so a team cannot be over-booked.
+- **Nothing is saved without a clear "yes"**: the graph pauses, and code (not the model) reads the reply.
+- **The disclaimer and translation notice** come from reviewed templates in `config/messages.yaml`.
+- **Conversations are saved in Postgres**, so follow-up questions work and a pending confirmation
+  survives a restart. Details and trade-offs: [ADR-0010](docs/adr/0010-agent-design.md).
+
 ## Model selection (Phase 4)
 
 Chosen by evaluation, not leaderboards: 90 questions (30 intents x English, Spanish, Vietnamese).
@@ -64,6 +81,7 @@ Reproduce: `uv run python scripts/eval_retrieval.py` and `uv run python scripts/
 | Database | PostgreSQL 17 + pgvector (Docker) |
 | ORM and migrations | SQLAlchemy 2.1, Alembic |
 | Configuration | pydantic-settings |
+| Agent orchestration | LangGraph (Postgres checkpointer) |
 | Embeddings | sentence-transformers (`BAAI/bge-m3`, CPU) |
 | LLM providers | Groq and OpenRouter free tiers, via the OpenAI Python SDK |
 | Lint and format | Ruff |
@@ -102,6 +120,14 @@ uv run python scripts/llm_smoke.py --provider groq
 The agent's model chain is set by `AGENT_MODELS` in `.env` (see `.env.example`); the
 default is the chain chosen in [ADR-0009](docs/adr/0009-model-selection.md).
 
+**Talk to Roost** in the terminal. `--employee` stands in for kiosk sign-in, which vacation
+requests need; pick any employee number from the seeded data:
+
+```bash
+uv run python scripts/chat.py --show-tools                    # handbook questions
+uv run python scripts/chat.py --language es --employee <number>  # vacation, in Spanish
+```
+
 ## Development commands
 
 | Task | Command |
@@ -119,6 +145,7 @@ default is the chain chosen in [ADR-0009](docs/adr/0009-model-selection.md).
 | Retrieval eval | `uv run python scripts/eval_retrieval.py` |
 | LLM eval (resumable) | `uv run python scripts/eval_llm.py --provider groq --model <id>` |
 | LLM eval report only | `uv run python scripts/eval_llm.py --report` |
+| Chat with the agent | `uv run python scripts/chat.py --employee <number> --show-tools` |
 
 ## Project structure
 
@@ -142,8 +169,8 @@ tests/            unit and integration tests
 evals/            evaluation datasets and committed results
 data/             handbook source files
 migrations/       Alembic database migrations
-scripts/          seed, ingestion, embedding, smoke-test and eval commands
-config/           YAML configuration
+scripts/          seed, ingestion, embedding, smoke-test, eval and chat commands
+config/           reviewed reply templates (messages.yaml)
 docs/             requirements, architecture and decision records
 ```
 
@@ -153,7 +180,7 @@ docs/             requirements, architecture and decision records
 - [x] Phase 2: Requirements and architecture
 - [x] Phase 3: Data pipeline (handbook ingestion)
 - [x] Phase 4: Model selection
-- [ ] Phase 5: Core logic (RAG and vacation agent)
+- [x] Phase 5: Core logic (RAG and vacation agent)
 - [ ] Phase 6: Evaluations
 - [ ] Phase 7: Guardrails
 - [ ] Phase 8: API layer

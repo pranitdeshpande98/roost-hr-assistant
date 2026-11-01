@@ -209,3 +209,4 @@ personal crises get the employee's HR contact and the ethics hotline.
 | 7 | Conversations needed beyond 45 days (disputes, investigations) | HR admins can place a legal hold that pauses deletion until released; placing and releasing holds is recorded in the audit log |
 | 8 | Sensitive content in logs and analytics | Transcripts follow the normal 45-day policy; traces, dashboards and analytics store only the sensitive-topic category, never the content; sensitive conversations are never used in eval datasets |
 | 9 | Using production conversations to improve quality | A conversation becomes an eval case only after PII is removed and an HR admin approves it |
+| 10 | Department limit for very small teams (15% of a team under 7 people is less than 1 person) | Every team may always have at least one person off on a day; larger teams use 15% rounded down |

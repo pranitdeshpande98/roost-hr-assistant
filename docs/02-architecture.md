@@ -141,3 +141,4 @@ in [`docs/adr/`](adr/).
 | 0007 | Relational database | Accepted |
 | 0008 | Channel adapters (kiosk, approver console, Teams) | Accepted |
 | 0009 | Embedding model, retrieval method and agent LLM chain | Accepted |
+| 0010 | Agent design: model-tool loop, deterministic rules and confirmation | Accepted |

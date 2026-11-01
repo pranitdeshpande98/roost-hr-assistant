@@ -176,12 +176,14 @@ the audit log must survive even if the rows it describes change.
 |---|---|---|
 | 3 (data pipeline) | `location`, `department`, `department_location`, `shift`, `employee`, `employee_role`, `leave_balance`, `holiday` | Mock HR system with synthetic data |
 | 3 (data pipeline) | `handbook_version`, `handbook_chunk`, `chunk_embedding` | Handbook storage and search |
-| 5 (core logic) | `vacation_request`, `vacation_request_day`, `approval`, `audit_log` | Vacation workflow and audit trail |
-| 5 (core logic) | `conversation`, `message`, LangGraph checkpoint tables | Conversation history and agent state |
-| 8 (API) | `kiosk_credential` | Kiosk sign-in |
+| 5 (core logic) | `vacation_request`, `vacation_request_day` | Vacation requests (create, change, cancel, status) |
+| 5 (core logic) | LangGraph checkpoint tables, in the `agent_memory` schema | Conversation state and paused confirmations |
+| 8 (API) | `approval`, `audit_log`, `kiosk_credential` | Supervisor and HR approvals, audit trail, kiosk sign-in |
+| 9 (observability) | `conversation`, `message` | Transcripts for the 45-day record policy and legal holds |
 
-LangGraph's checkpoint tables are created and managed by its own library, not
-by our migrations.
+LangGraph's checkpoint tables are created and managed by its own library, not by our
+migrations. An Alembic migration creates the `agent_memory` schema they live in, so
+autogenerate and `alembic check` never see them (ADR-0010).
 
 ## 3. Design decisions
 
