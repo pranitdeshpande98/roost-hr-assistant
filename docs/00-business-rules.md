@@ -65,7 +65,7 @@ Saturdays as needed, and are 8 paid hours.
 | Notice | At least 14 days. With less notice, the assistant does not submit and tells the employee to talk to their supervisor. |
 | Most days in a row | 10 working days; longer stretches need HR |
 | Blackout | Nov 15 – Dec 31 for Weekly Production |
-| Department limit | At most 15% of a department or shift off on the same day |
+| Department limit | At most 15% of one department, at one location, on one shift, off on the same day (departments span plants) |
 | Carryover | Up to 5 unused days carry over; the rest expire Dec 31 |
 
 ## 4. Vacation approval flow
@@ -91,8 +91,9 @@ confirms it; then it needs two approvals.
   approval is needed.
 - **Balance check.** Done silently. If the request is more than the employee has,
   the assistant says so and refers them to HR, without showing a number.
-- **Department limit.** If 15% of the department or shift is already off, the
-  assistant suggests the nearest available dates.
+- **Department limit.** If 15% of the employee's department at their location
+  and on their shift is already off, the assistant suggests the nearest
+  available dates.
 - **Denials.** The employee is notified the same way as for approvals.
 - **Changes.** Editing a request, even an approved one, restarts approval.
   Cancelling before the start date just notifies the approvers.

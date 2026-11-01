@@ -5,7 +5,13 @@ description = "Multilingual AI HR assistant: handbook Q&A, vacation requests, gu
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 authors = [{ name = "Pranit Deshpande" }]
-dependencies = []
+dependencies = [
+    "alembic>=1.20.1",
+    "pgvector>=0.5.1",
+    "psycopg[binary]>=3.3.6",
+    "pydantic-settings>=2.16.2",
+    "sqlalchemy>=2.1.6",
+]
 
 [build-system]
 requires = ["uv_build>=0.11.8,<0.12"]
@@ -13,6 +19,7 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "faker>=40.44.0",
     "mypy>=2.4.1",
     "pre-commit>=4.7.0",
     "pytest>=9.2.0",
@@ -50,6 +57,8 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = [
     "S101",     # assert is how pytest works
+    "S105",     # hard-coded test passwords are fake by design
+    "S106",
     "ARG",      # fixtures often look like unused arguments
 ]
 
@@ -63,8 +72,9 @@ docstring-code-format = true
 
 # ─────────────────────────── mypy (type checking) ───────────────────────────
 [tool.mypy]
+plugins = ["pydantic.mypy"]
 python_version = "3.12"
-files = ["src"]
+files = ["src", "scripts"]
 mypy_path = "src"
 strict = true
 warn_unreachable = true
