@@ -92,7 +92,7 @@ and the channel layer is designed so Teams plugs in without changing the agent.
 | V-03 | Each day is a half day or full day of the employee's scheduled shift. | 6.3 |
 | V-04 | Dates are in the future and do not overlap an existing active request. | 7.1 |
 | V-05 | Weekly Production: no dates between Nov 15 and Dec 31. | 6.5 |
-| V-06 | Department/shift stays at or below 15% off on every requested day. | 6.6 |
+| V-06 | The employee's department, at their location and on their shift, stays at or below 15% off on every requested day. | 6.6 |
 | V-07 | No more than 10 consecutive scheduled workdays. | 6.7 |
 | V-08 | Available vacation minus pending requests covers the request (checked silently). | 6.8 |
 | V-09 | Holidays inside the range are not charged as vacation. | 12.5 |
