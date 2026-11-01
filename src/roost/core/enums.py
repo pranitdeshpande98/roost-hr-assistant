@@ -52,3 +52,11 @@ class LeaveType(StrEnum):
 
     VACATION = "vacation"
     SICK = "sick"
+
+
+class HandbookStatus(StrEnum):
+    """Lifecycle of a handbook version (FR-44). Only one version is published at a time."""
+
+    DRAFT = "draft"
+    PUBLISHED = "published"
+    RETIRED = "retired"
