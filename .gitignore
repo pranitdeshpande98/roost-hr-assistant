@@ -35,7 +35,7 @@ data/processed/*
 models/
 
 # ── Eval & run outputs ─────────────────
-evals/results/
+
 logs/
 
 # ── Editors & OS ───────────────────────
