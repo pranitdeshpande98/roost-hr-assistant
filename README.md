@@ -42,6 +42,19 @@ with fallback · local multilingual embeddings with pgvector hybrid search ·
 PostgreSQL with an append-only audit log · server-rendered kiosk with
 channel adapters for Teams.
 
+## Model selection (Phase 4)
+
+Chosen by evaluation, not leaderboards: 90 questions (30 intents x English, Spanish, Vietnamese).
+Full evidence and reasoning: [ADR-0009](docs/adr/0009-model-selection.md).
+
+| Component | Choice | Key result |
+|---|---|---|
+| Embeddings | `BAAI/bge-m3` (local, CPU) | 98% hit@5 across all three languages |
+| Retrieval | Vector search, top 3 | Beat hybrid keyword + vector search (90%) |
+| Agent LLM | `gpt-oss-120b` → `qwen3.8-27b` → `nemotron-3-ultra` (free) | 100% tool use, language match and valid citations; ~1 s median |
+
+Reproduce: `uv run python scripts/eval_retrieval.py` and `uv run python scripts/eval_llm.py --report`.
+
 ## Tech stack (so far)
 
 | Area | Tool |
