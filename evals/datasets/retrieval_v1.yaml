@@ -1,0 +1,214 @@
+# Retrieval evaluation set v1.
+# Each intent is one employee question asked in English, Spanish and Vietnamese.
+# expected_sections lists every handbook section that correctly answers it.
+# Questions use everyday wording on purpose, not the handbook's own phrasing.
+
+- id: vacation-carryover
+  expected_sections: ["6.9"]
+  questions:
+    en: If I don't use all my vacation this year, do I lose it?
+    es: Si no uso todas mis vacaciones este año, ¿las pierdo?
+    vi: Nếu năm nay tôi không dùng hết ngày nghỉ phép thì có bị mất không?
+
+- id: vacation-notice
+  expected_sections: ["6.4"]
+  questions:
+    en: How far ahead do I have to ask for time off?
+    es: ¿Con cuánta anticipación tengo que pedir días libres?
+    vi: Tôi phải xin nghỉ phép trước bao lâu?
+
+- id: vacation-amount
+  expected_sections: ["6", "6.1"]
+  questions:
+    en: How many vacation days do I get each year?
+    es: ¿Cuántos días de vacaciones me dan al año?
+    vi: Mỗi năm tôi được bao nhiêu ngày nghỉ phép?
+
+- id: vacation-new-hire
+  expected_sections: ["6.2", "3.4"]
+  questions:
+    en: I just started last month. When can I take vacation?
+    es: Empecé a trabajar el mes pasado. ¿Cuándo puedo tomar vacaciones?
+    vi: Tôi mới bắt đầu làm tháng trước. Khi nào tôi được nghỉ phép?
+
+- id: vacation-half-day
+  expected_sections: ["6.3"]
+  questions:
+    en: Can I take just half a day off instead of a full day?
+    es: ¿Puedo tomar solo medio día libre en lugar del día completo?
+    vi: Tôi có thể nghỉ nửa ngày thay vì cả ngày không?
+
+- id: vacation-blackout
+  expected_sections: ["6.5"]
+  questions:
+    en: Why can't I take vacation in December? I work on the production line.
+    es: ¿Por qué no puedo tomar vacaciones en diciembre? Trabajo en la línea de producción.
+    vi: Tại sao tôi không được nghỉ phép vào tháng 12? Tôi làm ở dây chuyền sản xuất.
+
+- id: vacation-approval
+  expected_sections: ["7.2"]
+  questions:
+    en: Who has to approve my vacation request?
+    es: ¿Quién tiene que aprobar mi solicitud de vacaciones?
+    vi: Ai phải duyệt đơn xin nghỉ phép của tôi?
+
+- id: vacation-no-answer
+  expected_sections: ["7.4"]
+  questions:
+    en: My supervisor never answered my vacation request. What should I do?
+    es: Mi supervisor nunca respondió a mi solicitud de vacaciones. ¿Qué debo hacer?
+    vi: Quản lý của tôi chưa bao giờ trả lời đơn xin nghỉ phép của tôi. Tôi nên làm gì?
+
+- id: payday-weekly
+  expected_sections: ["5.1", "5"]
+  questions:
+    en: What day of the week do we get paid?
+    es: ¿Qué día de la semana nos pagan?
+    vi: Chúng tôi được trả lương vào ngày nào trong tuần?
+
+- id: payday-holiday
+  expected_sections: ["5.2"]
+  questions:
+    en: If payday lands on a holiday, when do I get my check?
+    es: Si el día de pago cae en un día festivo, ¿cuándo recibo mi cheque?
+    vi: Nếu ngày lĩnh lương trùng ngày lễ thì khi nào tôi nhận được lương?
+
+- id: first-paycheck
+  expected_sections: ["5.3"]
+  questions:
+    en: When will I get my first paycheck as a new employee?
+    es: Soy nuevo. ¿Cuándo recibo mi primer cheque de pago?
+    vi: Tôi là nhân viên mới. Khi nào tôi nhận được tiền lương đầu tiên?
+
+- id: sick-days
+  expected_sections: ["8.1", "8"]
+  questions:
+    en: How many sick days do I have?
+    es: ¿Cuántos días por enfermedad tengo?
+    vi: Tôi có bao nhiêu ngày nghỉ ốm?
+
+- id: bereavement
+  expected_sections: ["9.1", "9.2", "9"]
+  questions:
+    en: My grandmother passed away. Can I get paid time off for the funeral?
+    es: Mi abuela falleció. ¿Me dan días pagados para el funeral?
+    vi: Bà tôi vừa mất. Tôi có được nghỉ có lương để đi dự đám tang không?
+
+- id: jury-duty
+  expected_sections: ["10.1", "10"]
+  questions:
+    en: I got a jury summons. Will I still get paid?
+    es: Me llegó una citación para jurado. ¿Me siguen pagando?
+    vi: Tôi nhận được giấy triệu tập làm bồi thẩm đoàn. Tôi có còn được trả lương không?
+
+- id: fmla-eligibility
+  expected_sections: ["11.1", "11"]
+  questions:
+    en: My wife is having a baby. Can I take family leave?
+    es: Mi esposa va a tener un bebé. ¿Puedo tomar licencia familiar?
+    vi: Vợ tôi sắp sinh con. Tôi có được nghỉ phép gia đình không?
+
+- id: holiday-list
+  expected_sections: ["12.1", "12"]
+  questions:
+    en: Which holidays does the company give us off?
+    es: ¿Qué días festivos nos da libres la empresa?
+    vi: Công ty cho chúng tôi nghỉ những ngày lễ nào?
+
+- id: holiday-weekend
+  expected_sections: ["12.2"]
+  questions:
+    en: The Fourth of July is on a Saturday this year. Do we get another day off?
+    es: El 4 de julio cae en sábado este año. ¿Nos dan otro día libre?
+    vi: Năm nay ngày 4 tháng 7 rơi vào thứ Bảy. Chúng tôi có được nghỉ bù ngày khác không?
+
+- id: holiday-work-pay
+  expected_sections: ["12.4"]
+  questions:
+    en: How much extra do I get paid if I work on Thanksgiving?
+    es: ¿Cuánto más me pagan si trabajo el Día de Acción de Gracias?
+    vi: Nếu tôi đi làm vào Lễ Tạ Ơn thì được trả thêm bao nhiêu?
+
+- id: points-no-show
+  expected_sections: ["13.3", "13.7"]
+  questions:
+    en: What happens if I miss a shift and don't call anyone?
+    es: ¿Qué pasa si falto a mi turno y no aviso a nadie?
+    vi: Chuyện gì xảy ra nếu tôi nghỉ ca mà không báo cho ai?
+
+- id: call-out
+  expected_sections: ["13.2"]
+  questions:
+    en: I'm sick and can't come in today. Who do I call?
+    es: Estoy enfermo y no puedo ir hoy. ¿A quién llamo?
+    vi: Hôm nay tôi bị ốm và không thể đi làm. Tôi phải gọi cho ai?
+
+- id: points-expire
+  expected_sections: ["13.5"]
+  questions:
+    en: Do attendance points ever go away?
+    es: ¿Los puntos de asistencia se borran algún día?
+    vi: Điểm chuyên cần có bao giờ được xóa không?
+
+- id: health-start
+  expected_sections: ["14.2", "14.1"]
+  questions:
+    en: When does my health insurance start after I'm hired?
+    es: ¿Cuándo empieza mi seguro médico después de que me contratan?
+    vi: Bảo hiểm y tế của tôi bắt đầu khi nào sau khi được tuyển dụng?
+
+- id: retirement-match
+  expected_sections: ["14.7"]
+  questions:
+    en: Does the company match what I put into my 401k?
+    es: ¿La empresa iguala lo que pongo en mi 401k?
+    vi: Công ty có đóng thêm tương ứng với số tiền tôi góp vào 401k không?
+
+- id: dental-cost
+  expected_sections: ["14.5"]
+  questions:
+    en: How much does dental insurance cost for me and my family?
+    es: ¿Cuánto cuesta el seguro dental para mí y mi familia?
+    vi: Bảo hiểm nha khoa cho tôi và gia đình tốn bao nhiêu tiền?
+
+- id: harassment-report
+  expected_sections: ["15.4", "15.2"]
+  questions:
+    en: A coworker keeps making comments about my body. Where can I report it?
+    es: Un compañero sigue haciendo comentarios sobre mi cuerpo. ¿Dónde lo puedo reportar?
+    vi: Một đồng nghiệp cứ bình luận về cơ thể tôi. Tôi có thể báo cáo việc này ở đâu?
+
+- id: injury-report
+  expected_sections: ["16.2", "16.3"]
+  questions:
+    en: I cut my hand on the line today. What do I need to do?
+    es: Hoy me corté la mano en la línea. ¿Qué tengo que hacer?
+    vi: Hôm nay tôi bị đứt tay ở dây chuyền. Tôi cần phải làm gì?
+
+- id: overtime
+  expected_sections: ["4.4"]
+  questions:
+    en: Do I get paid extra if I work more than 40 hours in a week?
+    es: ¿Me pagan extra si trabajo más de 40 horas en una semana?
+    vi: Tôi có được trả thêm nếu làm hơn 40 giờ một tuần không?
+
+- id: shift-swap
+  expected_sections: ["4.5"]
+  questions:
+    en: Can I trade shifts with a coworker next week?
+    es: ¿Puedo cambiar de turno con un compañero la próxima semana?
+    vi: Tôi có thể đổi ca với đồng nghiệp vào tuần sau không?
+
+- id: kiosk-pin
+  expected_sections: ["18.3"]
+  questions:
+    en: I forgot my PIN for the kiosk. How do I reset it?
+    es: Olvidé mi PIN del quiosco. ¿Cómo lo restablezco?
+    vi: Tôi quên mã PIN của máy kiosk. Làm sao để đặt lại?
+
+- id: hotline-anonymous
+  expected_sections: ["17.3", "17.2"]
+  questions:
+    en: Can I report something to the ethics hotline without giving my name?
+    es: ¿Puedo reportar algo a la línea de ética sin dar mi nombre?
+    vi: Tôi có thể báo cáo với đường dây đạo đức mà không cần nêu tên không?

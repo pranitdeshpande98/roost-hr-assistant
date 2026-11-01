@@ -140,3 +140,4 @@ in [`docs/adr/`](adr/).
 | 0006 | Multilingual approach | Accepted |
 | 0007 | Relational database | Accepted |
 | 0008 | Channel adapters (kiosk, approver console, Teams) | Accepted |
+| 0009 | Embedding model, retrieval method and agent LLM chain | Accepted |

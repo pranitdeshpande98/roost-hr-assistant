@@ -7,9 +7,11 @@ requires-python = ">=3.12,<3.13"
 authors = [{ name = "Pranit Deshpande" }]
 dependencies = [
     "alembic>=1.20.1",
+    "openai>=3.42.0",
     "pgvector>=0.5.1",
     "psycopg[binary]>=3.3.6",
     "pydantic-settings>=2.16.2",
+    "sentence-transformers>=6.2.0",
     "sqlalchemy>=2.1.6",
 ]
 
@@ -20,11 +22,14 @@ build-backend = "uv_build"
 [dependency-groups]
 dev = [
     "faker>=40.44.0",
+    "httpx2>=2.16.0",
     "mypy>=2.4.1",
     "pre-commit>=4.7.0",
     "pytest>=9.2.0",
     "pytest-cov>=7.1.0",
+    "pyyaml>=6.0.3",
     "ruff>=0.17.3",
+    "types-pyyaml>=6.0.12.20261030",
 ]
 
 # ─────────────────────────── Ruff (lint + format) ───────────────────────────

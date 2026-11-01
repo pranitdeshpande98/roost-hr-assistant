@@ -3,6 +3,7 @@
 | Field | Value |
 |---|---|
 | Status | Accepted |
+- **Amended by:** ADR-0009 (vector-only retrieval; hybrid search not adopted)
 | Date | 2026-10-31 |
 | Requirements | FR-01, FR-02, FR-03, FR-44, NFR-01, NFR-05, NFR-08 |
 

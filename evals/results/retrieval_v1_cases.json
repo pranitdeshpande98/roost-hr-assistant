@@ -1,0 +1,3782 @@
+[
+  {
+    "case_id": "vacation-carryover-en",
+    "language": "en",
+    "method": "keyword",
+    "rank": 4
+  },
+  {
+    "case_id": "vacation-carryover-es",
+    "language": "es",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-carryover-vi",
+    "language": "vi",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-notice-en",
+    "language": "en",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-notice-es",
+    "language": "es",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-notice-vi",
+    "language": "vi",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-amount-en",
+    "language": "en",
+    "method": "keyword",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-amount-es",
+    "language": "es",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-amount-vi",
+    "language": "vi",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-new-hire-en",
+    "language": "en",
+    "method": "keyword",
+    "rank": 3
+  },
+  {
+    "case_id": "vacation-new-hire-es",
+    "language": "es",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-new-hire-vi",
+    "language": "vi",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-half-day-en",
+    "language": "en",
+    "method": "keyword",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-half-day-es",
+    "language": "es",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-half-day-vi",
+    "language": "vi",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-blackout-en",
+    "language": "en",
+    "method": "keyword",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-blackout-es",
+    "language": "es",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-blackout-vi",
+    "language": "vi",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-approval-en",
+    "language": "en",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-approval-es",
+    "language": "es",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-approval-vi",
+    "language": "vi",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-no-answer-en",
+    "language": "en",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-no-answer-es",
+    "language": "es",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-no-answer-vi",
+    "language": "vi",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "payday-weekly-en",
+    "language": "en",
+    "method": "keyword",
+    "rank": 5
+  },
+  {
+    "case_id": "payday-weekly-es",
+    "language": "es",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "payday-weekly-vi",
+    "language": "vi",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "payday-holiday-en",
+    "language": "en",
+    "method": "keyword",
+    "rank": 1
+  },
+  {
+    "case_id": "payday-holiday-es",
+    "language": "es",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "payday-holiday-vi",
+    "language": "vi",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "first-paycheck-en",
+    "language": "en",
+    "method": "keyword",
+    "rank": 2
+  },
+  {
+    "case_id": "first-paycheck-es",
+    "language": "es",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "first-paycheck-vi",
+    "language": "vi",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "sick-days-en",
+    "language": "en",
+    "method": "keyword",
+    "rank": 1
+  },
+  {
+    "case_id": "sick-days-es",
+    "language": "es",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "sick-days-vi",
+    "language": "vi",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "bereavement-en",
+    "language": "en",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "bereavement-es",
+    "language": "es",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "bereavement-vi",
+    "language": "vi",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "jury-duty-en",
+    "language": "en",
+    "method": "keyword",
+    "rank": 3
+  },
+  {
+    "case_id": "jury-duty-es",
+    "language": "es",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "jury-duty-vi",
+    "language": "vi",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "fmla-eligibility-en",
+    "language": "en",
+    "method": "keyword",
+    "rank": 1
+  },
+  {
+    "case_id": "fmla-eligibility-es",
+    "language": "es",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "fmla-eligibility-vi",
+    "language": "vi",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "holiday-list-en",
+    "language": "en",
+    "method": "keyword",
+    "rank": 2
+  },
+  {
+    "case_id": "holiday-list-es",
+    "language": "es",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "holiday-list-vi",
+    "language": "vi",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "holiday-weekend-en",
+    "language": "en",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "holiday-weekend-es",
+    "language": "es",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "holiday-weekend-vi",
+    "language": "vi",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "holiday-work-pay-en",
+    "language": "en",
+    "method": "keyword",
+    "rank": 1
+  },
+  {
+    "case_id": "holiday-work-pay-es",
+    "language": "es",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "holiday-work-pay-vi",
+    "language": "vi",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "points-no-show-en",
+    "language": "en",
+    "method": "keyword",
+    "rank": 1
+  },
+  {
+    "case_id": "points-no-show-es",
+    "language": "es",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "points-no-show-vi",
+    "language": "vi",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "call-out-en",
+    "language": "en",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "call-out-es",
+    "language": "es",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "call-out-vi",
+    "language": "vi",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "points-expire-en",
+    "language": "en",
+    "method": "keyword",
+    "rank": 1
+  },
+  {
+    "case_id": "points-expire-es",
+    "language": "es",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "points-expire-vi",
+    "language": "vi",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "health-start-en",
+    "language": "en",
+    "method": "keyword",
+    "rank": 1
+  },
+  {
+    "case_id": "health-start-es",
+    "language": "es",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "health-start-vi",
+    "language": "vi",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "retirement-match-en",
+    "language": "en",
+    "method": "keyword",
+    "rank": 2
+  },
+  {
+    "case_id": "retirement-match-es",
+    "language": "es",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "retirement-match-vi",
+    "language": "vi",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "dental-cost-en",
+    "language": "en",
+    "method": "keyword",
+    "rank": 2
+  },
+  {
+    "case_id": "dental-cost-es",
+    "language": "es",
+    "method": "keyword",
+    "rank": 1
+  },
+  {
+    "case_id": "dental-cost-vi",
+    "language": "vi",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "harassment-report-en",
+    "language": "en",
+    "method": "keyword",
+    "rank": 1
+  },
+  {
+    "case_id": "harassment-report-es",
+    "language": "es",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "harassment-report-vi",
+    "language": "vi",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "injury-report-en",
+    "language": "en",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "injury-report-es",
+    "language": "es",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "injury-report-vi",
+    "language": "vi",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "overtime-en",
+    "language": "en",
+    "method": "keyword",
+    "rank": 1
+  },
+  {
+    "case_id": "overtime-es",
+    "language": "es",
+    "method": "keyword",
+    "rank": 1
+  },
+  {
+    "case_id": "overtime-vi",
+    "language": "vi",
+    "method": "keyword",
+    "rank": 1
+  },
+  {
+    "case_id": "shift-swap-en",
+    "language": "en",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "shift-swap-es",
+    "language": "es",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "shift-swap-vi",
+    "language": "vi",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "kiosk-pin-en",
+    "language": "en",
+    "method": "keyword",
+    "rank": 1
+  },
+  {
+    "case_id": "kiosk-pin-es",
+    "language": "es",
+    "method": "keyword",
+    "rank": 1
+  },
+  {
+    "case_id": "kiosk-pin-vi",
+    "language": "vi",
+    "method": "keyword",
+    "rank": 1
+  },
+  {
+    "case_id": "hotline-anonymous-en",
+    "language": "en",
+    "method": "keyword",
+    "rank": 1
+  },
+  {
+    "case_id": "hotline-anonymous-es",
+    "language": "es",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "hotline-anonymous-vi",
+    "language": "vi",
+    "method": "keyword",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-carryover-en",
+    "language": "en",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-carryover-en",
+    "language": "en",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-carryover-es",
+    "language": "es",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-carryover-es",
+    "language": "es",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-carryover-vi",
+    "language": "vi",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-carryover-vi",
+    "language": "vi",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-notice-en",
+    "language": "en",
+    "method": "vector:bge-m3",
+    "rank": 2
+  },
+  {
+    "case_id": "vacation-notice-en",
+    "language": "en",
+    "method": "hybrid:bge-m3",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-notice-es",
+    "language": "es",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-notice-es",
+    "language": "es",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-notice-vi",
+    "language": "vi",
+    "method": "vector:bge-m3",
+    "rank": 2
+  },
+  {
+    "case_id": "vacation-notice-vi",
+    "language": "vi",
+    "method": "hybrid:bge-m3",
+    "rank": 2
+  },
+  {
+    "case_id": "vacation-amount-en",
+    "language": "en",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-amount-en",
+    "language": "en",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-amount-es",
+    "language": "es",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-amount-es",
+    "language": "es",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-amount-vi",
+    "language": "vi",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-amount-vi",
+    "language": "vi",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-new-hire-en",
+    "language": "en",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-new-hire-en",
+    "language": "en",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-new-hire-es",
+    "language": "es",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-new-hire-es",
+    "language": "es",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-new-hire-vi",
+    "language": "vi",
+    "method": "vector:bge-m3",
+    "rank": 2
+  },
+  {
+    "case_id": "vacation-new-hire-vi",
+    "language": "vi",
+    "method": "hybrid:bge-m3",
+    "rank": 2
+  },
+  {
+    "case_id": "vacation-half-day-en",
+    "language": "en",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-half-day-en",
+    "language": "en",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-half-day-es",
+    "language": "es",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-half-day-es",
+    "language": "es",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-half-day-vi",
+    "language": "vi",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-half-day-vi",
+    "language": "vi",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-blackout-en",
+    "language": "en",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-blackout-en",
+    "language": "en",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-blackout-es",
+    "language": "es",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-blackout-es",
+    "language": "es",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-blackout-vi",
+    "language": "vi",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-blackout-vi",
+    "language": "vi",
+    "method": "hybrid:bge-m3",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-approval-en",
+    "language": "en",
+    "method": "vector:bge-m3",
+    "rank": 5
+  },
+  {
+    "case_id": "vacation-approval-en",
+    "language": "en",
+    "method": "hybrid:bge-m3",
+    "rank": 5
+  },
+  {
+    "case_id": "vacation-approval-es",
+    "language": "es",
+    "method": "vector:bge-m3",
+    "rank": 5
+  },
+  {
+    "case_id": "vacation-approval-es",
+    "language": "es",
+    "method": "hybrid:bge-m3",
+    "rank": 5
+  },
+  {
+    "case_id": "vacation-approval-vi",
+    "language": "vi",
+    "method": "vector:bge-m3",
+    "rank": 2
+  },
+  {
+    "case_id": "vacation-approval-vi",
+    "language": "vi",
+    "method": "hybrid:bge-m3",
+    "rank": 2
+  },
+  {
+    "case_id": "vacation-no-answer-en",
+    "language": "en",
+    "method": "vector:bge-m3",
+    "rank": 2
+  },
+  {
+    "case_id": "vacation-no-answer-en",
+    "language": "en",
+    "method": "hybrid:bge-m3",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-no-answer-es",
+    "language": "es",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-no-answer-es",
+    "language": "es",
+    "method": "hybrid:bge-m3",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-no-answer-vi",
+    "language": "vi",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-no-answer-vi",
+    "language": "vi",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "payday-weekly-en",
+    "language": "en",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "payday-weekly-en",
+    "language": "en",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "payday-weekly-es",
+    "language": "es",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "payday-weekly-es",
+    "language": "es",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "payday-weekly-vi",
+    "language": "vi",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "payday-weekly-vi",
+    "language": "vi",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "payday-holiday-en",
+    "language": "en",
+    "method": "vector:bge-m3",
+    "rank": 3
+  },
+  {
+    "case_id": "payday-holiday-en",
+    "language": "en",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "payday-holiday-es",
+    "language": "es",
+    "method": "vector:bge-m3",
+    "rank": 3
+  },
+  {
+    "case_id": "payday-holiday-es",
+    "language": "es",
+    "method": "hybrid:bge-m3",
+    "rank": 3
+  },
+  {
+    "case_id": "payday-holiday-vi",
+    "language": "vi",
+    "method": "vector:bge-m3",
+    "rank": 3
+  },
+  {
+    "case_id": "payday-holiday-vi",
+    "language": "vi",
+    "method": "hybrid:bge-m3",
+    "rank": 3
+  },
+  {
+    "case_id": "first-paycheck-en",
+    "language": "en",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "first-paycheck-en",
+    "language": "en",
+    "method": "hybrid:bge-m3",
+    "rank": 2
+  },
+  {
+    "case_id": "first-paycheck-es",
+    "language": "es",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "first-paycheck-es",
+    "language": "es",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "first-paycheck-vi",
+    "language": "vi",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "first-paycheck-vi",
+    "language": "vi",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "sick-days-en",
+    "language": "en",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "sick-days-en",
+    "language": "en",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "sick-days-es",
+    "language": "es",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "sick-days-es",
+    "language": "es",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "sick-days-vi",
+    "language": "vi",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "sick-days-vi",
+    "language": "vi",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "bereavement-en",
+    "language": "en",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "bereavement-en",
+    "language": "en",
+    "method": "hybrid:bge-m3",
+    "rank": null
+  },
+  {
+    "case_id": "bereavement-es",
+    "language": "es",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "bereavement-es",
+    "language": "es",
+    "method": "hybrid:bge-m3",
+    "rank": 2
+  },
+  {
+    "case_id": "bereavement-vi",
+    "language": "vi",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "bereavement-vi",
+    "language": "vi",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "jury-duty-en",
+    "language": "en",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "jury-duty-en",
+    "language": "en",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "jury-duty-es",
+    "language": "es",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "jury-duty-es",
+    "language": "es",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "jury-duty-vi",
+    "language": "vi",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "jury-duty-vi",
+    "language": "vi",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "fmla-eligibility-en",
+    "language": "en",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "fmla-eligibility-en",
+    "language": "en",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "fmla-eligibility-es",
+    "language": "es",
+    "method": "vector:bge-m3",
+    "rank": 3
+  },
+  {
+    "case_id": "fmla-eligibility-es",
+    "language": "es",
+    "method": "hybrid:bge-m3",
+    "rank": 3
+  },
+  {
+    "case_id": "fmla-eligibility-vi",
+    "language": "vi",
+    "method": "vector:bge-m3",
+    "rank": 4
+  },
+  {
+    "case_id": "fmla-eligibility-vi",
+    "language": "vi",
+    "method": "hybrid:bge-m3",
+    "rank": 4
+  },
+  {
+    "case_id": "holiday-list-en",
+    "language": "en",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "holiday-list-en",
+    "language": "en",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "holiday-list-es",
+    "language": "es",
+    "method": "vector:bge-m3",
+    "rank": 3
+  },
+  {
+    "case_id": "holiday-list-es",
+    "language": "es",
+    "method": "hybrid:bge-m3",
+    "rank": 3
+  },
+  {
+    "case_id": "holiday-list-vi",
+    "language": "vi",
+    "method": "vector:bge-m3",
+    "rank": 2
+  },
+  {
+    "case_id": "holiday-list-vi",
+    "language": "vi",
+    "method": "hybrid:bge-m3",
+    "rank": 2
+  },
+  {
+    "case_id": "holiday-weekend-en",
+    "language": "en",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "holiday-weekend-en",
+    "language": "en",
+    "method": "hybrid:bge-m3",
+    "rank": null
+  },
+  {
+    "case_id": "holiday-weekend-es",
+    "language": "es",
+    "method": "vector:bge-m3",
+    "rank": 2
+  },
+  {
+    "case_id": "holiday-weekend-es",
+    "language": "es",
+    "method": "hybrid:bge-m3",
+    "rank": null
+  },
+  {
+    "case_id": "holiday-weekend-vi",
+    "language": "vi",
+    "method": "vector:bge-m3",
+    "rank": null
+  },
+  {
+    "case_id": "holiday-weekend-vi",
+    "language": "vi",
+    "method": "hybrid:bge-m3",
+    "rank": null
+  },
+  {
+    "case_id": "holiday-work-pay-en",
+    "language": "en",
+    "method": "vector:bge-m3",
+    "rank": 2
+  },
+  {
+    "case_id": "holiday-work-pay-en",
+    "language": "en",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "holiday-work-pay-es",
+    "language": "es",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "holiday-work-pay-es",
+    "language": "es",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "holiday-work-pay-vi",
+    "language": "vi",
+    "method": "vector:bge-m3",
+    "rank": 4
+  },
+  {
+    "case_id": "holiday-work-pay-vi",
+    "language": "vi",
+    "method": "hybrid:bge-m3",
+    "rank": 4
+  },
+  {
+    "case_id": "points-no-show-en",
+    "language": "en",
+    "method": "vector:bge-m3",
+    "rank": 2
+  },
+  {
+    "case_id": "points-no-show-en",
+    "language": "en",
+    "method": "hybrid:bge-m3",
+    "rank": 2
+  },
+  {
+    "case_id": "points-no-show-es",
+    "language": "es",
+    "method": "vector:bge-m3",
+    "rank": 2
+  },
+  {
+    "case_id": "points-no-show-es",
+    "language": "es",
+    "method": "hybrid:bge-m3",
+    "rank": 2
+  },
+  {
+    "case_id": "points-no-show-vi",
+    "language": "vi",
+    "method": "vector:bge-m3",
+    "rank": null
+  },
+  {
+    "case_id": "points-no-show-vi",
+    "language": "vi",
+    "method": "hybrid:bge-m3",
+    "rank": null
+  },
+  {
+    "case_id": "call-out-en",
+    "language": "en",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "call-out-en",
+    "language": "en",
+    "method": "hybrid:bge-m3",
+    "rank": 2
+  },
+  {
+    "case_id": "call-out-es",
+    "language": "es",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "call-out-es",
+    "language": "es",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "call-out-vi",
+    "language": "vi",
+    "method": "vector:bge-m3",
+    "rank": 4
+  },
+  {
+    "case_id": "call-out-vi",
+    "language": "vi",
+    "method": "hybrid:bge-m3",
+    "rank": 4
+  },
+  {
+    "case_id": "points-expire-en",
+    "language": "en",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "points-expire-en",
+    "language": "en",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "points-expire-es",
+    "language": "es",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "points-expire-es",
+    "language": "es",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "points-expire-vi",
+    "language": "vi",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "points-expire-vi",
+    "language": "vi",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "health-start-en",
+    "language": "en",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "health-start-en",
+    "language": "en",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "health-start-es",
+    "language": "es",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "health-start-es",
+    "language": "es",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "health-start-vi",
+    "language": "vi",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "health-start-vi",
+    "language": "vi",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "retirement-match-en",
+    "language": "en",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "retirement-match-en",
+    "language": "en",
+    "method": "hybrid:bge-m3",
+    "rank": 2
+  },
+  {
+    "case_id": "retirement-match-es",
+    "language": "es",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "retirement-match-es",
+    "language": "es",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "retirement-match-vi",
+    "language": "vi",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "retirement-match-vi",
+    "language": "vi",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "dental-cost-en",
+    "language": "en",
+    "method": "vector:bge-m3",
+    "rank": 2
+  },
+  {
+    "case_id": "dental-cost-en",
+    "language": "en",
+    "method": "hybrid:bge-m3",
+    "rank": 2
+  },
+  {
+    "case_id": "dental-cost-es",
+    "language": "es",
+    "method": "vector:bge-m3",
+    "rank": 2
+  },
+  {
+    "case_id": "dental-cost-es",
+    "language": "es",
+    "method": "hybrid:bge-m3",
+    "rank": 2
+  },
+  {
+    "case_id": "dental-cost-vi",
+    "language": "vi",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "dental-cost-vi",
+    "language": "vi",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "harassment-report-en",
+    "language": "en",
+    "method": "vector:bge-m3",
+    "rank": 2
+  },
+  {
+    "case_id": "harassment-report-en",
+    "language": "en",
+    "method": "hybrid:bge-m3",
+    "rank": 3
+  },
+  {
+    "case_id": "harassment-report-es",
+    "language": "es",
+    "method": "vector:bge-m3",
+    "rank": 2
+  },
+  {
+    "case_id": "harassment-report-es",
+    "language": "es",
+    "method": "hybrid:bge-m3",
+    "rank": 2
+  },
+  {
+    "case_id": "harassment-report-vi",
+    "language": "vi",
+    "method": "vector:bge-m3",
+    "rank": 3
+  },
+  {
+    "case_id": "harassment-report-vi",
+    "language": "vi",
+    "method": "hybrid:bge-m3",
+    "rank": 3
+  },
+  {
+    "case_id": "injury-report-en",
+    "language": "en",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "injury-report-en",
+    "language": "en",
+    "method": "hybrid:bge-m3",
+    "rank": 5
+  },
+  {
+    "case_id": "injury-report-es",
+    "language": "es",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "injury-report-es",
+    "language": "es",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "injury-report-vi",
+    "language": "vi",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "injury-report-vi",
+    "language": "vi",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "overtime-en",
+    "language": "en",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "overtime-en",
+    "language": "en",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "overtime-es",
+    "language": "es",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "overtime-es",
+    "language": "es",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "overtime-vi",
+    "language": "vi",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "overtime-vi",
+    "language": "vi",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "shift-swap-en",
+    "language": "en",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "shift-swap-en",
+    "language": "en",
+    "method": "hybrid:bge-m3",
+    "rank": 4
+  },
+  {
+    "case_id": "shift-swap-es",
+    "language": "es",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "shift-swap-es",
+    "language": "es",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "shift-swap-vi",
+    "language": "vi",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "shift-swap-vi",
+    "language": "vi",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "kiosk-pin-en",
+    "language": "en",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "kiosk-pin-en",
+    "language": "en",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "kiosk-pin-es",
+    "language": "es",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "kiosk-pin-es",
+    "language": "es",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "kiosk-pin-vi",
+    "language": "vi",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "kiosk-pin-vi",
+    "language": "vi",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "hotline-anonymous-en",
+    "language": "en",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "hotline-anonymous-en",
+    "language": "en",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "hotline-anonymous-es",
+    "language": "es",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "hotline-anonymous-es",
+    "language": "es",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "hotline-anonymous-vi",
+    "language": "vi",
+    "method": "vector:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "hotline-anonymous-vi",
+    "language": "vi",
+    "method": "hybrid:bge-m3",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-carryover-en",
+    "language": "en",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-carryover-en",
+    "language": "en",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-carryover-es",
+    "language": "es",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-carryover-es",
+    "language": "es",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-carryover-vi",
+    "language": "vi",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-carryover-vi",
+    "language": "vi",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-notice-en",
+    "language": "en",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-notice-en",
+    "language": "en",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-notice-es",
+    "language": "es",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-notice-es",
+    "language": "es",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-notice-vi",
+    "language": "vi",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-notice-vi",
+    "language": "vi",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-amount-en",
+    "language": "en",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-amount-en",
+    "language": "en",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-amount-es",
+    "language": "es",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-amount-es",
+    "language": "es",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-amount-vi",
+    "language": "vi",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 2
+  },
+  {
+    "case_id": "vacation-amount-vi",
+    "language": "vi",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 2
+  },
+  {
+    "case_id": "vacation-new-hire-en",
+    "language": "en",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-new-hire-en",
+    "language": "en",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-new-hire-es",
+    "language": "es",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-new-hire-es",
+    "language": "es",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-new-hire-vi",
+    "language": "vi",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-new-hire-vi",
+    "language": "vi",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-half-day-en",
+    "language": "en",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-half-day-en",
+    "language": "en",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-half-day-es",
+    "language": "es",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-half-day-es",
+    "language": "es",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-half-day-vi",
+    "language": "vi",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-half-day-vi",
+    "language": "vi",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-blackout-en",
+    "language": "en",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-blackout-en",
+    "language": "en",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-blackout-es",
+    "language": "es",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-blackout-es",
+    "language": "es",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-blackout-vi",
+    "language": "vi",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-blackout-vi",
+    "language": "vi",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 5
+  },
+  {
+    "case_id": "vacation-approval-en",
+    "language": "en",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 3
+  },
+  {
+    "case_id": "vacation-approval-en",
+    "language": "en",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 5
+  },
+  {
+    "case_id": "vacation-approval-es",
+    "language": "es",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 3
+  },
+  {
+    "case_id": "vacation-approval-es",
+    "language": "es",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 3
+  },
+  {
+    "case_id": "vacation-approval-vi",
+    "language": "vi",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 4
+  },
+  {
+    "case_id": "vacation-approval-vi",
+    "language": "vi",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 4
+  },
+  {
+    "case_id": "vacation-no-answer-en",
+    "language": "en",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 4
+  },
+  {
+    "case_id": "vacation-no-answer-en",
+    "language": "en",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-no-answer-es",
+    "language": "es",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-no-answer-es",
+    "language": "es",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-no-answer-vi",
+    "language": "vi",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-no-answer-vi",
+    "language": "vi",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": null
+  },
+  {
+    "case_id": "payday-weekly-en",
+    "language": "en",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "payday-weekly-en",
+    "language": "en",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "payday-weekly-es",
+    "language": "es",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "payday-weekly-es",
+    "language": "es",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "payday-weekly-vi",
+    "language": "vi",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "payday-weekly-vi",
+    "language": "vi",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "payday-holiday-en",
+    "language": "en",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "payday-holiday-en",
+    "language": "en",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "payday-holiday-es",
+    "language": "es",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "payday-holiday-es",
+    "language": "es",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "payday-holiday-vi",
+    "language": "vi",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 2
+  },
+  {
+    "case_id": "payday-holiday-vi",
+    "language": "vi",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 2
+  },
+  {
+    "case_id": "first-paycheck-en",
+    "language": "en",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "first-paycheck-en",
+    "language": "en",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "first-paycheck-es",
+    "language": "es",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "first-paycheck-es",
+    "language": "es",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "first-paycheck-vi",
+    "language": "vi",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "first-paycheck-vi",
+    "language": "vi",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "sick-days-en",
+    "language": "en",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "sick-days-en",
+    "language": "en",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "sick-days-es",
+    "language": "es",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "sick-days-es",
+    "language": "es",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "sick-days-vi",
+    "language": "vi",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "sick-days-vi",
+    "language": "vi",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "bereavement-en",
+    "language": "en",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "bereavement-en",
+    "language": "en",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": null
+  },
+  {
+    "case_id": "bereavement-es",
+    "language": "es",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "bereavement-es",
+    "language": "es",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 2
+  },
+  {
+    "case_id": "bereavement-vi",
+    "language": "vi",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 2
+  },
+  {
+    "case_id": "bereavement-vi",
+    "language": "vi",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 2
+  },
+  {
+    "case_id": "jury-duty-en",
+    "language": "en",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 2
+  },
+  {
+    "case_id": "jury-duty-en",
+    "language": "en",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 2
+  },
+  {
+    "case_id": "jury-duty-es",
+    "language": "es",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 2
+  },
+  {
+    "case_id": "jury-duty-es",
+    "language": "es",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 2
+  },
+  {
+    "case_id": "jury-duty-vi",
+    "language": "vi",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 3
+  },
+  {
+    "case_id": "jury-duty-vi",
+    "language": "vi",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 3
+  },
+  {
+    "case_id": "fmla-eligibility-en",
+    "language": "en",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 2
+  },
+  {
+    "case_id": "fmla-eligibility-en",
+    "language": "en",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "fmla-eligibility-es",
+    "language": "es",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 2
+  },
+  {
+    "case_id": "fmla-eligibility-es",
+    "language": "es",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 2
+  },
+  {
+    "case_id": "fmla-eligibility-vi",
+    "language": "vi",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 5
+  },
+  {
+    "case_id": "fmla-eligibility-vi",
+    "language": "vi",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 5
+  },
+  {
+    "case_id": "holiday-list-en",
+    "language": "en",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "holiday-list-en",
+    "language": "en",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "holiday-list-es",
+    "language": "es",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "holiday-list-es",
+    "language": "es",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "holiday-list-vi",
+    "language": "vi",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "holiday-list-vi",
+    "language": "vi",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "holiday-weekend-en",
+    "language": "en",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": null
+  },
+  {
+    "case_id": "holiday-weekend-en",
+    "language": "en",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": null
+  },
+  {
+    "case_id": "holiday-weekend-es",
+    "language": "es",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 2
+  },
+  {
+    "case_id": "holiday-weekend-es",
+    "language": "es",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": null
+  },
+  {
+    "case_id": "holiday-weekend-vi",
+    "language": "vi",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": null
+  },
+  {
+    "case_id": "holiday-weekend-vi",
+    "language": "vi",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": null
+  },
+  {
+    "case_id": "holiday-work-pay-en",
+    "language": "en",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 3
+  },
+  {
+    "case_id": "holiday-work-pay-en",
+    "language": "en",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "holiday-work-pay-es",
+    "language": "es",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 4
+  },
+  {
+    "case_id": "holiday-work-pay-es",
+    "language": "es",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 4
+  },
+  {
+    "case_id": "holiday-work-pay-vi",
+    "language": "vi",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": null
+  },
+  {
+    "case_id": "holiday-work-pay-vi",
+    "language": "vi",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": null
+  },
+  {
+    "case_id": "points-no-show-en",
+    "language": "en",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 2
+  },
+  {
+    "case_id": "points-no-show-en",
+    "language": "en",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 2
+  },
+  {
+    "case_id": "points-no-show-es",
+    "language": "es",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 2
+  },
+  {
+    "case_id": "points-no-show-es",
+    "language": "es",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 2
+  },
+  {
+    "case_id": "points-no-show-vi",
+    "language": "vi",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "points-no-show-vi",
+    "language": "vi",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "call-out-en",
+    "language": "en",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 3
+  },
+  {
+    "case_id": "call-out-en",
+    "language": "en",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 3
+  },
+  {
+    "case_id": "call-out-es",
+    "language": "es",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 3
+  },
+  {
+    "case_id": "call-out-es",
+    "language": "es",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 3
+  },
+  {
+    "case_id": "call-out-vi",
+    "language": "vi",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": null
+  },
+  {
+    "case_id": "call-out-vi",
+    "language": "vi",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": null
+  },
+  {
+    "case_id": "points-expire-en",
+    "language": "en",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "points-expire-en",
+    "language": "en",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "points-expire-es",
+    "language": "es",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "points-expire-es",
+    "language": "es",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "points-expire-vi",
+    "language": "vi",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "points-expire-vi",
+    "language": "vi",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "health-start-en",
+    "language": "en",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "health-start-en",
+    "language": "en",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "health-start-es",
+    "language": "es",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "health-start-es",
+    "language": "es",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "health-start-vi",
+    "language": "vi",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "health-start-vi",
+    "language": "vi",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "retirement-match-en",
+    "language": "en",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "retirement-match-en",
+    "language": "en",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 2
+  },
+  {
+    "case_id": "retirement-match-es",
+    "language": "es",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "retirement-match-es",
+    "language": "es",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "retirement-match-vi",
+    "language": "vi",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "retirement-match-vi",
+    "language": "vi",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "dental-cost-en",
+    "language": "en",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 2
+  },
+  {
+    "case_id": "dental-cost-en",
+    "language": "en",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 2
+  },
+  {
+    "case_id": "dental-cost-es",
+    "language": "es",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "dental-cost-es",
+    "language": "es",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "dental-cost-vi",
+    "language": "vi",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "dental-cost-vi",
+    "language": "vi",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "harassment-report-en",
+    "language": "en",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "harassment-report-en",
+    "language": "en",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "harassment-report-es",
+    "language": "es",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "harassment-report-es",
+    "language": "es",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "harassment-report-vi",
+    "language": "vi",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "harassment-report-vi",
+    "language": "vi",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "injury-report-en",
+    "language": "en",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "injury-report-en",
+    "language": "en",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 4
+  },
+  {
+    "case_id": "injury-report-es",
+    "language": "es",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "injury-report-es",
+    "language": "es",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "injury-report-vi",
+    "language": "vi",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 2
+  },
+  {
+    "case_id": "injury-report-vi",
+    "language": "vi",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 2
+  },
+  {
+    "case_id": "overtime-en",
+    "language": "en",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "overtime-en",
+    "language": "en",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "overtime-es",
+    "language": "es",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "overtime-es",
+    "language": "es",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "overtime-vi",
+    "language": "vi",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "overtime-vi",
+    "language": "vi",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "shift-swap-en",
+    "language": "en",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "shift-swap-en",
+    "language": "en",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 2
+  },
+  {
+    "case_id": "shift-swap-es",
+    "language": "es",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "shift-swap-es",
+    "language": "es",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "shift-swap-vi",
+    "language": "vi",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "shift-swap-vi",
+    "language": "vi",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "kiosk-pin-en",
+    "language": "en",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "kiosk-pin-en",
+    "language": "en",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "kiosk-pin-es",
+    "language": "es",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "kiosk-pin-es",
+    "language": "es",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "kiosk-pin-vi",
+    "language": "vi",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "kiosk-pin-vi",
+    "language": "vi",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "hotline-anonymous-en",
+    "language": "en",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "hotline-anonymous-en",
+    "language": "en",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "hotline-anonymous-es",
+    "language": "es",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "hotline-anonymous-es",
+    "language": "es",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "hotline-anonymous-vi",
+    "language": "vi",
+    "method": "vector:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "hotline-anonymous-vi",
+    "language": "vi",
+    "method": "hybrid:multilingual-e5-large-instruct",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-carryover-en",
+    "language": "en",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-carryover-en",
+    "language": "en",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-carryover-es",
+    "language": "es",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-carryover-es",
+    "language": "es",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-carryover-vi",
+    "language": "vi",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-carryover-vi",
+    "language": "vi",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-notice-en",
+    "language": "en",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 2
+  },
+  {
+    "case_id": "vacation-notice-en",
+    "language": "en",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-notice-es",
+    "language": "es",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 2
+  },
+  {
+    "case_id": "vacation-notice-es",
+    "language": "es",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 2
+  },
+  {
+    "case_id": "vacation-notice-vi",
+    "language": "vi",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-notice-vi",
+    "language": "vi",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-amount-en",
+    "language": "en",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-amount-en",
+    "language": "en",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-amount-es",
+    "language": "es",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-amount-es",
+    "language": "es",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-amount-vi",
+    "language": "vi",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 2
+  },
+  {
+    "case_id": "vacation-amount-vi",
+    "language": "vi",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 2
+  },
+  {
+    "case_id": "vacation-new-hire-en",
+    "language": "en",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-new-hire-en",
+    "language": "en",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-new-hire-es",
+    "language": "es",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 5
+  },
+  {
+    "case_id": "vacation-new-hire-es",
+    "language": "es",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 5
+  },
+  {
+    "case_id": "vacation-new-hire-vi",
+    "language": "vi",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-new-hire-vi",
+    "language": "vi",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-half-day-en",
+    "language": "en",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-half-day-en",
+    "language": "en",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-half-day-es",
+    "language": "es",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-half-day-es",
+    "language": "es",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-half-day-vi",
+    "language": "vi",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-half-day-vi",
+    "language": "vi",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-blackout-en",
+    "language": "en",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-blackout-en",
+    "language": "en",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-blackout-es",
+    "language": "es",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-blackout-es",
+    "language": "es",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-blackout-vi",
+    "language": "vi",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-blackout-vi",
+    "language": "vi",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-approval-en",
+    "language": "en",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 4
+  },
+  {
+    "case_id": "vacation-approval-en",
+    "language": "en",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 4
+  },
+  {
+    "case_id": "vacation-approval-es",
+    "language": "es",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 5
+  },
+  {
+    "case_id": "vacation-approval-es",
+    "language": "es",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 5
+  },
+  {
+    "case_id": "vacation-approval-vi",
+    "language": "vi",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-approval-vi",
+    "language": "vi",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-no-answer-en",
+    "language": "en",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-no-answer-en",
+    "language": "en",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-no-answer-es",
+    "language": "es",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 4
+  },
+  {
+    "case_id": "vacation-no-answer-es",
+    "language": "es",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": null
+  },
+  {
+    "case_id": "vacation-no-answer-vi",
+    "language": "vi",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "vacation-no-answer-vi",
+    "language": "vi",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "payday-weekly-en",
+    "language": "en",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "payday-weekly-en",
+    "language": "en",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 2
+  },
+  {
+    "case_id": "payday-weekly-es",
+    "language": "es",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "payday-weekly-es",
+    "language": "es",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "payday-weekly-vi",
+    "language": "vi",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 2
+  },
+  {
+    "case_id": "payday-weekly-vi",
+    "language": "vi",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 2
+  },
+  {
+    "case_id": "payday-holiday-en",
+    "language": "en",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "payday-holiday-en",
+    "language": "en",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "payday-holiday-es",
+    "language": "es",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "payday-holiday-es",
+    "language": "es",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "payday-holiday-vi",
+    "language": "vi",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "payday-holiday-vi",
+    "language": "vi",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "first-paycheck-en",
+    "language": "en",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "first-paycheck-en",
+    "language": "en",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "first-paycheck-es",
+    "language": "es",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "first-paycheck-es",
+    "language": "es",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "first-paycheck-vi",
+    "language": "vi",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "first-paycheck-vi",
+    "language": "vi",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "sick-days-en",
+    "language": "en",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "sick-days-en",
+    "language": "en",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "sick-days-es",
+    "language": "es",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "sick-days-es",
+    "language": "es",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "sick-days-vi",
+    "language": "vi",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "sick-days-vi",
+    "language": "vi",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "bereavement-en",
+    "language": "en",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "bereavement-en",
+    "language": "en",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": null
+  },
+  {
+    "case_id": "bereavement-es",
+    "language": "es",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "bereavement-es",
+    "language": "es",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 2
+  },
+  {
+    "case_id": "bereavement-vi",
+    "language": "vi",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "bereavement-vi",
+    "language": "vi",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "jury-duty-en",
+    "language": "en",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "jury-duty-en",
+    "language": "en",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "jury-duty-es",
+    "language": "es",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "jury-duty-es",
+    "language": "es",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "jury-duty-vi",
+    "language": "vi",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "jury-duty-vi",
+    "language": "vi",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "fmla-eligibility-en",
+    "language": "en",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 2
+  },
+  {
+    "case_id": "fmla-eligibility-en",
+    "language": "en",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "fmla-eligibility-es",
+    "language": "es",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 2
+  },
+  {
+    "case_id": "fmla-eligibility-es",
+    "language": "es",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 2
+  },
+  {
+    "case_id": "fmla-eligibility-vi",
+    "language": "vi",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 2
+  },
+  {
+    "case_id": "fmla-eligibility-vi",
+    "language": "vi",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 2
+  },
+  {
+    "case_id": "holiday-list-en",
+    "language": "en",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "holiday-list-en",
+    "language": "en",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "holiday-list-es",
+    "language": "es",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "holiday-list-es",
+    "language": "es",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "holiday-list-vi",
+    "language": "vi",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "holiday-list-vi",
+    "language": "vi",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "holiday-weekend-en",
+    "language": "en",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 2
+  },
+  {
+    "case_id": "holiday-weekend-en",
+    "language": "en",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": null
+  },
+  {
+    "case_id": "holiday-weekend-es",
+    "language": "es",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 4
+  },
+  {
+    "case_id": "holiday-weekend-es",
+    "language": "es",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": null
+  },
+  {
+    "case_id": "holiday-weekend-vi",
+    "language": "vi",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": null
+  },
+  {
+    "case_id": "holiday-weekend-vi",
+    "language": "vi",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": null
+  },
+  {
+    "case_id": "holiday-work-pay-en",
+    "language": "en",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "holiday-work-pay-en",
+    "language": "en",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "holiday-work-pay-es",
+    "language": "es",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "holiday-work-pay-es",
+    "language": "es",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "holiday-work-pay-vi",
+    "language": "vi",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "holiday-work-pay-vi",
+    "language": "vi",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "points-no-show-en",
+    "language": "en",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 2
+  },
+  {
+    "case_id": "points-no-show-en",
+    "language": "en",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 2
+  },
+  {
+    "case_id": "points-no-show-es",
+    "language": "es",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 2
+  },
+  {
+    "case_id": "points-no-show-es",
+    "language": "es",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 2
+  },
+  {
+    "case_id": "points-no-show-vi",
+    "language": "vi",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 3
+  },
+  {
+    "case_id": "points-no-show-vi",
+    "language": "vi",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 3
+  },
+  {
+    "case_id": "call-out-en",
+    "language": "en",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "call-out-en",
+    "language": "en",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 4
+  },
+  {
+    "case_id": "call-out-es",
+    "language": "es",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 3
+  },
+  {
+    "case_id": "call-out-es",
+    "language": "es",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 3
+  },
+  {
+    "case_id": "call-out-vi",
+    "language": "vi",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 5
+  },
+  {
+    "case_id": "call-out-vi",
+    "language": "vi",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 5
+  },
+  {
+    "case_id": "points-expire-en",
+    "language": "en",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "points-expire-en",
+    "language": "en",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "points-expire-es",
+    "language": "es",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "points-expire-es",
+    "language": "es",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "points-expire-vi",
+    "language": "vi",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "points-expire-vi",
+    "language": "vi",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "health-start-en",
+    "language": "en",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "health-start-en",
+    "language": "en",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "health-start-es",
+    "language": "es",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "health-start-es",
+    "language": "es",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "health-start-vi",
+    "language": "vi",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "health-start-vi",
+    "language": "vi",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "retirement-match-en",
+    "language": "en",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "retirement-match-en",
+    "language": "en",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 2
+  },
+  {
+    "case_id": "retirement-match-es",
+    "language": "es",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "retirement-match-es",
+    "language": "es",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "retirement-match-vi",
+    "language": "vi",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "retirement-match-vi",
+    "language": "vi",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "dental-cost-en",
+    "language": "en",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 2
+  },
+  {
+    "case_id": "dental-cost-en",
+    "language": "en",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 2
+  },
+  {
+    "case_id": "dental-cost-es",
+    "language": "es",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 2
+  },
+  {
+    "case_id": "dental-cost-es",
+    "language": "es",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 2
+  },
+  {
+    "case_id": "dental-cost-vi",
+    "language": "vi",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "dental-cost-vi",
+    "language": "vi",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "harassment-report-en",
+    "language": "en",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "harassment-report-en",
+    "language": "en",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "harassment-report-es",
+    "language": "es",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "harassment-report-es",
+    "language": "es",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "harassment-report-vi",
+    "language": "vi",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 2
+  },
+  {
+    "case_id": "harassment-report-vi",
+    "language": "vi",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 2
+  },
+  {
+    "case_id": "injury-report-en",
+    "language": "en",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": null
+  },
+  {
+    "case_id": "injury-report-en",
+    "language": "en",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": null
+  },
+  {
+    "case_id": "injury-report-es",
+    "language": "es",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": null
+  },
+  {
+    "case_id": "injury-report-es",
+    "language": "es",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": null
+  },
+  {
+    "case_id": "injury-report-vi",
+    "language": "vi",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 2
+  },
+  {
+    "case_id": "injury-report-vi",
+    "language": "vi",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 2
+  },
+  {
+    "case_id": "overtime-en",
+    "language": "en",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "overtime-en",
+    "language": "en",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "overtime-es",
+    "language": "es",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "overtime-es",
+    "language": "es",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "overtime-vi",
+    "language": "vi",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "overtime-vi",
+    "language": "vi",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "shift-swap-en",
+    "language": "en",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "shift-swap-en",
+    "language": "en",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 4
+  },
+  {
+    "case_id": "shift-swap-es",
+    "language": "es",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "shift-swap-es",
+    "language": "es",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "shift-swap-vi",
+    "language": "vi",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "shift-swap-vi",
+    "language": "vi",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "kiosk-pin-en",
+    "language": "en",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "kiosk-pin-en",
+    "language": "en",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "kiosk-pin-es",
+    "language": "es",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "kiosk-pin-es",
+    "language": "es",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "kiosk-pin-vi",
+    "language": "vi",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "kiosk-pin-vi",
+    "language": "vi",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "hotline-anonymous-en",
+    "language": "en",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "hotline-anonymous-en",
+    "language": "en",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "hotline-anonymous-es",
+    "language": "es",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "hotline-anonymous-es",
+    "language": "es",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "hotline-anonymous-vi",
+    "language": "vi",
+    "method": "vector:qwen3-embedding-0.6b",
+    "rank": 1
+  },
+  {
+    "case_id": "hotline-anonymous-vi",
+    "language": "vi",
+    "method": "hybrid:qwen3-embedding-0.6b",
+    "rank": 1
+  }
+]
