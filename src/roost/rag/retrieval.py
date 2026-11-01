@@ -1,6 +1,7 @@
 """Search the published handbook: keyword, vector and hybrid (ADR-0005)."""
 
 from collections.abc import Sequence
+from dataclasses import dataclass
 
 from sqlalchemy import ScalarSelect, Text, cast, func, select
 from sqlalchemy.orm import Session
@@ -81,3 +82,32 @@ def hybrid_search(
     keyword = keyword_search(session, query, limit=candidates)
     vector = vector_search(session, model_name, query_vector, limit=candidates)
     return reciprocal_rank_fusion([keyword, vector])[:limit]
+
+
+@dataclass(frozen=True, slots=True)
+class SectionText:
+    """A published handbook section, ready to show to a model or a person."""
+
+    section_number: str
+    heading_path: str
+    content: str
+
+
+def get_sections(session: Session, section_numbers: Sequence[str]) -> list[SectionText]:
+    """Published sections for the given numbers, in the order asked (unknown ones skipped)."""
+    rows = session.execute(
+        select(HandbookChunk.section_number, HandbookChunk.heading_path, HandbookChunk.content)
+        .where(
+            HandbookChunk.version_id == _published_version_id(),
+            HandbookChunk.section_number.in_(list(section_numbers)),
+        )
+        .order_by(HandbookChunk.chunk_index)
+    ).all()
+    by_number: dict[str, SectionText] = {}
+    for number, heading_path, content in rows:
+        if number in by_number:  # a section split into several chunks: join them in order
+            first = by_number[number]
+            by_number[number] = SectionText(number, heading_path, f"{first.content}\n{content}")
+        else:
+            by_number[number] = SectionText(number, heading_path, content)
+    return [by_number[n] for n in section_numbers if n in by_number]

@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from roost.db.models import ChunkEmbedding, HandbookChunk
 from roost.rag.ingest import ingest_handbook
-from roost.rag.retrieval import hybrid_search, keyword_search, vector_search
+from roost.rag.retrieval import get_sections, hybrid_search, keyword_search, vector_search
 
 pytestmark = pytest.mark.integration
 
@@ -90,3 +90,11 @@ def test_searches_ignore_unpublished_handbooks(db_session: Session) -> None:
     )
 
     assert keyword_search(db_session, "bereavement", limit=5) == []
+
+
+def test_get_sections_returns_text_in_requested_order(handbook: Session) -> None:
+    sections = get_sections(handbook, ["9.2", "6.4", "99.9"])
+
+    assert [s.section_number for s in sections] == ["9.2", "6.4"]  # unknown 99.9 skipped
+    assert sections[1].heading_path.endswith("Notice required")
+    assert sections[1].content
