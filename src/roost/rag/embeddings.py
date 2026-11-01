@@ -81,9 +81,13 @@ class SentenceTransformerEmbedder:
         self.spec = spec
         if model is None:  # pragma: no cover - loads a real model; run by scripts/embed_handbook.py
             # Imported here so the rest of the app never loads PyTorch unless it embeds.
+            import torch
             from sentence_transformers import SentenceTransformer
 
-            model = SentenceTransformer(spec.hf_id, device="cpu")
+            # float32: most laptop CPUs have no bfloat16 hardware, and emulating it is very slow.
+            model = SentenceTransformer(
+                spec.hf_id, device="cpu", model_kwargs={"dtype": torch.float32}
+            )
         self._model = model
 
     @property
