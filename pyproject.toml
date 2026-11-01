@@ -8,10 +8,12 @@ authors = [{ name = "Pranit Deshpande" }]
 dependencies = [
     "alembic>=1.20.1",
     "langgraph>=1.2.19",
+    "langgraph-checkpoint-postgres>=3.2.0",
     "openai>=3.42.0",
     "pgvector>=0.5.1",
     "psycopg[binary]>=3.3.6",
     "pydantic-settings>=2.16.2",
+    "pyyaml>=6.0.3",
     "sentence-transformers>=6.2.0",
     "sqlalchemy>=2.1.6",
 ]
@@ -28,7 +30,6 @@ dev = [
     "pre-commit>=4.7.0",
     "pytest>=9.2.0",
     "pytest-cov>=7.1.0",
-    "pyyaml>=6.0.3",
     "ruff>=0.17.3",
     "types-pyyaml>=6.0.12.20261030",
 ]

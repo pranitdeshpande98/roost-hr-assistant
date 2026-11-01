@@ -231,7 +231,8 @@ def list_requests(session: Session, employee_id: uuid.UUID) -> list[VacationRequ
     )
 
 
-def _ensure_changeable(request: VacationRequest, today: date) -> None:
+def ensure_changeable(request: VacationRequest, today: date) -> None:
+    """Raise unless the request is pending or approved and has not started (FR-13, FR-14)."""
     if request.status not in ACTIVE or request.days[0].day <= today:
         raise RequestNotChangeableError(request.reference_code)
 
@@ -247,7 +248,7 @@ def change_request(
     """Replace the days (FR-13). Any change sends the request back to pending, so both
     approvals restart."""
     request = get_request(session, employee_id, reference_code)
-    _ensure_changeable(request, today)
+    ensure_changeable(request, today)
     _lock_team(session, employee_id)
     check = check_draft(session, employee_id, draft, today=today, ignore_request_id=request.id)
     if not check.ok:
@@ -263,7 +264,7 @@ def cancel_request(
 ) -> VacationRequest:
     """Cancel before the first day (FR-14)."""
     request = get_request(session, employee_id, reference_code)
-    _ensure_changeable(request, today)
+    ensure_changeable(request, today)
     request.status = VacationRequestStatus.CANCELLED
     session.flush()
     return request
