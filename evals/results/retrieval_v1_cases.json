@@ -1899,13 +1899,13 @@
     "case_id": "vacation-no-answer-vi",
     "language": "vi",
     "method": "vector:multilingual-e5-large-instruct",
-    "rank": 5
+    "rank": null
   },
   {
     "case_id": "vacation-no-answer-vi",
     "language": "vi",
     "method": "hybrid:multilingual-e5-large-instruct",
-    "rank": 5
+    "rank": null
   },
   {
     "case_id": "payday-weekly-en",
