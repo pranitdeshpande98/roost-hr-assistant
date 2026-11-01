@@ -1,6 +1,6 @@
 # Roost: Multilingual AI HR Assistant
 
-> **Status:** ✅ Phase 3 complete · 🚧 Phase 4: model selection
+> **Status:** ✅ Phase 4 complete · 🚧 Phase 5: core logic (RAG and vacation agent)
 
 Roost is a production-style AI assistant for **Hollow Creek Poultry Co.**, a
 fictional poultry processor with three plants and a corporate office. It helps
@@ -38,9 +38,9 @@ fictional poultry processor with three plants and a corporate office. It helps
 
 **Key architecture decisions:** modular monolith in Python/FastAPI · LangGraph
 orchestration with Pydantic data contracts · OpenAI-compatible LLM providers
-with fallback · local multilingual embeddings with pgvector hybrid search ·
-PostgreSQL with an append-only audit log · server-rendered kiosk with
-channel adapters for Teams.
+with a fallback chain · local multilingual embeddings (bge-m3) with pgvector
+vector search · PostgreSQL with an append-only audit log · server-rendered kiosk
+with channel adapters for Teams.
 
 ## Model selection (Phase 4)
 
@@ -49,8 +49,8 @@ Full evidence and reasoning: [ADR-0009](docs/adr/0009-model-selection.md).
 
 | Component | Choice | Key result |
 |---|---|---|
-| Embeddings | `BAAI/bge-m3` (local, CPU) | 98% hit@5 across all three languages |
-| Retrieval | Vector search, top 3 | Beat hybrid keyword + vector search (90%) |
+| Embeddings | `BAAI/bge-m3` (local, CPU) | 98% hit@5 overall (English 100%, Spanish 100%, Vietnamese 93%) |
+| Retrieval | Vector search, top 3 | 98% vs 90% for hybrid keyword + vector search |
 | Agent LLM | `gpt-oss-120b` → `qwen3.8-27b` → `nemotron-3-ultra` (free) | 100% tool use, language match and valid citations; ~1 s median |
 
 Reproduce: `uv run python scripts/eval_retrieval.py` and `uv run python scripts/eval_llm.py --report`.
@@ -64,9 +64,11 @@ Reproduce: `uv run python scripts/eval_retrieval.py` and `uv run python scripts/
 | Database | PostgreSQL 17 + pgvector (Docker) |
 | ORM and migrations | SQLAlchemy 2.1, Alembic |
 | Configuration | pydantic-settings |
+| Embeddings | sentence-transformers (`BAAI/bge-m3`, CPU) |
+| LLM providers | Groq and OpenRouter free tiers, via the OpenAI Python SDK |
 | Lint and format | Ruff |
 | Type checking | mypy (strict) |
-| Testing | pytest, pytest-cov (unit + integration against real Postgres) |
+| Testing | pytest, pytest-cov (unit + integration against real Postgres; LLM calls mocked at the HTTP layer) |
 | Git hooks | pre-commit |
 
 ## Getting started
@@ -79,14 +81,26 @@ git clone https://github.com/pranitdeshpande98/roost-hr-assistant.git
 cd roost-hr-assistant
 uv sync                          # Python 3.12 + all dependencies
 uv run pre-commit install        # git hooks
-cp .env.example .env             # then set POSTGRES_PASSWORD
+cp .env.example .env             # then set POSTGRES_PASSWORD (and LLM keys, below)
 
 docker compose up -d             # Postgres + pgvector
 uv run alembic upgrade head      # create the schema
 uv run python scripts/seed_db.py # 4,500 synthetic employees
 uv run python scripts/ingest_handbook.py data/raw/handbook/handbook-v1.0.md \
     --version-label 1.0 --effective-date 2026-11-01 --publish
+uv run python scripts/embed_handbook.py --model bge-m3   # first run downloads ~2 GB
 ```
+
+**LLM keys (free, no credit card):** create a key at
+[console.groq.com](https://console.groq.com) and at [openrouter.ai](https://openrouter.ai),
+then add `GROQ_API_KEY` and `OPENROUTER_API_KEY` to `.env`. Check they work with:
+
+```bash
+uv run python scripts/llm_smoke.py --provider groq
+```
+
+The agent's model chain is set by `AGENT_MODELS` in `.env` (see `.env.example`); the
+default is the chain chosen in [ADR-0009](docs/adr/0009-model-selection.md).
 
 ## Development commands
 
@@ -99,6 +113,12 @@ uv run python scripts/ingest_handbook.py data/raw/handbook/handbook-v1.0.md \
 | Unit tests only (no Docker) | `uv run pytest -m "not integration"` |
 | Check models match migrations | `uv run alembic check` |
 | Run all hooks | `uv run pre-commit run --all-files` |
+| List a provider's live models | `uv run python scripts/llm_smoke.py --provider groq --list` |
+| Smoke-test an LLM | `uv run python scripts/llm_smoke.py --provider groq --model <id>` |
+| Embed with every candidate model | `uv run python scripts/embed_handbook.py --all` |
+| Retrieval eval | `uv run python scripts/eval_retrieval.py` |
+| LLM eval (resumable) | `uv run python scripts/eval_llm.py --provider groq --model <id>` |
+| LLM eval report only | `uv run python scripts/eval_llm.py --report` |
 
 ## Project structure
 
@@ -119,10 +139,10 @@ src/roost/        application package
   observability/  logging and tracing
   evals/          evaluation dataset loading and scoring
 tests/            unit and integration tests
-evals/            evaluation datasets and runners
+evals/            evaluation datasets and committed results
 data/             handbook source files
 migrations/       Alembic database migrations
-scripts/          seed and ingestion commands
+scripts/          seed, ingestion, embedding, smoke-test and eval commands
 config/           YAML configuration
 docs/             requirements, architecture and decision records
 ```
@@ -132,7 +152,7 @@ docs/             requirements, architecture and decision records
 - [x] Phase 1: Project foundation and tooling
 - [x] Phase 2: Requirements and architecture
 - [x] Phase 3: Data pipeline (handbook ingestion)
-- [ ] Phase 4: Model selection
+- [x] Phase 4: Model selection
 - [ ] Phase 5: Core logic (RAG and vacation agent)
 - [ ] Phase 6: Evaluations
 - [ ] Phase 7: Guardrails
