@@ -55,6 +55,8 @@ employee message ─► call_model ──(tool call?)──► run_tools ──�
 - **Vacation rules V-01 to V-09** run in plain Python, never in the LLM, and are re-checked at save
   time under a per-team lock so a team cannot be over-booked.
 - **Nothing is saved without a clear "yes"**: the graph pauses, and code (not the model) reads the reply.
+- **Payday questions** use `my_pay_schedule`: dates from the employee's payroll class and the holiday
+  rule (business rules, decision 11). Pay amounts are never read or shown.
 - **The disclaimer and translation notice** come from reviewed templates in `config/messages.yaml`.
 - **Conversations are saved in Postgres**, so follow-up questions work and a pending confirmation
   survives a restart. Details and trade-offs: [ADR-0010](docs/adr/0010-agent-design.md).

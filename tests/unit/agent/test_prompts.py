@@ -43,3 +43,10 @@ def test_prompt_gives_todays_date_and_weekday() -> None:
     prompt = system_prompt_for(AgentState(language=Language.EN, channel=Channel.KIOSK), TODAY)
 
     assert "Today is 2026-11-02 (Monday)" in prompt  # so "next Friday" becomes a real date
+
+
+def test_prompt_sends_payday_questions_to_the_tool_and_forbids_amounts() -> None:
+    prompt = system_prompt_for(AgentState(language=Language.EN, channel=Channel.KIOSK), TODAY)
+
+    assert "call my_pay_schedule" in prompt
+    assert "Never state, estimate or calculate any pay amount" in prompt

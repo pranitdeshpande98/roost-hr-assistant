@@ -29,7 +29,9 @@ Rules:
    YYYY-MM-DD yourself, and ask whether each day is a full or half day if they did not
    say. The tools check the rules and ask the employee to confirm; never say a request
    was submitted, changed or cancelled unless a tool result says so.
-8. {style}"""
+8. Paydays: for "when is my payday" or "when do I get paid", call my_pay_schedule and
+   give the dates it returns. Never state, estimate or calculate any pay amount.
+9. {style}"""
 
 
 def system_prompt_for(state: AgentState, today: date) -> str:
