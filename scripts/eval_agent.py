@@ -7,6 +7,7 @@ chain runs out of quota the run stops (exit code 3) and the same command resumes
 Usage:
     uv run python scripts/eval_agent.py
     uv run python scripts/eval_agent.py --scenario payday-weekly --language en
+    uv run python scripts/eval_agent.py --report     # score saved results; no API calls
 """
 
 import argparse
@@ -19,6 +20,7 @@ from langgraph.checkpoint.memory import InMemorySaver
 from sqlalchemy import create_engine
 
 from roost.agent.factory import build_agent
+from roost.agent.messages import default_messages
 from roost.core.config import get_settings
 from roost.core.enums import Language
 from roost.evals.agent_dataset import EVAL_TODAY, expand_cases, load_agent_scenarios
@@ -34,6 +36,7 @@ from roost.evals.agent_harness import (
     rolled_back_sessions,
     run_case,
 )
+from roost.evals.agent_scoring import report_results
 from roost.llm.client import build_chat_model
 from roost.llm.errors import LLMRequestError
 from roost.llm.providers import get_llm_settings
@@ -53,11 +56,27 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--delay", type=float, default=10.0, help="seconds between cases")
     parser.add_argument("--dataset", type=Path, default=DATASET)
     parser.add_argument("--out", type=Path, default=RESULTS_DIR)
+    parser.add_argument(
+        "--report", action="store_true", help="score saved results (exit 1 if a gate fails)"
+    )
     return parser.parse_args(argv)
+
+
+def report(dataset: Path, out: Path) -> int:
+    """Score saved results, print them, write summary.md; exit 1 if any gate fails."""
+    text, all_gates_pass = report_results(dataset, out, default_messages())
+    if not text:
+        logger.error("No results in %s yet.", out)
+        return 1
+    sys.stdout.write(text)
+    (out / "summary.md").write_text(text, encoding="utf-8", newline="\n")
+    return 0 if all_gates_pass else 1
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
+    if args.report:
+        return report(args.dataset, args.out)
     cases = expand_cases(load_agent_scenarios(args.dataset))
     if args.scenario:
         cases = [c for c in cases if c.scenario.id in set(args.scenario)]
