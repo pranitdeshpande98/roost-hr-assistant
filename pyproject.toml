@@ -6,7 +6,10 @@ readme = "README.md"
 requires-python = ">=3.12,<3.13"
 authors = [{ name = "Pranit Deshpande" }]
 dependencies = [
+    "alembic>=1.20.1",
+    "psycopg[binary]>=3.3.6",
     "pydantic-settings>=2.16.2",
+    "sqlalchemy>=2.1.6",
 ]
 
 [build-system]
