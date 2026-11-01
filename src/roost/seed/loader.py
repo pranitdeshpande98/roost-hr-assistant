@@ -32,7 +32,7 @@ def _to_id_map(result: Result[str, int]) -> dict[str, int]:
     .all() is required: Result has a .keys() method, so dict(result) would
     treat it as a mapping instead of a sequence of rows.
     """
-    return dict(result.tuples().all())
+    return dict(result.all())
 
 
 def is_seeded(session: Session) -> bool:
