@@ -33,6 +33,7 @@ fictional poultry processor with three plants and a corporate office. It helps
 | [Business rules](docs/00-business-rules.md) | Approved HR rules the assistant follows |
 | [Requirements](docs/01-requirements.md) | Functional and non-functional requirements with traceable IDs |
 | [Architecture](docs/02-architecture.md) | System design, components and key flows |
+| [Data model](docs/03-data-model.md) | Database tables and how they relate |
 | [Decision records](docs/adr/) | Why each major technology was chosen |
 
 **Key architecture decisions:** modular monolith in Python/FastAPI · LangGraph
@@ -73,7 +74,6 @@ uv run python scripts/seed_db.py # 4,500 synthetic employees
 uv run python scripts/ingest_handbook.py data/raw/handbook/handbook-v1.0.md \
     --version-label 1.0 --effective-date 2026-11-01 --publish
 ```
-```
 
 ## Development commands
 
@@ -83,31 +83,35 @@ uv run python scripts/ingest_handbook.py data/raw/handbook/handbook-v1.0.md \
 | Format | `uv run ruff format .` |
 | Type check | `uv run mypy` |
 | Run tests | `uv run pytest` |
-| Run all hooks | `uv run pre-commit run --all-files` |
 | Unit tests only (no Docker) | `uv run pytest -m "not integration"` |
 | Check models match migrations | `uv run alembic check` |
+| Run all hooks | `uv run pre-commit run --all-files` |
 
 ## Project structure
 
-```
+```text
 src/roost/        application package
   core/           settings, shared types, errors
   api/            HTTP layer
   agent/          orchestration and prompts
   tools/          tools the agent can call
   leave/          vacation rules (deterministic, no LLM)
-  rag/            handbook ingestion and retrieval
+  rag/            handbook parsing, ingestion and retrieval
   llm/            provider-agnostic LLM client
   guardrails/     sensitive topics, PII, prompt injection, disclosure
   auth/           kiosk login and roles
-  db/             data models and repositories
+  db/             data models
+  seed/           synthetic employee data
   adapters/       HR system, email, notifications (mocked)
   observability/  logging and tracing
+  evals/          evaluation dataset loading and scoring
 tests/            unit and integration tests
 evals/            evaluation datasets and runners
-data/             handbook source and synthetic data
+data/             handbook source files
+migrations/       Alembic database migrations
+scripts/          seed and ingestion commands
 config/           YAML configuration
-docs/             requirements and architecture decisions
+docs/             requirements, architecture and decision records
 ```
 
 ## Roadmap
