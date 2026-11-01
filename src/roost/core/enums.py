@@ -67,3 +67,19 @@ class Channel(StrEnum):
 
     KIOSK = "kiosk"
     TEAMS = "teams"
+
+
+class DayPortion(StrEnum):
+    """Vacation is taken in half or full days of the scheduled shift (handbook 6.3)."""
+
+    FULL = "full"
+    HALF = "half"
+
+
+class VacationRequestStatus(StrEnum):
+    """Where a vacation request stands (FR-12). Pending until both approvals are given."""
+
+    PENDING = "pending"
+    APPROVED = "approved"
+    DENIED = "denied"
+    CANCELLED = "cancelled"

@@ -11,6 +11,7 @@ from roost.db.models.hr import (
     Location,
     Shift,
 )
+from roost.db.models.leave import VacationRequest, VacationRequestDay
 
 __all__ = [
     "ChunkEmbedding",
@@ -24,4 +25,6 @@ __all__ = [
     "LeaveBalance",
     "Location",
     "Shift",
+    "VacationRequest",
+    "VacationRequestDay",
 ]

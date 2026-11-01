@@ -1,0 +1,44 @@
+# Fixed, human-reviewed messages (ADR-0006, decision 4).
+# The LLM never writes or translates these; code adds them to replies.
+# Every message needs en, es and vi. An empty string means "add nothing".
+# Spanish and Vietnamese text must be reviewed by a native speaker before launch.
+
+disclaimer:
+  en: "This is general information from the employee handbook, not an HR decision. HR's decision is final."
+  es: "Esta es información general del manual del empleado, no una decisión de Recursos Humanos. La decisión de Recursos Humanos es definitiva."
+  vi: "Đây là thông tin chung từ sổ tay nhân viên, không phải quyết định của Phòng Nhân sự. Quyết định của Phòng Nhân sự là quyết định cuối cùng."
+
+binding_notice:
+  en: ""
+  es: "Esta respuesta es una traducción. La versión en inglés del manual es la versión oficial."
+  vi: "Câu trả lời này là bản dịch. Bản tiếng Anh của sổ tay là bản chính thức."
+
+no_answer:
+  en: "Sorry, I can't answer that right now. Please contact your plant HR office."
+  es: "Lo siento, no puedo responder en este momento. Comuníquese con la oficina de Recursos Humanos de su planta."
+  vi: "Xin lỗi, hiện tôi không thể trả lời câu hỏi này. Vui lòng liên hệ văn phòng Nhân sự tại nhà máy của bạn."
+
+confirm_submit:
+  en: "Please confirm this vacation request:\n{details}\nReply YES to submit it or NO to cancel."
+  es: "Confirme esta solicitud de vacaciones:\n{details}\nResponda SÍ para enviarla o NO para cancelar."
+  vi: "Vui lòng xác nhận yêu cầu nghỉ phép này:\n{details}\nTrả lời CÓ để gửi hoặc KHÔNG để hủy."
+
+confirm_change:
+  en: "Please confirm the new dates for {reference}:\n{details}\nReply YES to change it or NO to keep it as it is."
+  es: "Confirme las nuevas fechas de {reference}:\n{details}\nResponda SÍ para cambiarla o NO para dejarla como está."
+  vi: "Vui lòng xác nhận ngày mới cho {reference}:\n{details}\nTrả lời CÓ để thay đổi hoặc KHÔNG để giữ nguyên."
+
+confirm_cancel:
+  en: "Please confirm you want to cancel {reference}.\nReply YES to cancel it or NO to keep it."
+  es: "Confirme que desea cancelar {reference}.\nResponda SÍ para cancelarla o NO para mantenerla."
+  vi: "Vui lòng xác nhận bạn muốn hủy {reference}.\nTrả lời CÓ để hủy hoặc KHÔNG để giữ lại."
+
+full_day:
+  en: "full day"
+  es: "día completo"
+  vi: "cả ngày"
+
+half_day:
+  en: "half day"
+  es: "medio día"
+  vi: "nửa ngày"

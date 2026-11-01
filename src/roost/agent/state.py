@@ -1,6 +1,7 @@
 """The state every node in the agent graph reads and updates."""
 
 import operator
+import uuid
 from typing import Annotated
 
 from pydantic import BaseModel, Field
@@ -20,5 +21,6 @@ class AgentState(BaseModel):
     messages: Annotated[list[ChatMessage], operator.add] = Field(default_factory=list)
     language: Language
     channel: Channel
-    employee_id: int | None = None  # set after kiosk login or Teams sign-in
+    employee_id: uuid.UUID | None = None  # set after kiosk login or Teams sign-in
     tool_rounds: int = 0  # how many times tools have run this turn (loop guard)
+    reply: str | None = None  # final text shown to the employee, set by the last node
