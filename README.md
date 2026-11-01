@@ -1,6 +1,6 @@
 # Roost: Multilingual AI HR Assistant
 
-> **Status:** ✅ Phase 2 complete · 🚧 Phase 3: data pipeline
+> **Status:** ✅ Phase 3 complete · 🚧 Phase 4: model selection
 
 Roost is a production-style AI assistant for **Hollow Creek Poultry Co.**, a
 fictional poultry processor with three plants and a corporate office. It helps
@@ -47,21 +47,32 @@ channel adapters for Teams.
 |---|---|
 | Language | Python 3.12 |
 | Packaging and environments | [uv](https://docs.astral.sh/uv/) |
+| Database | PostgreSQL 17 + pgvector (Docker) |
+| ORM and migrations | SQLAlchemy 2.1, Alembic |
+| Configuration | pydantic-settings |
 | Lint and format | Ruff |
 | Type checking | mypy (strict) |
-| Testing | pytest, pytest-cov |
+| Testing | pytest, pytest-cov (unit + integration against real Postgres) |
 | Git hooks | pre-commit |
 
 ## Getting started
 
-**Prerequisites:** Git and [uv](https://docs.astral.sh/uv/getting-started/installation/).
-uv installs the correct Python version automatically.
+**Prerequisites:** Git, [uv](https://docs.astral.sh/uv/getting-started/installation/)
+and Docker Desktop. uv installs the correct Python version automatically.
 
 ```bash
 git clone https://github.com/pranitdeshpande98/roost-hr-assistant.git
 cd roost-hr-assistant
-uv sync                       # creates .venv with Python 3.12 and all dev tools
-uv run pre-commit install     # enables the git hooks
+uv sync                          # Python 3.12 + all dependencies
+uv run pre-commit install        # git hooks
+cp .env.example .env             # then set POSTGRES_PASSWORD
+
+docker compose up -d             # Postgres + pgvector
+uv run alembic upgrade head      # create the schema
+uv run python scripts/seed_db.py # 4,500 synthetic employees
+uv run python scripts/ingest_handbook.py data/raw/handbook/handbook-v1.0.md \
+    --version-label 1.0 --effective-date 2026-11-01 --publish
+```
 ```
 
 ## Development commands
@@ -73,6 +84,8 @@ uv run pre-commit install     # enables the git hooks
 | Type check | `uv run mypy` |
 | Run tests | `uv run pytest` |
 | Run all hooks | `uv run pre-commit run --all-files` |
+| Unit tests only (no Docker) | `uv run pytest -m "not integration"` |
+| Check models match migrations | `uv run alembic check` |
 
 ## Project structure
 
@@ -101,7 +114,7 @@ docs/             requirements and architecture decisions
 
 - [x] Phase 1: Project foundation and tooling
 - [x] Phase 2: Requirements and architecture
-- [ ] Phase 3: Data pipeline (handbook ingestion)
+- [x] Phase 3: Data pipeline (handbook ingestion)
 - [ ] Phase 4: Model selection
 - [ ] Phase 5: Core logic (RAG and vacation agent)
 - [ ] Phase 6: Evaluations
