@@ -1,0 +1,155 @@
+# Hand-labelled examples for calibrating the LLM judge (faithfulness and citations).
+# Sources use the same format the agent's tools return. The judge is trusted only if it
+# reaches these verdicts. Ten answers are correct; ten each contain one planted error.
+
+# --- correct answers ------------------------------------------------------------------
+
+- id: good-vacation-en
+  note: Exactly what section 6 says.
+  sources: ["[§6] 6. Vacation (PTO)\nEvery employee earns 10 vacation days a year, usable after 90 days and requested at least 14 days in advance."]
+  answer: You earn 10 vacation days a year, and you can use them after 90 days [§6].
+  faithful: true
+  citations_correct: true
+
+- id: good-notice-es
+  note: Correct Spanish paraphrase of 6.4.
+  sources: ["[§6.4] 6. Vacation (PTO) > 6.4 Notice required\nSubmit vacation requests at least 14 calendar days before the first day off. Requests with less notice cannot be submitted through the Roost HR Assistant; talk to your supervisor directly, who may approve exceptions with HR."]
+  answer: Debe solicitar sus vacaciones con al menos 14 días calendario de anticipación [§6.4]. Con menos aviso, hable directamente con su supervisor.
+  faithful: true
+  citations_correct: true
+
+- id: good-sick-vi
+  note: Correct Vietnamese, including the driver detail.
+  sources: ["[§8.1] 8. Sick Leave > 8.1 Amount\nYou receive 2 sick days (16 hours, or 20 hours for drivers) on January 1 each year. New employees receive the full amount when hired. Sick days can be used after the 90-day introductory period."]
+  answer: Mỗi năm bạn được 2 ngày nghỉ ốm (16 giờ, hoặc 20 giờ đối với tài xế) [§8.1].
+  faithful: true
+  citations_correct: true
+
+- id: good-bereavement-en
+  note: Two claims, each cited to the section that supports it.
+  sources:
+    - "[§9.1] 9. Bereavement Leave > 9.1 Who is covered\nImmediate family means your spouse, child, parent, sibling, grandparent, or a parent, sibling or child of your spouse (in-laws). Step-relationships are treated the same as these relationships."
+    - "[§9.2] 9. Bereavement Leave > 9.2 Amount\nYou receive up to 2 paid scheduled workdays for each death. Bereavement pay is at your regular rate for your scheduled hours."
+  answer: Grandparents are covered [§9.1], and you can take up to 2 paid scheduled workdays [§9.2].
+  faithful: true
+  citations_correct: true
+
+- id: good-premium-en
+  note: Published price from the premium table.
+  sources: ["[§14.5] 14. Benefits > 14.5 Premiums\nPremiums are deducted from each paycheck. The amounts below are per biweekly paycheck.\n| Medical Silver | $65 | $105 | $135 |"]
+  answer: Silver medical for Single + Family costs $135 per biweekly paycheck [§14.5].
+  faithful: true
+  citations_correct: true
+
+- id: good-401k-es
+  note: Correct Spanish summary of 14.7.
+  sources: ["[§14.7] 14. Benefits > 14.7 401(k) and Roth 401(k)\nAfter 1 year, you may contribute to a traditional 401(k), a Roth 401(k), or both. The company matches 100% of the first 4% of pay you contribute."]
+  answer: Después de 1 año, la empresa iguala el 100% del primer 4% de su salario que usted aporta [§14.7].
+  faithful: true
+  citations_correct: true
+
+- id: good-coverage-vi
+  note: Correct Vietnamese summary of 14.2.
+  sources: ["[§14.2] 14. Benefits > 14.2 When coverage starts\nHealth coverage starts on the first day of the month after you complete 45 days of employment. For example, if your 45th day is March 10, coverage starts April 1. You must enroll within 30 days of becoming eligible."]
+  answer: Bảo hiểm y tế bắt đầu vào ngày đầu tiên của tháng sau khi bạn làm việc đủ 45 ngày [§14.2].
+  faithful: true
+  citations_correct: true
+
+- id: good-callout-en
+  note: Correct summary of 13.2.
+  sources: ["[§13.2] 13. Attendance and Punctuality > 13.2 Calling out\nIf you will be absent or late, call your plant attendance line at least 1 hour before your shift starts. Leave your name, employee number, shift, and the reason. Telling a coworker is not enough."]
+  answer: Call your plant attendance line at least 1 hour before your shift starts; telling a coworker is not enough [§13.2].
+  faithful: true
+  citations_correct: true
+
+- id: good-payday-tool-en
+  note: Faithful to a tool result rather than a handbook section; no citations.
+  sources: ["Payroll class: Biweekly (paid every other Friday) [§5.1].\nNext payday: 2026-11-13 (Friday), for the pay period 2026-10-25 to 2026-11-07."]
+  answer: Your next payday is Friday, November 13, 2026, covering October 25 to November 7.
+  faithful: true
+  citations_correct: true
+
+- id: good-no-claims-en
+  note: A referral with no factual claims is faithful.
+  sources: ["[§6] 6. Vacation (PTO)\nEvery employee earns 10 vacation days a year, usable after 90 days and requested at least 14 days in advance."]
+  answer: I couldn't find that in the handbook. Please contact your plant HR office.
+  faithful: true
+  citations_correct: true
+
+# --- one planted error each -----------------------------------------------------------
+
+- id: wrong-number-en
+  note: Says 12 days; the source says 10. The citation cannot support a wrong number.
+  sources: ["[§6] 6. Vacation (PTO)\nEvery employee earns 10 vacation days a year, usable after 90 days and requested at least 14 days in advance."]
+  answer: You earn 12 vacation days a year [§6].
+  faithful: false
+  citations_correct: false
+
+- id: invented-rule-es
+  note: First sentence is right; the paper form is invented (and uncited).
+  sources: ["[§6.4] 6. Vacation (PTO) > 6.4 Notice required\nSubmit vacation requests at least 14 calendar days before the first day off. Requests with less notice cannot be submitted through the Roost HR Assistant; talk to your supervisor directly, who may approve exceptions with HR."]
+  answer: Debe pedir sus vacaciones con 14 días de anticipación [§6.4]. Además, debe llenar un formulario en papel y entregarlo a Recursos Humanos.
+  faithful: false
+  citations_correct: true
+
+- id: invented-amount-vi
+  note: Five sick days; the source says two. No citation.
+  sources: ["[§8.1] 8. Sick Leave > 8.1 Amount\nYou receive 2 sick days (16 hours, or 20 hours for drivers) on January 1 each year. New employees receive the full amount when hired. Sick days can be used after the 90-day introductory period."]
+  answer: Mỗi năm bạn được 5 ngày nghỉ ốm.
+  faithful: false
+  citations_correct: true
+
+- id: wrong-match-en
+  note: 6% and day one are both wrong; the source says 4% after 1 year.
+  sources: ["[§14.7] 14. Benefits > 14.7 401(k) and Roth 401(k)\nAfter 1 year, you may contribute to a traditional 401(k), a Roth 401(k), or both. The company matches 100% of the first 4% of pay you contribute."]
+  answer: The company matches 100% of the first 6% you contribute, starting on your first day [§14.7].
+  faithful: false
+  citations_correct: false
+
+- id: wrong-tier-en
+  note: $150 is Gold, not Silver.
+  sources: ["[§14.5] 14. Benefits > 14.5 Premiums\nPremiums are deducted from each paycheck. The amounts below are per biweekly paycheck.\n| Medical Silver | $65 | $105 | $135 |\n| Medical Gold | $80 | $120 | $150 |"]
+  answer: Silver medical for Single + Family costs $150 per biweekly paycheck [§14.5].
+  faithful: false
+  citations_correct: false
+
+- id: wrong-payday-tool-en
+  note: The tool says November 13; the answer says November 6.
+  sources: ["Payroll class: Biweekly (paid every other Friday) [§5.1].\nNext payday: 2026-11-13 (Friday), for the pay period 2026-10-25 to 2026-11-07."]
+  answer: Your next payday is Friday, November 6.
+  faithful: false
+  citations_correct: true
+
+- id: right-fact-wrong-section-en
+  note: True claim, but cited to the sick-leave section.
+  sources:
+    - "[§6] 6. Vacation (PTO)\nEvery employee earns 10 vacation days a year, usable after 90 days and requested at least 14 days in advance."
+    - "[§8.1] 8. Sick Leave > 8.1 Amount\nYou receive 2 sick days (16 hours, or 20 hours for drivers) on January 1 each year."
+  answer: You earn 10 vacation days a year [§8.1].
+  faithful: true
+  citations_correct: false
+
+- id: wrong-section-es
+  note: True calling-out rule, cited to the benefits section.
+  sources:
+    - "[§13.2] 13. Attendance and Punctuality > 13.2 Calling out\nIf you will be absent or late, call your plant attendance line at least 1 hour before your shift starts."
+    - "[§14.2] 14. Benefits > 14.2 When coverage starts\nHealth coverage starts on the first day of the month after you complete 45 days of employment."
+  answer: Debe llamar a la línea de asistencia de su planta al menos 1 hora antes de su turno [§14.2].
+  faithful: true
+  citations_correct: false
+
+- id: wrong-section-vi
+  note: True holiday-payday rule, cited to the notice section.
+  sources:
+    - "[§5.2] 5. Pay Periods and Paydays > 5.2 When a payday falls on a holiday\nIf a payday falls on a company holiday (Section 12), you are paid on the business day before it."
+    - "[§6.4] 6. Vacation (PTO) > 6.4 Notice required\nSubmit vacation requests at least 14 calendar days before the first day off."
+  answer: Nếu ngày trả lương trùng ngày lễ của công ty, bạn sẽ được trả vào ngày làm việc trước đó [§6.4].
+  faithful: true
+  citations_correct: false
+
+- id: citation-not-in-sources-en
+  note: True claim (9.1 supports it), but cited to 9.3, which was never provided.
+  sources: ["[§9.1] 9. Bereavement Leave > 9.1 Who is covered\nImmediate family means your spouse, child, parent, sibling, grandparent, or a parent, sibling or child of your spouse (in-laws)."]
+  answer: Grandparents count as immediate family [§9.3].
+  faithful: true
+  citations_correct: false
