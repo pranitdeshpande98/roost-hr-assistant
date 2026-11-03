@@ -101,11 +101,10 @@ def explain(check: RuleCheck) -> str:
     """Rule failures as text for the model, each with its handbook section and dates."""
     lines = []
     for violation in check.violations:
-        dates = (
-            f" Dates: {', '.join(d.isoformat() for d in violation.dates)}."
-            if violation.dates
-            else ""
-        )
+        # Each date with its weekday: the model must not work it out (it once called a
+        # Saturday a Sunday).
+        days = ", ".join(f"{d.isoformat()} ({d:%A})" for d in violation.dates)
+        dates = f" Dates: {days}." if days else ""
         lines.append(f"- [§{violation.section}] {RULE_EXPLANATIONS[violation.rule]}{dates}")
     return (
         "NOT SUBMITTED. The request breaks these rules. Explain them to the employee in "
@@ -123,7 +122,10 @@ def _details(draft: VacationRequestDraft, language: Language, messages: MessageC
 
 def _declined(reply: ConfirmationReply, action: str) -> str:
     if reply.answer is Confirmation.NO:
-        return f"NOT {action}: the employee said no."
+        return (
+            f"NOT {action}: the employee said no. Tell them in one sentence that nothing "
+            "was sent, and do not ask them to confirm again."
+        )
     return (
         f"NOT {action}: the employee did not clearly confirm. Their reply was: "
         f"{reply.text!r}. Help with what they said, and ask again if they still want it."

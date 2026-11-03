@@ -108,7 +108,8 @@ def test_no_saves_nothing(alice: tuple[Session, uuid.UUID]) -> None:
 
     result = tool.run(_days(*WEEK), _context(employee_id, ScriptedEmployee("no")))
 
-    assert result == "NOT SUBMITTED: the employee said no."
+    assert result.startswith("NOT SUBMITTED: the employee said no.")
+    assert "do not ask them to confirm again" in result
     assert _requests(session, employee_id) == []
 
 

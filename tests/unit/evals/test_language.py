@@ -18,12 +18,17 @@ from roost.evals.language import detect_language
             "Según la sección Vacation (PTO), usted puede pedir días libres con dos semanas.",
             Language.ES,
         ),
+        # A short refusal: "a" is Spanish here too, and the accent settles it.
+        ("No tengo acceso a esa información. Por favor contacte a Recursos Humanos.", Language.ES),
+        ("Please contact HR about your shift swap.", Language.EN),
     ],
 )
 def test_detects_supported_languages(text: str, language: Language) -> None:
     assert detect_language(text) is language
 
 
-@pytest.mark.parametrize("text", ["", "   ", "[§6.1] 10", "OK"])
+@pytest.mark.parametrize(
+    "text", ["", "   ", "[§6.1] 10", "OK", "No, the end."]
+)  # "no" vs "the": a tie
 def test_returns_none_without_evidence(text: str) -> None:
     assert detect_language(text) is None

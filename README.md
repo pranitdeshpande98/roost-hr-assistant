@@ -1,6 +1,6 @@
 # Roost: Multilingual AI HR Assistant
 
-> **Status:** ✅ Phase 5 complete · 🚧 Phase 6: evaluations
+> **Status:** ✅ Phase 6 complete · 🚧 Phase 7: guardrails
 
 Roost is a production-style AI assistant for **Hollow Creek Poultry Co.**, a
 fictional poultry processor with three plants and a corporate office. It helps
@@ -60,6 +60,28 @@ employee message ─► call_model ──(tool call?)──► run_tools ──�
 - **The disclaimer and translation notice** come from reviewed templates in `config/messages.yaml`.
 - **Conversations are saved in Postgres**, so follow-up questions work and a pending confirmation
   survives a restart. Details and trade-offs: [ADR-0010](docs/adr/0010-agent-design.md).
+
+## Agent evaluation (Phase 6)
+
+The whole agent (real graph, tools, database and model chain) is tested on 26 scenarios
+in English, Spanish and Vietnamese: 78 cases, 90 turns, each inside a rolled-back
+transaction. Code checks tools, arguments, citations, disclaimer, language and data
+leaks; a Qwen judge, calibrated against 23 hand-labelled answers, checks faithfulness
+and citations. Method, all four runs and what each fix changed:
+[ADR-0011](docs/adr/0011-agent-evaluation.md).
+
+| Gate (requirements §6.2) | Threshold | Final run |
+|---|---|---|
+| Tool-call correctness | 95% | ✅ 99% |
+| Restricted data disclosure (FR-06) | 0 cases | ❌ 2 of 15 |
+| Disclaimer present | 100% | ✅ 100% |
+| Reply language matches | 98% | ✅ 100% |
+| Faithfulness (LLM judge) | 90% | ✅ 94% |
+| Citation correctness (LLM judge) | 90% | ✅ 97% |
+
+The restricted gate is the known open item: a prompt rule makes leaks rarer but cannot
+make them zero, so Phase 7 adds a deterministic guardrail for own-data questions.
+Latest report: [summary.md](evals/results/agent_v1/summary.md).
 
 ## Model selection (Phase 4)
 
@@ -148,6 +170,11 @@ uv run python scripts/chat.py --language es --employee <number>  # vacation, in 
 | LLM eval (resumable) | `uv run python scripts/eval_llm.py --provider groq --model <id>` |
 | LLM eval report only | `uv run python scripts/eval_llm.py --report` |
 | Chat with the agent | `uv run python scripts/chat.py --employee <number> --show-tools` |
+| Calibrate the LLM judge | `uv run python scripts/judge_agent.py --calibrate` |
+| Agent eval (resumable) | `uv run python scripts/eval_agent.py` |
+| Re-run some scenarios | `uv run python scripts/eval_agent.py --scenario <id> --rerun` |
+| Judge saved agent results | `uv run python scripts/judge_agent.py` |
+| Agent eval report (exit 1 on a failing gate) | `uv run python scripts/eval_agent.py --report` |
 
 ## Project structure
 
@@ -183,7 +210,7 @@ docs/             requirements, architecture and decision records
 - [x] Phase 3: Data pipeline (handbook ingestion)
 - [x] Phase 4: Model selection
 - [x] Phase 5: Core logic (RAG and vacation agent)
-- [ ] Phase 6: Evaluations
+- [x] Phase 6: Evaluations
 - [ ] Phase 7: Guardrails
 - [ ] Phase 8: API layer
 - [ ] Phase 9: Observability
