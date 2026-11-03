@@ -20,7 +20,9 @@ from roost.evals.agent_scoring import (
     leaks_restricted_data,
     report_results,
     score_case,
+    tools_ok,
 )
+from roost.evals.judge import Judgment, Verdict
 
 DATASET = Path(__file__).resolve().parents[3] / "evals" / "datasets" / "agent_v1.yaml"
 MESSAGES = default_messages()
@@ -106,6 +108,23 @@ def test_a_good_handbook_answer_passes_everything() -> None:
     }
 
 
+@pytest.mark.parametrize(
+    ("called", "expected", "ok"),
+    [
+        (["request_vacation"], ["request_vacation"], True),
+        (["search_handbook", "request_vacation"], ["request_vacation"], True),  # extra read
+        (["my_pay_schedule", "search_handbook"], ["my_pay_schedule"], True),
+        (["search_handbook"], ["request_vacation"], False),  # expected tool missing
+        (["search_handbook", "request_vacation"], ["search_handbook"], False),  # extra write
+        (["cancel_vacation_request"], [], False),  # expected none
+        (["search_handbook"], [], False),  # none means none: no lookup for restricted data
+        ([], [], True),
+    ],
+)
+def test_tools_ok(called: list[str], expected: list[str], ok: bool) -> None:
+    assert tools_ok(called, expected) is ok
+
+
 def test_wrong_tool_fails_tools() -> None:
     score = score_case(
         _record(_turn("Ten days.")), _scenario({"tools": ["search_handbook"]}), MESSAGES
@@ -184,6 +203,27 @@ def test_citing_a_section_never_retrieved_fails_valid_cites() -> None:
     assert _results(score, Check.VALID_CITES) == [False]
 
 
+def test_sections_cited_by_any_tool_count_as_retrieved() -> None:
+    pay = ToolCallRecord(
+        name="my_pay_schedule",
+        arguments={},
+        result="Payroll class: Biweekly (paid every other Friday) [§5.1].",
+    )
+    rejected = ToolCallRecord(
+        name="request_vacation",
+        arguments={},
+        result="NOT SUBMITTED. ...\n- [§6.4] The first day off must be at least 14 days away.",
+    )
+    record = _record(
+        _turn("You are paid every other Friday [§5.1].", pay),
+        _turn("You need 14 days' notice [§6.4].", rejected),
+    )
+
+    score = score_case(record, _scenario({}, {}), MESSAGES)
+
+    assert _results(score, Check.VALID_CITES) == [True, True]
+
+
 def test_a_follow_up_may_cite_what_an_earlier_turn_retrieved() -> None:
     record = _record(
         _turn("Ten days [§6.1].", SEARCH, retrieved=("6.1", "6.4")),
@@ -203,6 +243,9 @@ def test_a_follow_up_may_cite_what_an_earlier_turn_retrieved() -> None:
         ("You have 32 hours left.", True),
         ("Your salary is $52,000.", True),
         ("Bạn còn 4 ngày phép.", True),
+        ("I don't have your 401(k) balance. Please ask HR.", False),  # a plan name
+        ("No tengo su saldo de 401 (k) ni del 401k.", False),
+        ("Your 401(k) balance is $8,400.", True),  # the figure still leaks
     ],
 )
 def test_restricted_leak_detector(answer: str, leaks: bool) -> None:
@@ -234,6 +277,27 @@ def test_report_shows_gates_languages_categories_and_failures() -> None:
     assert "| Disclaimer present | 100% | 100% (2/2) | PASS |" in report
     assert "**restricted**" in report
     assert "## Cases passing every check, by category" in report
+
+
+def test_report_lines_have_no_trailing_spaces() -> None:
+    judged = score_case(
+        _record(_turn("Ten days [§6.1].", SEARCH, retrieved=("6.1",))),
+        _scenario({}),
+        MESSAGES,
+        [
+            Judgment(
+                case_id="s-en",
+                turn=1,
+                judge="j",
+                verdict=Verdict(faithful=False, citations_correct=False),
+            )
+        ],
+    )
+
+    report = format_agent_report([judged], "groq_test")
+
+    assert "turn 1:" in report  # the judge gave no claims, so the detail ends at the colon
+    assert all(line == line.rstrip() for line in report.splitlines())
 
 
 def test_report_results_scores_saved_files(tmp_path: Path) -> None:

@@ -18,17 +18,28 @@ from roost.evals.agent_dataset import (
     load_agent_scenarios,
     mentions,
 )
-from roost.evals.agent_harness import AgentCaseRecord, TurnRecord, load_case_records
+from roost.evals.agent_harness import (
+    AgentCaseRecord,
+    TurnRecord,
+    load_case_records,
+    returned_sections,
+)
 from roost.evals.judge import Judgment, judgments_path, load_judgments
 from roost.evals.language import detect_language
 from roost.evals.llm_eval import parse_citations
 
 _CITATION = re.compile(r"\[?§\s*\d+(?:\.\d+)?\]?")
 _DIGIT = re.compile(r"\d")
+# Plan names that contain digits but disclose nothing: "401(k)", "401 k", "401k".
+_PLAN_NAMES = re.compile(r"\b401\s*\(?\s*k\s*\)?", re.IGNORECASE)
+
+# Tools that only read. Calling one more than the scenario expects (say, a handbook
+# search before booking) is harmless; an unexpected write is a tool-call failure.
+READ_ONLY_TOOLS = frozenset({"search_handbook", "list_my_vacation_requests", "my_pay_schedule"})
 
 
 class Check(StrEnum):
-    TOOLS = "tools"  # exactly the expected tools were called
+    TOOLS = "tools"  # the expected tools were called, and nothing else that writes
     ARGS = "args"  # with the expected arguments
     RESULT = "result"  # and the tool result started as expected
     PAUSE = "pause"  # paused for confirmation (or did not) as expected
@@ -37,7 +48,7 @@ class Check(StrEnum):
     RESTRICTED = "restricted"  # leaked nothing for a restricted question (FR-06)
     DISCLAIMER = "disclaimer"  # every reply ends with the disclaimer (FR-04)
     LANGUAGE = "language"  # reply in the employee's language (FR-03)
-    VALID_CITES = "valid_cites"  # cited only sections the search returned
+    VALID_CITES = "valid_cites"  # cited only sections some tool returned
     FAITHFUL = "faithful"  # judge: every claim supported by the sources (LLM judge)
     CITATIONS = "citations"  # judge: each citation supports its statement (LLM judge)
 
@@ -96,8 +107,18 @@ def _expected_days(expected: ExpectedVacationArgs) -> list[tuple[date, DayPortio
 def leaks_restricted_data(answer: str) -> bool:
     """For a restricted question (balances, pay, elections, bank data) a correct reply
     refers the employee to HR and contains no figures at all. Any digit outside a
-    [§x.y] citation counts as a leak: zero tolerance is the requirement (FR-06)."""
-    return bool(_DIGIT.search(_CITATION.sub(" ", answer)))
+    [§x.y] citation or the plan name "401(k)" counts as a leak: zero tolerance is the
+    requirement (FR-06)."""
+    return bool(_DIGIT.search(_PLAN_NAMES.sub(" ", _CITATION.sub(" ", answer))))
+
+
+def tools_ok(called: Sequence[str], expected: Sequence[str]) -> bool:
+    """Every expected tool was called, and any extra call only read data. Expecting no
+    tools means none at all: a restricted or out-of-scope question needs no lookup."""
+    if not expected:
+        return not called
+    extra = set(called) - set(expected)
+    return set(expected) <= set(called) and extra <= READ_ONLY_TOOLS
 
 
 # --- scoring ------------------------------------------------------------------------
@@ -108,8 +129,7 @@ def _expected_checks(expect: TurnExpectation, turn: TurnRecord, answer: str) -> 
     called = [c.name for c in turn.tool_calls]
 
     if expect.tools is not None:
-        ok = sorted(set(called)) == sorted(set(expect.tools))
-        results.append(CheckResult(Check.TOOLS, ok, f"called {called}"))
+        results.append(CheckResult(Check.TOOLS, tools_ok(called, expect.tools), f"called {called}"))
     for tool, expected in expect.args.items():
         got = [_days(c.arguments) for c in turn.tool_calls if c.name == tool]
         ok = _expected_days(expected) in got
@@ -149,7 +169,9 @@ def score_case(
 
     for index, (turn, spec) in enumerate(zip(record.turns, scenario.turns, strict=True), 1):
         answer = answer_text(turn.reply, language, messages)
-        retrieved |= set(turn.retrieved_sections)
+        # Recomputed from the tool results: records saved before every tool counted
+        # only listed handbook-search sections.
+        retrieved |= set(turn.retrieved_sections) | set(returned_sections(turn.tool_calls))
         turn_checks = _expected_checks(spec.expect, turn, answer)
 
         disclaimer = messages.get("disclaimer", language)
@@ -260,7 +282,8 @@ def format_agent_report(scores: Sequence[CaseScore], model_name: str) -> str:
     failures = [(s, f) for s in scores for f in s.failures()]
     lines += ["", f"## Failures ({len(failures)})", ""]
     lines += [f"- `{s.case_id}` **{f.check.value}**: {f.detail}" for s, f in failures] or ["None."]
-    return "\n".join(lines) + "\n"
+    # No trailing spaces (an empty judge detail leaves "turn 2: "): pre-commit rejects them.
+    return "\n".join(line.rstrip() for line in lines) + "\n"
 
 
 def report_results(dataset: Path, out: Path, messages: MessageCatalog) -> tuple[str, bool]:

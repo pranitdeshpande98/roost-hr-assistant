@@ -17,9 +17,12 @@ from roost.evals.agent_harness import (
     AgentCaseRecord,
     ModelOutageError,
     RecordingChatModel,
+    ToolCallRecord,
     append_case_record,
     load_case_records,
+    remove_case_records,
     results_path,
+    returned_sections,
     run_case,
 )
 from roost.llm.errors import LLMUnavailableError
@@ -141,6 +144,31 @@ def test_records_round_trip_with_lf_line_endings(tmp_path: Path) -> None:
     assert load_case_records(path) == [record]
     assert b"\r" not in path.read_bytes()
     assert load_case_records(tmp_path / "missing.jsonl") == []
+
+
+def test_removes_only_the_given_cases(tmp_path: Path) -> None:
+    model = RecordingChatModel(ScriptedChatModel([text_reply("a"), text_reply("b")]))
+    first = run_case(_case(SAY), _make_agent(model), model, _no_sessions, None)
+    second = first.model_copy(update={"case_id": "other-en"})
+    path = tmp_path / "r.jsonl"
+    append_case_record(path, first)
+    append_case_record(path, second)
+
+    assert remove_case_records(path, {first.case_id}) == 1
+    assert load_case_records(path) == [second]
+    assert remove_case_records(path, {"missing"}) == 0
+    assert b"\r" not in path.read_bytes()
+
+
+def test_sections_come_from_every_tool_result() -> None:
+    calls = [
+        ToolCallRecord(name="search_handbook", arguments={}, result="[§6.4] Notice\n[§6.1] Amount"),
+        ToolCallRecord(name="my_pay_schedule", arguments={}, result="Biweekly [§5.1]."),
+        ToolCallRecord(name="request_vacation", arguments={}, result=""),  # still paused
+        ToolCallRecord(name="search_handbook", arguments={}, result="[§6.4] again"),
+    ]
+
+    assert returned_sections(calls) == ("6.4", "6.1", "5.1")
 
 
 def test_results_path_is_safe_for_a_chain_name(tmp_path: Path) -> None:

@@ -153,3 +153,29 @@
   answer: Grandparents count as immediate family [§9.3].
   faithful: true
   citations_correct: false
+
+- id: derived-days-correct-en
+  note: "Next Monday is 7 days after Monday 2026-11-02: a correct calculation from the context."
+  context: Today is 2026-11-02 (Monday).
+  sources:
+    - "Tool request_vacation called with {\"days\": [{\"date\": \"2026-11-09\", \"portion\": \"full\"}]} returned:\nNOT SUBMITTED. The request breaks these rules. Explain them to the employee in their language and cite the sections:\n- [§6.4] The first day off must be at least 14 calendar days from today. With less notice, the employee should talk to their supervisor directly."
+  answer: I can't submit it because requests need at least 14 days' notice [§6.4], and next Monday is only 7 days away. Please talk to your supervisor directly.
+  faithful: true
+  citations_correct: true
+
+- id: derived-weekday-wrong-es
+  note: "2026-12-12 is a Saturday, not a Sunday: a wrong calculation is unsupported."
+  context: Today is 2026-11-02 (Monday).
+  sources:
+    - "Tool request_vacation called with {\"days\": [{\"date\": \"2026-12-12\", \"portion\": \"full\"}]} returned:\nNOT SUBMITTED. The request breaks these rules. Explain them to the employee in their language and cite the sections:\n- [§6.3] Only days the employee is scheduled to work can be requested. Dates: 2026-12-12."
+  answer: El 12 de diciembre es domingo y no es un día programado para usted, así que no se puede solicitar [§6.3].
+  faithful: false
+  citations_correct: true
+
+- id: dates-from-arguments-vi
+  note: The booked dates appear only in the tool arguments, which are a source.
+  sources:
+    - "Tool request_vacation called with {\"days\": [{\"date\": \"2026-12-14\", \"portion\": \"full\"}, {\"date\": \"2026-12-15\", \"portion\": \"full\"}]} returned:\nSUBMITTED. Reference VR-C82K9X. Status: pending supervisor and HR approval. Give the employee the reference."
+  answer: Yêu cầu nghỉ cả ngày 14 và 15 tháng 12 đã được gửi. Mã tham chiếu là VR-C82K9X, đang chờ quản lý và Phòng Nhân sự duyệt.
+  faithful: true
+  citations_correct: true

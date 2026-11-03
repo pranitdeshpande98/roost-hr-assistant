@@ -7,7 +7,7 @@ can book real vacation requests without leaving anything behind or affecting eac
 import re
 import time
 import uuid
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Collection, Iterable, Iterator
 from contextlib import AbstractContextManager, contextmanager
 from datetime import date, timedelta
 from decimal import Decimal
@@ -59,7 +59,7 @@ class TurnRecord(BaseModel):
     reply: str
     paused: bool
     tool_calls: tuple[ToolCallRecord, ...] = ()
-    retrieved_sections: tuple[str, ...] = ()  # sections returned by search_handbook
+    retrieved_sections: tuple[str, ...] = ()  # sections cited in any tool result
     models: tuple[str, ...] = ()  # which model answered each call (shows fallbacks)
 
 
@@ -200,6 +200,13 @@ def _messages(agent: Agent, thread_id: str) -> list[ChatMessage]:
     return messages
 
 
+def returned_sections(calls: Iterable[ToolCallRecord]) -> tuple[str, ...]:
+    """Handbook sections the agent was given: cited in any tool result. A handbook search
+    returns [§x.y] excerpts, and the pay schedule and vacation tools cite the section
+    their answer rests on ([§5.1], [§6.4])."""
+    return tuple(dict.fromkeys(s for call in calls for s in parse_citations(call.result)))
+
+
 def _record_turn(
     say: str,
     reply: str,
@@ -223,20 +230,12 @@ def _record_turn(
         for call_id in dict.fromkeys(ids)
         if call_id in calls_by_id
     )
-    retrieved = tuple(
-        dict.fromkeys(
-            section
-            for call in tool_calls
-            if call.name == "search_handbook"
-            for section in parse_citations(call.result)
-        )
-    )
     return TurnRecord(
         say=say,
         reply=reply,
         paused=paused,
         tool_calls=tool_calls,
-        retrieved_sections=retrieved,
+        retrieved_sections=returned_sections(tool_calls),
         models=tuple(c.model for c in calls),
     )
 
@@ -300,6 +299,18 @@ def load_case_records(path: Path) -> list[AgentCaseRecord]:
         return []
     lines = path.read_text(encoding="utf-8").splitlines()
     return [AgentCaseRecord.model_validate_json(line) for line in lines if line.strip()]
+
+
+def remove_case_records(path: Path, case_ids: Collection[str]) -> int:
+    """Drop the given cases from a results file so the next run records them again.
+    Returns how many were removed."""
+    records = load_case_records(path)
+    kept = [r for r in records if r.case_id not in case_ids]
+    if len(kept) != len(records):
+        path.write_text(
+            "".join(r.model_dump_json() + "\n" for r in kept), encoding="utf-8", newline="\n"
+        )
+    return len(records) - len(kept)
 
 
 def append_case_record(path: Path, record: AgentCaseRecord) -> None:

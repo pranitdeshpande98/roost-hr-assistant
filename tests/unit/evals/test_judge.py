@@ -1,5 +1,6 @@
 """Tests for roost.evals.judge with a scripted judge (no real model)."""
 
+from datetime import date
 from pathlib import Path
 
 import pytest
@@ -14,12 +15,15 @@ from roost.evals.judge import (
     Verdict,
     agreement,
     append_judgment,
+    date_context,
     judge_answer,
     judgeable_turns,
     judgments_path,
     load_calibration,
     load_judgments,
     parse_verdict,
+    remove_judgments,
+    tool_source,
 )
 from roost.llm.errors import LLMResponseError
 from roost.llm.fake import ScriptedChatModel, text_reply
@@ -84,10 +88,11 @@ def test_gives_up_after_the_retry() -> None:
 def test_calibration_set_is_balanced() -> None:
     items = load_calibration(CALIBRATION)
 
-    assert len(items) == 20
-    assert sum(i.faithful and i.citations_correct for i in items) == 10
-    assert sum(not i.faithful for i in items) == 6
+    assert len(items) == 23
+    assert sum(i.faithful and i.citations_correct for i in items) == 12
+    assert sum(not i.faithful for i in items) == 7
     assert sum(not i.citations_correct for i in items) == 7
+    assert sum(bool(i.context) for i in items) == 2  # date calculations: one right, one wrong
 
 
 def test_a_judge_matching_every_label_agrees_fully() -> None:
@@ -107,9 +112,9 @@ def test_a_judge_that_misses_an_error_is_caught() -> None:
 
     result = agreement(items, always_fine)
 
-    assert result.caught_unfaithful == 0.0  # it missed all six planted factual errors
-    assert result.faithful_agreement == pytest.approx(14 / 20)
-    assert len(result.disagreements) == 10
+    assert result.caught_unfaithful == 0.0  # it missed all seven planted factual errors
+    assert result.faithful_agreement == pytest.approx(16 / 23)
+    assert len(result.disagreements) == 11
 
 
 # --- which turns get judged ---------------------------------------------------------
@@ -146,8 +151,44 @@ def test_judges_answers_against_every_source_so_far() -> None:
 
     turns = judgeable_turns(record, _strip)
 
-    assert turns[0] == (1, "Ten days [§6].", ["[§6] Ten days."])
-    assert turns[1][2] == ["[§6] Ten days.", "[§6.4] Fourteen days."]  # sources accumulate
+    first = "Tool search_handbook called with {} returned:\n[§6] Ten days."
+    second = "Tool search_handbook called with {} returned:\n[§6.4] Fourteen days."
+    assert turns[0] == (1, "Ten days [§6].", [first])
+    assert turns[1][2] == [first, second]  # sources accumulate
+
+
+def test_a_tool_source_shows_the_arguments_and_the_result() -> None:
+    call = ToolCallRecord(
+        name="request_vacation",
+        arguments={"days": [{"date": "2026-12-14", "portion": "full"}]},
+        result="SUBMITTED. Reference VR-ABC234.",
+    )
+
+    assert tool_source(call) == (
+        'Tool request_vacation called with {"days": [{"date": "2026-12-14", "portion": "full"}]}'
+        " returned:\nSUBMITTED. Reference VR-ABC234."
+    )
+
+
+def test_date_context_matches_the_agent_prompt() -> None:
+    assert date_context(date(2026, 11, 2)) == "Today is 2026-11-02 (Monday)."
+
+
+def test_the_judge_sees_the_context_before_the_sources() -> None:
+    judge = ScriptedChatModel([text_reply(GOOD)])
+
+    judge_answer(judge, "Next Monday is 7 days away.", ["SRC"], "Today is 2026-11-02 (Monday).")
+
+    content = judge.requests[0].messages[1].content or ""
+    assert content.startswith("CONTEXT:\nToday is 2026-11-02 (Monday).\n\nSOURCES:\nSRC")
+
+
+def test_no_context_section_without_context() -> None:
+    judge = ScriptedChatModel([text_reply(GOOD)])
+
+    judge_answer(judge, "Ten days.", ["SRC"])
+
+    assert (judge.requests[0].messages[1].content or "").startswith("SOURCES:")
 
 
 def test_skips_confirmation_questions_and_turns_without_sources() -> None:
@@ -168,6 +209,18 @@ def test_judgments_round_trip_in_their_own_folder(tmp_path: Path) -> None:
     assert path.parent.name == "judgments"  # not picked up as a results file
     assert load_judgments(path) == [judgment]
     assert load_judgments(tmp_path / "missing.jsonl") == []
+
+
+def test_removes_judgments_of_some_cases_or_all(tmp_path: Path) -> None:
+    path = judgments_path(tmp_path, "chain")
+    for case_id in ("a-en", "b-en", "a-es"):
+        append_judgment(path, Judgment(case_id=case_id, turn=1, judge="j", error="x"))
+
+    assert remove_judgments(path, {"a-en", "a-es"}) == 2
+    assert [j.case_id for j in load_judgments(path)] == ["b-en"]
+    assert remove_judgments(path) == 1
+    assert load_judgments(path) == []
+    assert remove_judgments(tmp_path / "missing.jsonl") == 0
 
 
 # --- verdicts in scoring and the report ---------------------------------------------

@@ -7,6 +7,7 @@ chain runs out of quota the run stops (exit code 3) and the same command resumes
 Usage:
     uv run python scripts/eval_agent.py
     uv run python scripts/eval_agent.py --scenario payday-weekly --language en
+    uv run python scripts/eval_agent.py --scenario payday-weekly --rerun   # run again
     uv run python scripts/eval_agent.py --report     # score saved results; no API calls
 """
 
@@ -17,9 +18,11 @@ import time
 from pathlib import Path
 
 from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
 from sqlalchemy import create_engine
 
 from roost.agent.factory import build_agent
+from roost.agent.memory import SAFE_CHECKPOINT_TYPES
 from roost.agent.messages import default_messages
 from roost.core.config import get_settings
 from roost.core.enums import Language
@@ -32,11 +35,13 @@ from roost.evals.agent_harness import (
     append_case_record,
     load_case_records,
     pick_employee,
+    remove_case_records,
     results_path,
     rolled_back_sessions,
     run_case,
 )
 from roost.evals.agent_scoring import report_results
+from roost.evals.judge import judgments_path, remove_judgments
 from roost.llm.client import build_chat_model
 from roost.llm.errors import LLMRequestError
 from roost.llm.providers import get_llm_settings
@@ -58,6 +63,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--out", type=Path, default=RESULTS_DIR)
     parser.add_argument(
         "--report", action="store_true", help="score saved results (exit 1 if a gate fails)"
+    )
+    parser.add_argument(
+        "--rerun",
+        action="store_true",
+        help="discard saved results and judgments of the selected cases, then run them again",
     )
     return parser.parse_args(argv)
 
@@ -89,6 +99,11 @@ def main(argv: list[str] | None = None) -> int:
         logger.error("FAILED: %s", error)
         return 1
     path = results_path(args.out, model.name)
+    if args.rerun:
+        selected = {c.case_id for c in cases}
+        removed = remove_case_records(path, selected)
+        remove_judgments(judgments_path(args.out, path.stem), selected)
+        logger.info("Discarded %d saved results (and their judgments) to run again", removed)
     done = {r.case_id for r in load_case_records(path)}
     todo = [c for c in cases if c.case_id not in done]
     logger.info(
@@ -108,7 +123,10 @@ def main(argv: list[str] | None = None) -> int:
             sessions,
             model=model,
             embedder=embedder,
-            checkpointer=InMemorySaver(),  # memory per case; nothing written to Postgres
+            # Memory per case; nothing written to Postgres. Same type allowlist as production.
+            checkpointer=InMemorySaver(
+                serde=JsonPlusSerializer(allowed_msgpack_modules=SAFE_CHECKPOINT_TYPES)
+            ),
             clock=lambda: EVAL_TODAY,
         )
 

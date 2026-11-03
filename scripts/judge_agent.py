@@ -7,6 +7,7 @@ rate-limit stop (exit code 3).
 Usage:
     uv run python scripts/judge_agent.py --calibrate   # must pass before trusting it
     uv run python scripts/judge_agent.py               # judge saved agent results
+    uv run python scripts/judge_agent.py --rejudge     # discard saved judgments first
     uv run python scripts/eval_agent.py --report       # gates now include the judge
 """
 
@@ -19,17 +20,20 @@ from pathlib import Path
 
 from roost.agent.messages import default_messages
 from roost.core.enums import Language
+from roost.evals.agent_dataset import EVAL_TODAY
 from roost.evals.agent_harness import load_case_records
 from roost.evals.agent_scoring import answer_text
 from roost.evals.judge import (
     Judgment,
     agreement,
     append_judgment,
+    date_context,
     judge_answer,
     judgeable_turns,
     judgments_path,
     load_calibration,
     load_judgments,
+    remove_judgments,
 )
 from roost.llm.client import OpenAICompatibleChatModel
 from roost.llm.errors import LLMRequestError, LLMResponseError, LLMUnavailableError
@@ -53,6 +57,14 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--calibrate", action="store_true", help="run the calibration set only")
     parser.add_argument("--delay", type=float, default=3.0, help="seconds between judge calls")
     parser.add_argument("--out", type=Path, default=RESULTS_DIR)
+    parser.add_argument(
+        "--rejudge",
+        action="store_true",
+        help="discard saved judgments and judge again (after changing the judge)",
+    )
+    parser.add_argument(
+        "--scenario", action="append", help="with --rejudge: only this scenario id (repeatable)"
+    )
     return parser.parse_args(argv)
 
 
@@ -62,7 +74,7 @@ def calibrate(judge: ChatModel, delay: float, out: Path) -> int:
     for index, item in enumerate(items):
         if index:
             time.sleep(delay)
-        verdicts.append(judge_answer(judge, item.answer, item.sources))
+        verdicts.append(judge_answer(judge, item.answer, item.sources, item.context))
         logger.info("  %-30s judged", item.id)
     result = agreement(items, verdicts)
     trusted = (
@@ -92,8 +104,21 @@ def calibrate(judge: ChatModel, delay: float, out: Path) -> int:
     return 0 if trusted else 1
 
 
+def rejudge(out: Path, scenarios: list[str] | None) -> None:
+    """Discard saved judgments (all, or of the given scenarios' cases)."""
+    for results in sorted(out.glob("*.jsonl")):
+        case_ids = (
+            {r.case_id for r in load_case_records(results) if r.scenario_id in set(scenarios)}
+            if scenarios
+            else None
+        )
+        removed = remove_judgments(judgments_path(out, results.stem), case_ids)
+        logger.info("%s: discarded %d judgments", results.stem, removed)
+
+
 def judge_results(judge: ChatModel, delay: float, out: Path) -> int:
     messages = default_messages()
+    context = date_context(EVAL_TODAY)  # what the agent was told
     for results in sorted(out.glob("*.jsonl")):
         path = judgments_path(out, results.stem)
         done = {(j.case_id, j.turn) for j in load_judgments(path)}
@@ -108,7 +133,7 @@ def judge_results(judge: ChatModel, delay: float, out: Path) -> int:
             if index > 1:
                 time.sleep(delay)
             try:
-                verdict = judge_answer(judge, answer, sources)
+                verdict = judge_answer(judge, answer, sources, context)
                 judgment = Judgment(case_id=case_id, turn=number, judge=judge.name, verdict=verdict)
             except LLMResponseError as error:
                 judgment = Judgment(
@@ -132,6 +157,8 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if args.calibrate:
             return calibrate(judge, args.delay, args.out)
+        if args.rejudge:
+            rejudge(args.out, args.scenario)
         return judge_results(judge, args.delay, args.out)
     except LLMUnavailableError as error:
         logger.warning("Judge unavailable: %s. Re-run the same command later.", error)

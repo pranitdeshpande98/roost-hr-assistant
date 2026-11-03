@@ -4,25 +4,30 @@ statement it is attached to). Calibrated against hand-labelled examples before u
 
 import json
 import re
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Collection, Sequence
+from datetime import date
 from pathlib import Path
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from roost.evals.agent_harness import AgentCaseRecord
+from roost.evals.agent_harness import AgentCaseRecord, ToolCallRecord
 from roost.llm.errors import LLMResponseError
 from roost.llm.types import ChatMessage, ChatModel
 
 JUDGE_PROMPT = """You check answers written by an HR assistant against the sources it was given.
 
-SOURCES are excerpts from the English employee handbook and outputs of HR tools.
+SOURCES are excerpts from the English employee handbook and HR tool calls: the
+arguments the assistant sent and what the tool returned. CONTEXT, when given, is what
+the assistant was told about the conversation, such as today's date.
 The ANSWER may be in English, Spanish or Vietnamese. Judge its meaning, not its wording.
 
 Decide two things:
 1. faithful: true if every factual claim in the ANSWER is supported by the SOURCES.
    Polite phrases, offers to help and advice to contact HR are not factual claims.
    A number, date, amount, condition or rule that the SOURCES do not state is NOT supported.
+   A day of the week or a count of days correctly calculated from CONTEXT or a date in
+   the SOURCES IS supported; a wrongly calculated one is not.
 2. citations_correct: true if every citation like [§6.4] in the ANSWER points to a source
    section that supports the sentence it is attached to. True if there are no citations.
 
@@ -67,10 +72,15 @@ def parse_verdict(text: str | None) -> Verdict:
 
 
 def judge_answer(
-    model: ChatModel, answer: str, sources: Sequence[str], retries: int = 1
+    model: ChatModel,
+    answer: str,
+    sources: Sequence[str],
+    context: str = "",
+    retries: int = 1,
 ) -> Verdict:
     """Ask the judge once (plus `retries` if its reply is malformed). Outages propagate."""
-    content = "SOURCES:\n" + "\n\n---\n\n".join(sources) + f"\n\nANSWER:\n{answer}"
+    content = f"CONTEXT:\n{context}\n\n" if context else ""
+    content += "SOURCES:\n" + "\n\n---\n\n".join(sources) + f"\n\nANSWER:\n{answer}"
     messages = [
         ChatMessage(role="system", content=JUDGE_PROMPT),
         ChatMessage(role="user", content=content),
@@ -95,6 +105,7 @@ class CalibrationItem(BaseModel):
 
     id: str
     note: str  # what a human sees in it
+    context: str = ""
     sources: tuple[str, ...] = Field(min_length=1)
     answer: str
     faithful: bool
@@ -144,6 +155,18 @@ def agreement(items: Sequence[CalibrationItem], verdicts: Sequence[Verdict]) -> 
 # --- judging recorded agent conversations ---------------------------------------------
 
 
+def date_context(today: date) -> str:
+    """The same date line the agent's system prompt gives it."""
+    return f"Today is {today.isoformat()} ({today.strftime('%A')})."
+
+
+def tool_source(call: ToolCallRecord) -> str:
+    """A tool call as the judge sees it: what was asked and what came back. The
+    arguments matter: a confirmation reply repeats the dates that were booked."""
+    arguments = json.dumps(call.arguments, ensure_ascii=False, sort_keys=True)
+    return f"Tool {call.name} called with {arguments} returned:\n{call.result}"
+
+
 def judgeable_turns(
     record: AgentCaseRecord, strip: Callable[[str], str]
 ) -> list[tuple[int, str, list[str]]]:
@@ -155,8 +178,9 @@ def judgeable_turns(
     turns = []
     for number, turn in enumerate(record.turns, start=1):
         for call in turn.tool_calls:
-            if call.result and call.result not in sources:
-                sources.append(call.result)
+            source = tool_source(call)
+            if call.result and source not in sources:
+                sources.append(source)
         answer = strip(turn.reply)
         if answer and not turn.paused and sources:
             turns.append((number, answer, list(sources)))
@@ -173,6 +197,18 @@ def load_judgments(path: Path) -> list[Judgment]:
         return []
     lines = path.read_text(encoding="utf-8").splitlines()
     return [Judgment.model_validate_json(line) for line in lines if line.strip()]
+
+
+def remove_judgments(path: Path, case_ids: Collection[str] | None = None) -> int:
+    """Drop judgments (of the given cases, or all) so the next run judges them again.
+    Returns how many were removed."""
+    judgments = load_judgments(path)
+    kept = [j for j in judgments if case_ids is not None and j.case_id not in case_ids]
+    if len(kept) != len(judgments):
+        path.write_text(
+            "".join(j.model_dump_json() + "\n" for j in kept), encoding="utf-8", newline="\n"
+        )
+    return len(judgments) - len(kept)
 
 
 def append_judgment(path: Path, judgment: Judgment) -> None:

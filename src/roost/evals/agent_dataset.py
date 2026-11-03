@@ -149,13 +149,35 @@ def expand_cases(scenarios: list[Scenario]) -> list[AgentCase]:
     ]
 
 
+# Models often write typographic dashes and spaces ("VR\u2011C82K9X", "14\u202fdays"): compare
+# them as the plain ASCII characters a reader sees.
+_LOOKALIKES = str.maketrans(
+    {
+        "\u2010": "-",  # hyphen
+        "\u2011": "-",  # non-breaking hyphen
+        "\u2012": "-",  # figure dash
+        "\u2013": "-",  # en dash
+        "\u2212": "-",  # minus sign
+        "\u00a0": " ",  # no-break space
+        "\u202f": " ",  # narrow no-break space
+    }
+)
+
+
+def normalize_text(text: str) -> str:
+    """Typographic dashes and spaces replaced by their ASCII look-alikes."""
+    return text.translate(_LOOKALIKES)
+
+
 def mentions(reply: str, expected: str) -> bool:
     """Whether `reply` mentions `expected`.
 
     A number is matched as a whole number after removing [§x.y] citations, so "6" matches
     "6" or "06" but not "2026", and "2" is not satisfied by a citation like [§9.2].
-    Anything else is a case-insensitive substring.
+    Anything else is a case-insensitive substring. Typographic dashes and spaces count
+    as their ASCII look-alikes.
     """
+    reply = normalize_text(reply)
     if expected.isdigit():
         numbers = _NUMBER.findall(_CITATION.sub(" ", reply))
         return any(int(found) == int(expected) for found in numbers)

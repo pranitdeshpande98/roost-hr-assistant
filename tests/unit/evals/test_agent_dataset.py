@@ -145,6 +145,9 @@ def test_case_messages_are_in_the_case_language() -> None:
         ("Reference VR-7K2M9Q.", "VR-", True),
         ("reference vr-7k2m9q", "VR-", True),  # substrings ignore case
         ("No reference yet.", "VR-", False),
+        ("Reference **VR\u2011C82K9X**.", "VR-", True),  # non-breaking hyphen
+        ("Mã tham chiếu VR\u2013C82K9X.", "VR-", True),  # en dash
+        ("Notice: 14\u202fdays.", "14", True),  # narrow no-break space
     ],
 )
 def test_mentions(reply: str, expected: str, found: bool) -> None:
