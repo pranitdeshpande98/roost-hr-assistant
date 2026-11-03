@@ -123,7 +123,10 @@ def _details(draft: VacationRequestDraft, language: Language, messages: MessageC
 
 def _declined(reply: ConfirmationReply, action: str) -> str:
     if reply.answer is Confirmation.NO:
-        return f"NOT {action}: the employee said no."
+        return (
+            f"NOT {action}: the employee said no. Tell them in one sentence that nothing "
+            "was sent, and do not ask them to confirm again."
+        )
     return (
         f"NOT {action}: the employee did not clearly confirm. Their reply was: "
         f"{reply.text!r}. Help with what they said, and ask again if they still want it."
