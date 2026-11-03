@@ -310,7 +310,8 @@
         en: And how much notice do I need to give for them?
         es: ¿Y con cuánta anticipación tengo que pedirlos?
         vi: Vậy tôi phải xin trước bao lâu?
-      expect: {cites_any: ["6.4"], mentions: ["14"]}
+      # §6 itself says "requested at least 14 days in advance", so citing it is correct.
+      expect: {cites_any: ["6", "6.4"], mentions: ["14"]}
 
 - id: followup-payday
   category: multi_turn

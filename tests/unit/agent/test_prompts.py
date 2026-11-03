@@ -39,6 +39,13 @@ def test_prompt_keeps_the_safety_rules() -> None:
     assert "{" not in prompt  # every placeholder was filled
 
 
+def test_restricted_questions_get_no_handbook_figures_instead() -> None:
+    prompt = system_prompt_for(AgentState(language=Language.ES, channel=Channel.KIOSK), TODAY)
+
+    assert "say you do not have\n   that information and refer them to HR" in prompt
+    assert "Do not answer with handbook figures instead" in prompt
+
+
 def test_prompt_gives_todays_date_and_weekday() -> None:
     prompt = system_prompt_for(AgentState(language=Language.EN, channel=Channel.KIOSK), TODAY)
 

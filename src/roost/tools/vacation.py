@@ -101,11 +101,10 @@ def explain(check: RuleCheck) -> str:
     """Rule failures as text for the model, each with its handbook section and dates."""
     lines = []
     for violation in check.violations:
-        dates = (
-            f" Dates: {', '.join(d.isoformat() for d in violation.dates)}."
-            if violation.dates
-            else ""
-        )
+        # Each date with its weekday: the model must not work it out (it once called a
+        # Saturday a Sunday).
+        days = ", ".join(f"{d.isoformat()} ({d:%A})" for d in violation.dates)
+        dates = f" Dates: {days}." if days else ""
         lines.append(f"- [§{violation.section}] {RULE_EXPLANATIONS[violation.rule]}{dates}")
     return (
         "NOT SUBMITTED. The request breaks these rules. Explain them to the employee in "
