@@ -3,10 +3,10 @@
 | Measure | Result | Required |
 |---|---|---|
 | Faithfulness agreement | 100% | 90% |
-| Citation agreement | 95% | 90% |
+| Citation agreement | 96% | 90% |
 | Unfaithful answers caught | 100% | 100% |
 
-**TRUSTED** on 20 hand-labelled examples.
+**TRUSTED** on 23 hand-labelled examples.
 
 ## Disagreements
 
