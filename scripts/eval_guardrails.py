@@ -7,6 +7,7 @@ Usage:
     uv run python scripts/eval_guardrails.py --split dev            # keywords + LLM
     uv run python scripts/eval_guardrails.py --split dev --no-llm   # keywords + fallback
     uv run python scripts/eval_guardrails.py --split dev --rerun    # after a change
+    uv run python scripts/eval_guardrails.py --split test --model groq:qwen/qwen3.8-27b
     uv run python scripts/eval_guardrails.py --report               # no API calls
 """
 
@@ -47,6 +48,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--split", choices=["dev", "test", "all"], default="dev")
     parser.add_argument("--language", action="append", choices=[lang.value for lang in Language])
     parser.add_argument("--no-llm", action="store_true", help="keywords and fallback only")
+    parser.add_argument(
+        "--model",
+        help="one provider:model instead of GUARDRAIL_MODELS: no fallback, so a quota stop "
+        "pauses the run (resume later) instead of mixing models in one result",
+    )
     parser.add_argument("--delay", type=float, default=2.0, help="seconds after each LLM call")
     parser.add_argument("--rerun", action="store_true", help="discard the selected saved results")
     parser.add_argument("--dataset", type=Path, default=DATASET)
@@ -91,7 +97,8 @@ def main(argv: list[str] | None = None) -> int:
     model: RecordingChatModel | None = None
     if not args.no_llm:
         try:
-            model = RecordingChatModel(build_chat_model(get_llm_settings().guardrail_model_refs))
+            refs = [args.model] if args.model else get_llm_settings().guardrail_model_refs
+            model = RecordingChatModel(build_chat_model(refs))
         except LLMRequestError as error:
             logger.error("FAILED: %s", error)
             return 1
