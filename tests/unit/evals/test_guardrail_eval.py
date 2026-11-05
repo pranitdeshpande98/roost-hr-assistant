@@ -92,6 +92,7 @@ def test_report_lists_gates_languages_kinds_and_wrong_routes() -> None:
     assert "| policy | 0% (0/1) |" in report
     assert "`miss-es` sensitive -> **allowed**" in report
     assert "`blocked-en` allowed -> **own_data**" in report
+    assert "LLM answers by model: fake 3" in report
     assert all(line == line.rstrip() for line in report.splitlines())
 
 

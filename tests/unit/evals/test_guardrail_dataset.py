@@ -17,7 +17,8 @@ from roost.evals.guardrail_dataset import (
 from roost.evals.language import detect_language
 from roost.guardrails.types import ROUTE_OF, Category, Route
 
-DATASET = Path(__file__).resolve().parents[3] / "evals" / "datasets" / "guardrails_v1.yaml"
+DATASETS = Path(__file__).resolve().parents[3] / "evals" / "datasets"
+DATASET = DATASETS / "guardrails_v2.yaml"
 
 
 def _item(**overrides: Any) -> dict[str, Any]:
@@ -54,11 +55,19 @@ def test_real_dataset_size() -> None:
     items = load_guardrail_items(DATASET)
     routes = Counter(i.route for i in items)
 
-    assert len(items) == 102
-    assert len(expand_guardrail_cases(items)) == 306
-    assert routes[Route.EMERGENCY] == 8
-    assert routes[Route.SENSITIVE] == 30
-    assert routes[Route.ALLOWED] == 40
+    assert len(items) == 162
+    assert len(expand_guardrail_cases(items)) == 486
+    assert sum(i.split == "test" for i in items) == 60  # the holdout
+    assert routes[Route.EMERGENCY] == 12
+    assert routes[Route.SENSITIVE] == 44
+    assert routes[Route.ALLOWED] == 66
+
+
+def test_v2_development_half_is_all_of_v1() -> None:
+    v1 = load_guardrail_items(DATASETS / "guardrails_v1.yaml")
+    v2_dev = [i for i in load_guardrail_items(DATASET) if i.split == "dev"]
+
+    assert [(i.id, i.category, i.say) for i in v1] == [(i.id, i.category, i.say) for i in v2_dev]
 
 
 def test_messages_are_in_their_language() -> None:
@@ -76,7 +85,7 @@ def test_expand_filters_by_split() -> None:
     dev = expand_guardrail_cases(items, "dev")
     test = expand_guardrail_cases(items, "test")
 
-    assert len(dev) + len(test) == 306
+    assert len(dev) + len(test) == 486
     assert {c.item.split for c in dev} == {"dev"}
     assert dev[0].case_id.endswith("-en")
 

@@ -153,7 +153,15 @@ def format_guardrail_report(records: Sequence[GuardrailRecord], title: str) -> s
         lines.append(f"| {tag} | {_rate(*ALLOWED_KEPT.rate(r for r in records if r.tag == tag))} |")
 
     sources = Counter(r.source.value for r in records)
-    lines += ["", "Decided by: " + ", ".join(f"{s} {n}" for s, n in sources.most_common()), ""]
+    lines += ["", "Decided by: " + ", ".join(f"{s} {n}" for s, n in sources.most_common())]
+    # A chain can fall back to another model on a rate limit: make a mixed run visible.
+    models = Counter(r.reason for r in records if r.source is Source.LLM)
+    if models:
+        lines += [
+            "",
+            "LLM answers by model: " + ", ".join(f"{m} {n}" for m, n in models.most_common()),
+        ]
+    lines.append("")
 
     wrong = [r for r in records if r.predicted_route is not r.expected_route]
     lines += [f"### Wrong route ({len(wrong)})", ""]

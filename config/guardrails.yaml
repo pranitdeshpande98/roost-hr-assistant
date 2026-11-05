@@ -73,6 +73,7 @@ keywords:
       - 'bất tỉnh'
       - 'rò rỉ (khí|ga|amoniac)'
       - 'chảy máu (rất )?nhiều'
+      - 'máu chảy (rất )?nhiều'
       - 'súng'
       - 'mùi (khí )?(ga|gas|amoniac|hóa chất)'
   injection:
@@ -86,6 +87,7 @@ keywords:
       - '^\s*system\s*:'
       - '\bjailbreak'
       - '\bemployee (#|no\.? ?|number )?\d{3,}'
+      - '\bapprove\b.{0,30}\byourself\b'
     es:
       - '\b(ignora|olvida)\b.{0,30}\b(instrucciones|reglas)\b'
       - '\bprompt del sistema\b'
@@ -94,6 +96,7 @@ keywords:
       - '\bsin restricciones\b'
       - '^\s*sistema\s*:'
       - '\bempleado (#|n[úu]m(ero)?\.? ?)?\d{3,}'
+      - '\baprueb\w*\b.{0,30}\btú mism[oa]\b'
     vi:
       - 'bỏ qua.{0,30}(hướng dẫn|quy tắc|quy định|chỉ dẫn)'
       - 'quên.{0,20}(hướng dẫn|chỉ dẫn|quy tắc)'
@@ -103,6 +106,7 @@ keywords:
       - 'không có giới hạn'
       - '^\s*hệ thống\s*:'
       - 'nhân viên (số )?\d{3,}'
+      - 'tự duyệt'
 
 examples:
   danger:

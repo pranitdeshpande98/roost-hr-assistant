@@ -37,8 +37,8 @@ from roost.tools.handbook import HANDBOOK_EMBEDDING_MODEL
 
 logger = logging.getLogger("eval_guardrails")
 
-DATASET = Path("evals/datasets/guardrails_v1.yaml")
-RESULTS_DIR = Path("evals/results/guardrails_v1")
+DATASET = Path("evals/datasets/guardrails_v2.yaml")
+RESULTS_DIR = Path("evals/results/guardrails_v2")
 LOCAL_ONLY = "local-only (keywords + similarity)"
 
 
