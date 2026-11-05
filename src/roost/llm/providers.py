@@ -49,10 +49,18 @@ class LLMSettings(BaseSettings):
         "openrouter:nvidia/nemotron-3-ultra-550b-a55b:free"
     )
 
+    # The input guardrail's classifier: the `fast` model role (ADR-0004, ADR-0012). Its own
+    # quota, so classifying a message never spends the agent's daily tokens.
+    guardrail_models: str = "groq:openai/gpt-oss-20b,groq:qwen/qwen3.8-27b"
+
     @property
     def agent_model_refs(self) -> list[str]:
         """`agent_models` split into individual "provider:model" refs."""
-        return [ref.strip() for ref in self.agent_models.split(",") if ref.strip()]
+        return _split_refs(self.agent_models)
+
+    @property
+    def guardrail_model_refs(self) -> list[str]:
+        return _split_refs(self.guardrail_models)
 
     def api_key_for(self, provider: str) -> SecretStr:
         """The key for `provider`, or a clear error naming the variable to set."""
@@ -60,6 +68,11 @@ class LLMSettings(BaseSettings):
         if key is None or not key.get_secret_value():
             raise LLMRequestError(f"Set {provider.upper()}_API_KEY in .env to use {provider}.")
         return key
+
+
+def _split_refs(refs: str) -> list[str]:
+    """A comma-separated chain split into individual "provider:model" refs."""
+    return [ref.strip() for ref in refs.split(",") if ref.strip()]
 
 
 def parse_model_ref(ref: str) -> tuple[str, str]:

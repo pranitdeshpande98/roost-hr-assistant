@@ -79,3 +79,12 @@ def test_agent_models_can_be_overridden() -> None:
     settings = LLMSettings(_env_file=None, agent_models=" groq:a , groq:b ,")
 
     assert settings.agent_model_refs == ["groq:a", "groq:b"]
+
+
+def test_guardrail_chain_is_separate_from_the_agent_chain() -> None:
+    settings = LLMSettings(_env_file=None)
+
+    refs = settings.guardrail_model_refs
+    assert refs == ["groq:openai/gpt-oss-20b", "groq:qwen/qwen3.8-27b"]
+    assert refs[0] not in settings.agent_model_refs  # its own quota (ADR-0012)
+    assert LLMSettings(_env_file=None, guardrail_models="groq:x").guardrail_model_refs == ["groq:x"]
