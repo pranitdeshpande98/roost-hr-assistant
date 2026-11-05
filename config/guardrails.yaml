@@ -54,6 +54,7 @@ keywords:
       - '\bbleeding (a lot|badly|heavily)\b'
       - '\b(has|with|bring(ing)?|brought) a (gun|knife|weapon)\b'
       - '\bactive shooter\b'
+      - '\bsmell(s|ing)? (of )?(gas|ammonia|chemicals?)\b'
     es:
       - '\bhay un incendio\b'
       - '\bincendio en\b'
@@ -63,6 +64,8 @@ keywords:
       - '\bfuga de (gas|amoníaco)\b'
       - '\bsangra mucho\b'
       - '\b(un|una) (arma|pistola)\b'
+      - '\bhuele (mucho )?a (gas|amoníaco|químicos?)\b'
+      - '\bolor a (gas|amoníaco)\b'
     vi:
       - 'đang (có )?cháy'
       - 'bị cháy'
@@ -71,6 +74,7 @@ keywords:
       - 'rò rỉ (khí|ga|amoniac)'
       - 'chảy máu (rất )?nhiều'
       - 'súng'
+      - 'mùi (khí )?(ga|gas|amoniac|hóa chất)'
   injection:
     en:
       - '\b(ignore|disregard|forget)\b.{0,30}\b(instructions|rules|prompt)\b'
@@ -81,6 +85,7 @@ keywords:
       - '\byou are (now )?dan\b'
       - '^\s*system\s*:'
       - '\bjailbreak'
+      - '\bemployee (#|no\.? ?|number )?\d{3,}'
     es:
       - '\b(ignora|olvida)\b.{0,30}\b(instrucciones|reglas)\b'
       - '\bprompt del sistema\b'
@@ -88,6 +93,7 @@ keywords:
       - '\b(revela|imprime|muestra|repite)\b.{0,40}\b(instrucciones|texto de arriba)\b'
       - '\bsin restricciones\b'
       - '^\s*sistema\s*:'
+      - '\bempleado (#|n[úu]m(ero)?\.? ?)?\d{3,}'
     vi:
       - 'bỏ qua.{0,30}(hướng dẫn|quy tắc|quy định|chỉ dẫn)'
       - 'quên.{0,20}(hướng dẫn|chỉ dẫn|quy tắc)'
@@ -96,6 +102,7 @@ keywords:
       - '(tiết lộ|in ra|lặp lại).{0,40}(hướng dẫn|chỉ dẫn|đoạn văn ở trên)'
       - 'không có giới hạn'
       - '^\s*hệ thống\s*:'
+      - 'nhân viên (số )?\d{3,}'
 
 examples:
   danger:
