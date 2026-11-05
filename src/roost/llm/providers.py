@@ -49,9 +49,10 @@ class LLMSettings(BaseSettings):
         "openrouter:nvidia/nemotron-3-ultra-550b-a55b:free"
     )
 
-    # The input guardrail's classifier: the `fast` model role (ADR-0004, ADR-0012). Its own
-    # quota, so classifying a message never spends the agent's daily tokens.
-    guardrail_models: str = "groq:openai/gpt-oss-20b,groq:qwen/qwen3.8-27b"
+    # The input guardrail's classifier (ADR-0012). Not the agent's model, so classifying a
+    # message never spends the agent's daily tokens. Qwen first: gpt-oss-20b (ADR-0004's
+    # `fast` role) ran out of free daily quota after about 400 calls in the Phase 7 evals.
+    guardrail_models: str = "groq:qwen/qwen3.8-27b,groq:openai/gpt-oss-20b"
 
     @property
     def agent_model_refs(self) -> list[str]:

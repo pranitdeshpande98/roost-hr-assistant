@@ -85,6 +85,7 @@ def test_guardrail_chain_is_separate_from_the_agent_chain() -> None:
     settings = LLMSettings(_env_file=None)
 
     refs = settings.guardrail_model_refs
-    assert refs == ["groq:openai/gpt-oss-20b", "groq:qwen/qwen3.8-27b"]
-    assert refs[0] not in settings.agent_model_refs  # its own quota (ADR-0012)
+    assert refs == ["groq:qwen/qwen3.8-27b", "groq:openai/gpt-oss-20b"]
+    # Never the agent's primary model: classifying must not spend the agent's quota.
+    assert refs[0] != settings.agent_model_refs[0]
     assert LLMSettings(_env_file=None, guardrail_models="groq:x").guardrail_model_refs == ["groq:x"]
