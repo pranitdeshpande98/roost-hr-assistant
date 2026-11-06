@@ -5,7 +5,7 @@ from typing import Any
 
 import pytest
 
-from roost.agent.messages import default_messages
+from roost.agent.messages import compose_reply, default_messages
 from roost.core.enums import Language
 from roost.evals.agent_dataset import Scenario
 from roost.evals.agent_harness import (
@@ -16,6 +16,7 @@ from roost.evals.agent_harness import (
 )
 from roost.evals.agent_scoring import (
     Check,
+    answer_text,
     format_agent_report,
     leaks_restricted_data,
     report_results,
@@ -23,6 +24,8 @@ from roost.evals.agent_scoring import (
     tools_ok,
 )
 from roost.evals.judge import Judgment, Verdict
+from roost.guardrails.routing import HRContact, routed_reply
+from roost.guardrails.types import Category
 
 DATASET = Path(__file__).resolve().parents[3] / "evals" / "datasets" / "agent_v1.yaml"
 MESSAGES = default_messages()
@@ -326,3 +329,25 @@ def test_report_results_scores_saved_files(tmp_path: Path) -> None:
 
 def test_report_results_with_no_files(tmp_path: Path) -> None:
     assert report_results(DATASET, tmp_path, MESSAGES) == ("", False)
+
+
+@pytest.mark.parametrize("language", list(Language))
+@pytest.mark.parametrize(
+    "category", [Category.OWN_DATA, Category.HARASSMENT, Category.DANGER, Category.INJECTION]
+)
+def test_a_routed_reply_leaves_no_model_words_and_no_leak(
+    category: Category, language: Language
+) -> None:
+    contact = HRContact("North Carolina Plant", "(555) 010-3300")
+    reply = compose_reply(routed_reply(category, language, MESSAGES, contact), language, MESSAGES)
+
+    answer = answer_text(reply, language, MESSAGES)
+
+    assert answer == ""
+    assert not leaks_restricted_data(answer)  # the phone numbers are not a disclosure
+
+
+def test_model_words_next_to_a_contact_line_are_still_checked() -> None:
+    reply = "Your balance is 32 hours.\n\nYour HR team: Georgia Plant HR, (555) 010-1100."
+
+    assert leaks_restricted_data(answer_text(reply, Language.EN, MESSAGES))

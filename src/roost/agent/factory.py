@@ -9,10 +9,12 @@ from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.graph.state import CompiledStateGraph
 from sqlalchemy.orm import Session
 
-from roost.agent.graph import build_graph
+from roost.agent.graph import Screen, build_graph
 from roost.agent.messages import default_messages
 from roost.agent.state import AgentState
 from roost.agent.tools import ToolRegistry
+from roost.guardrails.factory import build_input_guardrail
+from roost.guardrails.routing import database_hr_contact
 from roost.llm.client import build_chat_model
 from roost.llm.providers import get_llm_settings
 from roost.llm.types import ChatModel
@@ -29,6 +31,9 @@ def build_agent(
     embedder: Embedder | None = None,
     checkpointer: BaseCheckpointSaver[Any] | None = None,
     clock: Callable[[], date] = date.today,
+    guardrails: bool = True,
+    guardrail_model: ChatModel | None = None,
+    screen: Screen | None = None,
 ) -> CompiledStateGraph[AgentState, Any, Any, Any]:
     """The agent with the ADR-0009 model chain and bge-m3 handbook search.
 
@@ -36,6 +41,10 @@ def build_agent(
     swapped for fakes in tests; by default the model chain comes from AGENT_MODELS and the
     embedder loads bge-m3 (slow the first time). Pass a checkpointer for multi-turn memory
     and for vacation confirmations, which pause the conversation until the employee replies.
+
+    The input guardrail (ADR-0012) screens every new message. By default its classifier
+    chain comes from GUARDRAIL_MODELS; pass `guardrail_model` or a ready `screen` to swap
+    it, or `guardrails=False` to run without it (unit tests of the agent loop only).
     """
     chat_model = model or build_chat_model(get_llm_settings().agent_model_refs)
     query_embedder = embedder or SentenceTransformerEmbedder(
@@ -50,4 +59,17 @@ def build_agent(
             PayScheduleTool(session_factory),
         ]
     )
-    return build_graph(chat_model, tools, messages=messages, checkpointer=checkpointer, clock=clock)
+    if guardrails and screen is None:
+        screen = build_input_guardrail(
+            query_embedder,
+            guardrail_model or build_chat_model(get_llm_settings().guardrail_model_refs),
+        )
+    return build_graph(
+        chat_model,
+        tools,
+        messages=messages,
+        checkpointer=checkpointer,
+        clock=clock,
+        screen=screen if guardrails else None,
+        hr_contact=database_hr_contact(session_factory),
+    )

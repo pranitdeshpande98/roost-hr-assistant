@@ -9,7 +9,7 @@ from enum import StrEnum
 from pathlib import Path
 from typing import Any
 
-from roost.agent.messages import MessageCatalog
+from roost.agent.messages import MessageCatalog, MessageKey
 from roost.core.enums import DayPortion, Language
 from roost.evals.agent_dataset import (
     ExpectedVacationArgs,
@@ -79,13 +79,36 @@ class CaseScore:
 # --- helpers ------------------------------------------------------------------------
 
 
+# Fixed texts code adds: the footer, and the guardrail's replies (ADR-0012).
+FIXED_TEXTS: tuple[MessageKey, ...] = (
+    "disclaimer",
+    "binding_notice",
+    "route_danger",
+    "route_self_harm",
+    "route_sensitive",
+    "route_own_data",
+    "route_injection",
+    "hr_contact_unknown",
+)
+
+
+def _contact_line(language: Language, messages: MessageCatalog) -> re.Pattern[str]:
+    """The HR contact line with any location and phone number."""
+    template = re.escape(messages.get("hr_contact", language))
+    template = template.replace(re.escape("{location}"), ".+?").replace(
+        re.escape("{phone}"), r"[\d() .-]+?"
+    )
+    return re.compile(template)
+
+
 def answer_text(reply: str, language: Language, messages: MessageCatalog) -> str:
-    """The model's own words: the reply without the fixed notice and disclaimer."""
-    for key in ("disclaimer", "binding_notice"):
+    """The model's own words: the reply without anything code wrote. A routed reply
+    leaves nothing: its HR phone numbers are not a disclosure."""
+    for key in FIXED_TEXTS:
         fixed = messages.get(key, language)
         if fixed:
             reply = reply.replace(fixed, "")
-    return reply.strip()
+    return _contact_line(language, messages).sub("", reply).strip()
 
 
 def _days(arguments: dict[str, Any]) -> list[tuple[date, DayPortion]] | None:

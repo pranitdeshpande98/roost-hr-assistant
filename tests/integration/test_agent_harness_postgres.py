@@ -110,6 +110,7 @@ def test_a_booked_vacation_is_rolled_back_after_the_case(seeded_engine: Engine) 
             embedder=NoEmbedder(),
             checkpointer=InMemorySaver(),
             clock=lambda: EVAL_TODAY,
+            guardrails=False,  # this test is about rolling back what a tool saved
         )
 
     with rolled_back_sessions(seeded_engine) as sessions:

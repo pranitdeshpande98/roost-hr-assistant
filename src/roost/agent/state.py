@@ -7,6 +7,7 @@ from typing import Annotated
 from pydantic import BaseModel, Field
 
 from roost.core.enums import Channel, Language
+from roost.guardrails.types import Category
 from roost.llm.types import ChatMessage
 
 
@@ -24,3 +25,6 @@ class AgentState(BaseModel):
     employee_id: uuid.UUID | None = None  # set after kiosk login or Teams sign-in
     tool_rounds: int = 0  # how many times tools have run this turn (loop guard)
     reply: str | None = None  # final text shown to the employee, set by the last node
+    # What the input guardrail decided about this turn's message. Telemetry records the
+    # category, never the text (FR-49). None when no guardrail ran.
+    guardrail: Category | None = None

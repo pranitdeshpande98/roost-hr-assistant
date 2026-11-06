@@ -42,3 +42,43 @@ half_day:
   en: "half day"
   es: "medio día"
   vi: "nửa ngày"
+
+# --- Input guardrail replies (ADR-0012) ---------------------------------------------
+# The model never sees these messages. Every sensitive reply carries the crisis line too:
+# the classifier can confuse a crisis with another sensitive topic, the reply must not.
+# Phone numbers come from handbook sections 2.3, 16.1 and 17 (fictional).
+
+route_danger:
+  en: "If anyone is in danger, call 911 now. Then tell your supervisor and the plant safety manager, and follow the posted evacuation routes."
+  es: "Si alguien está en peligro, llame al 911 ahora. Después avise a su supervisor y al gerente de seguridad de la planta, y siga las rutas de evacuación señaladas."
+  vi: "Nếu có ai đang gặp nguy hiểm, hãy gọi 911 ngay. Sau đó báo cho quản lý của bạn và quản lý an toàn của nhà máy, và đi theo lối thoát hiểm được chỉ dẫn."
+
+route_self_harm:
+  en: "I'm sorry you're going through this. You don't have to face it alone: call or text 988 (Suicide and Crisis Lifeline) any time, or call 911 if you are in immediate danger."
+  es: "Siento mucho que esté pasando por esto. No tiene que enfrentarlo solo: llame o envíe un mensaje al 988 (Línea de Prevención del Suicidio y Crisis) a cualquier hora, o llame al 911 si está en peligro inmediato."
+  vi: "Tôi rất tiếc khi bạn đang trải qua điều này. Bạn không phải đối mặt một mình: hãy gọi hoặc nhắn tin tới 988 (Đường dây Phòng chống Tự tử và Khủng hoảng) bất cứ lúc nào, hoặc gọi 911 nếu bạn đang gặp nguy hiểm ngay lúc này."
+
+route_sensitive:
+  en: "Thank you for telling me. This is something your HR team should handle directly, so I can't help with it here. You can also call the Ethics Hotline at 1-800-555-0199: anonymous, 24/7, in English, Spanish and Vietnamese. If anyone is in danger, call 911. If you are thinking about harming yourself, call or text 988."
+  es: "Gracias por contármelo. Esto debe atenderlo directamente su equipo de Recursos Humanos, así que no puedo ayudarle con ello aquí. También puede llamar a la Línea de Ética al 1-800-555-0199: anónima, las 24 horas, en inglés, español y vietnamita. Si alguien está en peligro, llame al 911. Si está pensando en hacerse daño, llame o envíe un mensaje al 988."
+  vi: "Cảm ơn bạn đã cho tôi biết. Việc này cần được Phòng Nhân sự xử lý trực tiếp, nên tôi không thể giúp ở đây. Bạn cũng có thể gọi Đường dây nóng Đạo đức theo số 1-800-555-0199: ẩn danh, 24/7, bằng tiếng Anh, tiếng Tây Ban Nha và tiếng Việt. Nếu có ai đang gặp nguy hiểm, hãy gọi 911. Nếu bạn đang nghĩ đến việc làm hại bản thân, hãy gọi hoặc nhắn tin tới 988."
+
+route_own_data:
+  en: "I can't see your personal records, such as balances, pay, deductions, benefit elections or bank details. Your HR team can give you that information."
+  es: "No puedo ver sus registros personales, como saldos, pagos, descuentos, beneficios elegidos o datos bancarios. Su equipo de Recursos Humanos puede darle esa información."
+  vi: "Tôi không thể xem hồ sơ cá nhân của bạn, như số dư, lương, các khoản khấu trừ, phúc lợi đã chọn hay thông tin ngân hàng. Phòng Nhân sự có thể cung cấp thông tin đó cho bạn."
+
+route_injection:
+  en: "I can only help with your own HR questions, within the company's rules. You can ask me about the handbook, your paydays or your vacation requests."
+  es: "Solo puedo ayudarle con sus propias preguntas de Recursos Humanos, dentro de las reglas de la empresa. Puede preguntarme sobre el manual, sus días de pago o sus solicitudes de vacaciones."
+  vi: "Tôi chỉ có thể giúp các câu hỏi nhân sự của chính bạn, theo quy định của công ty. Bạn có thể hỏi tôi về sổ tay, ngày lãnh lương hoặc các yêu cầu nghỉ phép của bạn."
+
+hr_contact:
+  en: "Your HR team: {location} HR, {phone}."
+  es: "Su equipo de Recursos Humanos: {location}, {phone}."
+  vi: "Phòng Nhân sự của bạn: {location}, {phone}."
+
+hr_contact_unknown:
+  en: "Your HR team's phone number is in the handbook, section 2.3. Each plant HR office is next to the main break room."
+  es: "El teléfono de su equipo de Recursos Humanos está en el manual, sección 2.3. Cada oficina de Recursos Humanos está junto al comedor principal."
+  vi: "Số điện thoại Phòng Nhân sự của bạn có trong sổ tay, mục 2.3. Văn phòng Nhân sự của mỗi nhà máy nằm cạnh phòng nghỉ chính."
