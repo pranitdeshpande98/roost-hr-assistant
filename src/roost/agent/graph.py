@@ -16,6 +16,7 @@ from roost.agent.messages import MessageCatalog, compose_reply, default_messages
 from roost.agent.prompts import system_prompt_for
 from roost.agent.state import AgentState
 from roost.agent.tools import ToolContext, ToolRegistry
+from roost.guardrails.citations import remove_unsupported_citations
 from roost.guardrails.classifier import GuardrailDecision
 from roost.guardrails.routing import HRContact, routed_reply
 from roost.guardrails.types import Route
@@ -136,6 +137,13 @@ def build_graph(
     def finalize(state: AgentState) -> dict[str, Any]:
         last = state.messages[-1]
         answer = None if last.tool_calls else last.content
+        if answer:
+            # Output guardrail: a citation must point to a section some tool returned in
+            # this conversation (follow-ups may cite an earlier turn's search).
+            sources = [m.content or "" for m in state.messages if m.role == "tool"]
+            answer, removed = remove_unsupported_citations(answer, sources)
+            if removed:
+                logger.warning("Removed %d unsupported citation(s)", len(removed))
         return {"reply": compose_reply(answer, state.language, catalog)}
 
     graph = StateGraph(AgentState)

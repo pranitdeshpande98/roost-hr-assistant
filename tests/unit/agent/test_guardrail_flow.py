@@ -133,3 +133,35 @@ def test_a_broken_guardrail_does_not_break_the_chat() -> None:
 
     assert reply.startswith("Ten days a year")
     assert _state(agent, "t1")["guardrail"] is None
+
+
+class SearchTool:
+    @property
+    def spec(self) -> ToolSpec:
+        return ToolSpec(name="search", description="Search.", parameters={"type": "object"})
+
+    def run(self, arguments: dict[str, Any], context: ToolContext) -> str:
+        return "[§6.4] Notice\nRequest at least 14 days ahead."
+
+
+def test_citations_no_tool_returned_are_removed_from_the_reply() -> None:
+    model = ScriptedChatModel(
+        [
+            tool_reply(ToolCall(id="c1", name="search", arguments={})),
+            text_reply("Ask 14 days ahead [§6.4]. Your supervisor decides [§4.2]."),
+            text_reply("Yes, still 14 days [§6.4] [§9.9]."),
+        ]
+    )
+    agent = build_graph(
+        model,
+        ToolRegistry([SearchTool()]),
+        system_prompt=lambda state, today: "sys",
+        messages=MESSAGES,
+        checkpointer=InMemorySaver(),
+    )
+
+    first = ask(agent, "t1", "How much notice?", **EN)
+    follow_up = ask(agent, "t1", "Even in December?", **EN)  # cites the earlier search
+
+    assert first.startswith("Ask 14 days ahead [§6.4]. Your supervisor decides.\n")
+    assert follow_up.startswith("Yes, still 14 days [§6.4].\n")
