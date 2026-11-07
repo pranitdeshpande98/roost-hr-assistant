@@ -32,7 +32,7 @@ flowchart LR
             SEARCH["handbook_search"]
             PAY["payroll_schedule"]
             LEAVE["vacation tools<br/>validate, create, change,<br/>cancel, status"]
-            CASE["hr_case_summary<br/>(with consent)"]
+            CASE["hr_referral<br/>(with consent, own words)"]
         end
 
         RULES["Leave rules V-01..V-09<br/>(pure Python)"]

@@ -1,6 +1,6 @@
 # Roost: Multilingual AI HR Assistant
 
-> **Status:** ✅ Phase 7 complete · 🚧 Phase 8: API layer
+> **Status:** ✅ Phase 8 complete · 🚧 Phase 9: Observability
 
 Roost is a production-style AI assistant for **Hollow Creek Poultry Co.**, a
 fictional poultry processor with three plants and a corporate office. It helps
@@ -115,6 +115,38 @@ failed first test split, and the alternatives that were dropped:
 In the whole agent (102 cases, [summary.md](evals/results/agent_v2/summary.md)) all six
 Phase 6 gates pass, and restricted data disclosure goes from 13/15 to **21/21**.
 
+## The web apps (Phase 8)
+
+One FastAPI app serves two server-rendered sites. Both work without JavaScript.
+
+```text
+Kiosk  /sign-in ─► choose a PIN (first time) ─► /chat ─► "Book Dec 7 and 8" ─► YES ─► VR-…
+                                                                                 │
+Console /console ◄── supervisor: approve/deny ◄── notice (Teams, email or kiosk) ─┘
+                 └─► HR at the employee's location: approve/deny ─► employee told, hours posted
+```
+
+| | Kiosk (employees) | Console (supervisors and HR) |
+|---|---|---|
+| Sign-in | Employee number + 6-digit PIN; HR sets a temporary one in person | Employee number + password (12+ characters); Entra ID in Phase 12 |
+| Idle limit, enforced by the server | 2 minutes | 15 minutes |
+| Sees | Their own requests and answers | Only requests routed to them; HR also sees Referrals |
+| Hours | The hours a request uses | Hours a request uses; **HR only**: hours left after it |
+
+- **Approvals in rounds:** supervisor, then HR at the employee's location (Corporate HR
+  for corporate staff). A change starts a new round; the CEO's requests need none.
+- **Notices** go by Teams, else email, else the kiosk, in each person's language. Until
+  Phase 12, email and Teams messages are written to `var/outbox/`.
+- **Sensitive matters:** after the fixed reply, Roost asks whether to send HR the
+  employee's own words. Only a clear YES sends; HR reads them in the console, never in
+  email, and they are erased 90 days after HR marks them handled.
+- **Safe on a shared kiosk:** nothing cached or stored in the browser, a strict Content
+  Security Policy, CSRF tokens on every form, cookies only as hashes in Postgres, tokens
+  replaced after a PIN change, Argon2id hashing and lockout after 5 failures.
+
+Design and trade-offs, including the one exception to "never show balances":
+[ADR-0013](docs/adr/0013-api-layer.md).
+
 ## Model selection (Phase 4)
 
 Chosen by evaluation, not leaderboards: 90 questions (30 intents x English, Spanish, Vietnamese).
@@ -138,6 +170,8 @@ Reproduce: `uv run python scripts/eval_retrieval.py` and `uv run python scripts/
 | ORM and migrations | SQLAlchemy 2.1, Alembic |
 | Configuration | pydantic-settings |
 | Agent orchestration | LangGraph (Postgres checkpointer) |
+| Web | FastAPI, Jinja2 templates, htmx (vendored), uvicorn |
+| Password and PIN hashing | argon2-cffi (Argon2id) |
 | Embeddings | sentence-transformers (`BAAI/bge-m3`, CPU) |
 | LLM providers | Groq and OpenRouter free tiers, via the OpenAI Python SDK |
 | Lint and format | Ruff |
@@ -184,6 +218,23 @@ uv run python scripts/chat.py --show-tools                    # handbook questio
 uv run python scripts/chat.py --language es --employee NUMBER  # vacation, in Spanish
 ```
 
+**Run the web apps:**
+
+```bash
+uv run uvicorn roost.api.app:app --port 8000
+```
+
+Kiosk: <http://localhost:8000/sign-in>. Console: <http://localhost:8000/console>.
+HR gives people their first PIN or console password (each is shown once):
+
+```bash
+uv run python scripts/set_pin.py --employee NUMBER --hr HR_NUMBER --generate
+uv run python scripts/set_console_password.py --employee NUMBER --hr HR_NUMBER --generate
+```
+
+`NUMBER` is the employee's number; `HR_NUMBER` is an HR generalist at the same location
+or an HR admin. Console passwords are only for supervisors and HR.
+
 ## Development commands
 
 | Task | Command |
@@ -211,20 +262,29 @@ uv run python scripts/chat.py --language es --employee NUMBER  # vacation, in Sp
 | Guardrail eval on one model, no fallback | `uv run python scripts/eval_guardrails.py --split test --model groq:qwen/qwen3.8-27b` |
 | Guardrail eval without the LLM | `uv run python scripts/eval_guardrails.py --split dev --no-llm` |
 | Guardrail eval report (exit 1 on a failing gate) | `uv run python scripts/eval_guardrails.py --report` |
+| Run the kiosk and console | `uv run uvicorn roost.api.app:app --port 8000` |
+| Set a temporary kiosk PIN | `uv run python scripts/set_pin.py --employee NUMBER --hr HR_NUMBER --generate` |
+| Set a temporary console password | `uv run python scripts/set_console_password.py --employee NUMBER --hr HR_NUMBER --generate` |
+| FR-23 reminders (daily) | `uv run python scripts/send_reminders.py` |
+| Deliver email and Teams notices to `var/outbox/` | `uv run python scripts/deliver_outbox.py` |
+| Erase referral texts 90 days after handling (daily) | `uv run python scripts/delete_old_referrals.py` |
 
 ## Project structure
 
 ```text
 src/roost/        application package
   core/           settings, shared types, errors
-  api/            HTTP layer
+  api/            kiosk and approver console (FastAPI, templates, sessions)
   agent/          orchestration and prompts
   tools/          tools the agent can call
-  leave/          vacation rules (deterministic, no LLM)
+  leave/          vacation rules (deterministic, no LLM), approvals and balances
   rag/            handbook parsing, ingestion and retrieval
   llm/            provider-agnostic LLM client
   guardrails/     sensitive topics, PII, prompt injection, disclosure
-  auth/           kiosk login and roles
+  auth/           PINs, console passwords, lockout and rate limits
+  audit/          the append-only audit log
+  notifications/  outbox, wording and delivery (Teams, email, kiosk)
+  referrals/      the consented note to HR (FR-32)
   db/             data models
   seed/           synthetic employee data
   adapters/       HR system, email, notifications (mocked)
@@ -235,7 +295,7 @@ evals/            evaluation datasets and committed results
 data/             handbook source files
 migrations/       Alembic database migrations
 scripts/          seed, ingestion, embedding, smoke-test, eval and chat commands
-config/           reviewed reply templates and guardrail rules (messages.yaml, guardrails.yaml)
+config/           reviewed text and rules: replies, kiosk and console pages, notices, guardrails
 docs/             requirements, architecture and decision records
 ```
 
@@ -248,7 +308,7 @@ docs/             requirements, architecture and decision records
 - [x] Phase 5: Core logic (RAG and vacation agent)
 - [x] Phase 6: Evaluations
 - [x] Phase 7: Guardrails
-- [ ] Phase 8: API layer
+- [x] Phase 8: API layer
 - [ ] Phase 9: Observability
 - [ ] Phase 10: Containers and CI/CD
 - [ ] Phase 11: Deployment

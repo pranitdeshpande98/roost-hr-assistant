@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Status | Draft v0.1 |
-| Last updated | 2026-10-31 |
-| Decisions | [ADR-0005](adr/0005-embeddings-and-vector-store.md), [ADR-0007](adr/0007-relational-database.md) |
+| Status | v0.2: Phase 8 tables built |
+| Last updated | 2026-11-07 |
+| Decisions | [ADR-0005](adr/0005-embeddings-and-vector-store.md), [ADR-0007](adr/0007-relational-database.md), [ADR-0013](adr/0013-api-layer.md) |
 
 All tables live in one PostgreSQL database. Tables are built in the phase that
 first needs them; this document shows the full target model so each migration
@@ -27,9 +27,16 @@ erDiagram
 
     employee ||--o{ vacation_request : submits
     vacation_request ||--|{ vacation_request_day : covers
-    vacation_request ||--o{ approval : "decided by"
-    employee ||--o{ approval : decides
+    vacation_request ||--o{ approval : "decided in rounds"
+    employee ||--o{ approval : "assigned or decides"
+    location ||--o{ approval : "HR step for"
     employee ||--o| kiosk_credential : "signs in with"
+    employee ||--o| console_credential : "approves with"
+    employee ||--o{ web_session : "signed in as"
+    employee ||--o{ notification : receives
+    vacation_request ||--o{ notification : about
+    employee ||--o{ hr_referral : "asked HR"
+    location ||--o{ hr_referral : "read by HR at"
     employee ||--o{ conversation : has
     conversation ||--o{ message : contains
 
@@ -128,18 +135,60 @@ erDiagram
     }
     approval {
         bigint id PK
-        uuid request_id FK
+        uuid request_id FK "unique with round and step"
+        smallint round "1, then +1 for each change"
         text step "supervisor, hr"
-        uuid approver_id FK
-        text decision
+        uuid assignee_id FK "supervisor step only"
+        smallint hr_location_id FK "HR step only"
+        text decision "pending, approved, denied"
+        uuid decided_by_id FK
+        text comment "nullable, shown to the employee"
         timestamptz decided_at
     }
     kiosk_credential {
         uuid employee_id PK, FK
-        text pin_hash "Argon2"
+        text pin_hash "Argon2id"
         bool must_change
         smallint failed_attempts
         timestamptz locked_until
+    }
+    console_credential {
+        uuid employee_id PK, FK
+        text password_hash "Argon2id"
+        bool must_change
+        smallint failed_attempts
+        timestamptz locked_until
+    }
+    web_session {
+        text token_hash PK "SHA-256 of the cookie token"
+        text app "kiosk, console"
+        uuid employee_id FK
+        text kiosk_id "kiosk header, or the console's address"
+        text language
+        uuid thread_id "agent conversation"
+        text csrf_token
+        bool must_change_pin "PIN or password"
+        timestamptz last_seen_at "idle limit"
+    }
+    notification {
+        bigint id PK
+        uuid recipient_id FK
+        text channel "teams, email, kiosk"
+        text kind
+        uuid request_id FK "nullable"
+        jsonb details "reference, days, comment; never text"
+        timestamptz sent_at "null until delivered"
+    }
+    hr_referral {
+        uuid id PK
+        uuid employee_id FK
+        smallint location_id FK
+        text category "sensitive topic"
+        text language
+        text text "the employee's own words; erased 90 days after handled"
+        timestamptz handled_at
+        uuid handled_by_id FK
+        timestamptz text_deleted_at
     }
     conversation {
         uuid id PK
@@ -179,6 +228,8 @@ the audit log must survive even if the rows it describes change.
 | 5 (core logic) | `vacation_request`, `vacation_request_day` | Vacation requests (create, change, cancel, status) |
 | 5 (core logic) | LangGraph checkpoint tables, in the `agent_memory` schema | Conversation state and paused confirmations |
 | 8 (API) | `approval`, `audit_log`, `kiosk_credential` | Supervisor and HR approvals, audit trail, kiosk sign-in |
+| 8 (API) | `web_session`, `console_credential` | Server-side sessions for the kiosk and the approver console; console passwords |
+| 8 (API) | `notification`, `hr_referral` | Notification outbox (Teams, email, kiosk); the consented note to HR (FR-32) |
 | 9 (observability) | `conversation`, `message` | Transcripts for the 45-day record policy and legal holds |
 
 LangGraph's checkpoint tables are created and managed by its own library, not by our
@@ -196,10 +247,15 @@ autogenerate and `alembic check` never see them (ADR-0010).
 | `leave_balance` per employee, type and year | Matches how accrual, carryover (Section 6.9) and the yearly sick grant (Section 8.1) work. Available hours = accrued + carried over − used − pending requests. |
 | `vacation_request_day` rows | Each day can be a full or half day (Section 6.3) and is checked against holidays (Section 12.5) and department limits (Section 6.6) individually. |
 | `version` column on `vacation_request` | Optimistic locking: two approvers acting at the same moment cannot overwrite each other's decision. |
+| `approval` rows in rounds; a decided row never changes | A change starts round N+1 (FR-13); older rounds stay as history, and a decision on an old round is refused. The supervisor step names its assignee; the HR step names a location, so any HR generalist there (or an HR admin) can decide it. Check constraints keep exactly one of the two, and decision fields set together. |
+| Approved hours posted to `used_hours` | The HR system would record them. Posted on the same balance row the vacation check reads (the latest year up to the day's year), and given back when an approved request is changed or cancelled. |
+| `web_session` keeps only a hash of the token | A copy of the table cannot be used to sign in. Idle limits (2 minutes kiosk, 15 console) are checked against `last_seen_at` on every request. |
+| `notification` is an outbox | Written in the same transaction as the decision; delivered separately. `details` never holds a balance or anything an employee said. |
+| `hr_referral` text is erased, the row kept | The words are needed only until HR follows up; the record that a referral was sent and handled stays (with the audit log entry). |
 | `chunk_embedding` separate from `handbook_chunk`, keyed by model name | Several embedding models can be stored side by side, so Phase 4 can compare candidates on the same chunks, and switching models never requires downtime. Each model gets its own vector index. |
 | Generated `search_tsv` column | Postgres keeps the keyword-search index in sync with `content` automatically (ADR-0005 hybrid search). |
 | Only one handbook version `published` at a time | Enforced with a partial unique index; publishing is one transaction (FR-44). |
-| `audit_log` insert-only | Enforced by database permissions and a trigger (ADR-0007, FR-24). |
+| `audit_log` insert-only | Triggers reject `UPDATE`, `DELETE` and `TRUNCATE` (ADR-0007, FR-24). The writer refuses detail keys such as `text` or `message`, so no conversation content is ever recorded. |
 | `birth_date` marked as PII | Used only to block birth-date PINs (FR-40); never sent to the LLM or shown in the UI (NFR-05). |
 | `message.sensitive_category` | Lets analytics count sensitive topics by category without reading content (FR-49). |
 | Times stored as `timestamptz` | Plants span Eastern and Central time zones; all timestamps are stored in UTC and converted for display using the location's time zone. |
