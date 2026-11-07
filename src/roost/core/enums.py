@@ -83,3 +83,33 @@ class VacationRequestStatus(StrEnum):
     APPROVED = "approved"
     DENIED = "denied"
     CANCELLED = "cancelled"
+
+
+class ApprovalStep(StrEnum):
+    """The two approvals a vacation request needs, in order (FR-20)."""
+
+    SUPERVISOR = "supervisor"
+    HR = "hr"
+
+
+class ApprovalDecision(StrEnum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    DENIED = "denied"
+
+
+class AuditAction(StrEnum):
+    """Everything the permanent audit log records (FR-24, FR-48, section 4.7)."""
+
+    REQUEST_SUBMITTED = "request_submitted"
+    REQUEST_CHANGED = "request_changed"
+    REQUEST_CANCELLED = "request_cancelled"
+    APPROVAL_DECIDED = "approval_decided"
+    REQUEST_APPROVED = "request_approved"
+    REQUEST_DENIED = "request_denied"
+    HR_SUMMARY_SENT = "hr_summary_sent"
+    PIN_SET = "pin_set"
+    PIN_CHANGED = "pin_changed"
+    PIN_LOCKED = "pin_locked"
+    LEGAL_HOLD_PLACED = "legal_hold_placed"
+    LEGAL_HOLD_RELEASED = "legal_hold_released"

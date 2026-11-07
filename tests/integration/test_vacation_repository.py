@@ -5,12 +5,12 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 import pytest
-from sqlalchemy import select, text, update
+from sqlalchemy import func, select, text, update
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import StaleDataError
 
-from roost.core.enums import DayPortion, LeaveType, VacationRequestStatus
-from roost.db.models import Department, Employee, LeaveBalance, Location
+from roost.core.enums import AuditAction, DayPortion, LeaveType, VacationRequestStatus
+from roost.db.models import AuditLog, Department, Employee, LeaveBalance, Location
 from roost.leave.repository import (
     RequestNotChangeableError,
     RequestNotFoundError,
@@ -215,3 +215,45 @@ def test_stale_update_is_rejected(finance: tuple[Session, uuid.UUID, uuid.UUID])
     request.status = VacationRequestStatus.CANCELLED
     with pytest.raises(StaleDataError):
         session.flush()
+
+
+def test_every_request_action_is_audited_in_the_same_transaction(
+    finance: tuple[Session, uuid.UUID, uuid.UUID],
+) -> None:
+    session, employee, _ = finance
+    created = create_request(session, employee, _draft(WEEK[0]), today=TODAY)
+    change_request(session, employee, created.reference_code, _draft(WEEK[1]), today=TODAY)
+    cancel_request(session, employee, created.reference_code, today=TODAY)
+    session.flush()
+
+    entries = session.scalars(
+        select(AuditLog)
+        .where(AuditLog.entity_type == "vacation_request", AuditLog.entity_id == str(created.id))
+        .order_by(AuditLog.id)
+    ).all()
+
+    assert [e.action for e in entries] == [
+        AuditAction.REQUEST_SUBMITTED,
+        AuditAction.REQUEST_CHANGED,
+        AuditAction.REQUEST_CANCELLED,
+    ]
+    assert {e.actor_employee_id for e in entries} == {employee}
+    assert entries[0].details == {
+        "reference": created.reference_code,
+        "status": "pending",
+        "days": [[WEEK[0].isoformat(), "full"]],
+    }
+    assert entries[1].details["days"] == [[WEEK[1].isoformat(), "full"]]
+    assert entries[2].details["status"] == "cancelled"
+
+
+def test_a_rejected_request_leaves_no_audit_entry(
+    finance: tuple[Session, uuid.UUID, uuid.UUID],
+) -> None:
+    session, employee, _ = finance
+    before = session.scalar(select(func.count()).select_from(AuditLog))
+
+    with pytest.raises(RuleViolationError):
+        create_request(session, employee, _draft(TODAY + timedelta(days=3)), today=TODAY)
+
+    assert session.scalar(select(func.count()).select_from(AuditLog)) == before

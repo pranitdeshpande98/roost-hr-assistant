@@ -13,7 +13,14 @@ from decimal import Decimal
 from sqlalchemy import ColumnElement, func, select, true
 from sqlalchemy.orm import Session
 
-from roost.core.enums import DayPortion, EmploymentStatus, LeaveType, VacationRequestStatus
+from roost.audit import log as audit_log
+from roost.core.enums import (
+    AuditAction,
+    DayPortion,
+    EmploymentStatus,
+    LeaveType,
+    VacationRequestStatus,
+)
 from roost.db.models import Employee, LeaveBalance, Shift, VacationRequest, VacationRequestDay
 from roost.leave.holidays import holiday_on
 from roost.leave.rules import (
@@ -205,7 +212,26 @@ def create_request(
     )
     session.add(request)
     session.flush()
+    _audit(session, AuditAction.REQUEST_SUBMITTED, employee_id, request)
     return request
+
+
+def _audit(
+    session: Session, action: AuditAction, actor: uuid.UUID, request: VacationRequest
+) -> None:
+    """Record a request action (FR-24): the reference and days, never any message."""
+    audit_log.record(
+        session,
+        action,
+        actor=actor,
+        entity_type="vacation_request",
+        entity_id=str(request.id),
+        details={
+            "reference": request.reference_code,
+            "status": request.status.value,
+            "days": [[d.day.isoformat(), d.portion.value] for d in request.days],
+        },
+    )
 
 
 def get_request(session: Session, employee_id: uuid.UUID, reference_code: str) -> VacationRequest:
@@ -256,6 +282,7 @@ def change_request(
     request.days = _day_rows(draft, load_employee_facts(session, employee_id).shift_hours)
     request.status = VacationRequestStatus.PENDING
     session.flush()
+    _audit(session, AuditAction.REQUEST_CHANGED, employee_id, request)
     return request
 
 
@@ -267,4 +294,5 @@ def cancel_request(
     ensure_changeable(request, today)
     request.status = VacationRequestStatus.CANCELLED
     session.flush()
+    _audit(session, AuditAction.REQUEST_CANCELLED, employee_id, request)
     return request

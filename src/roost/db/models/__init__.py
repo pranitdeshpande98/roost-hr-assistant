@@ -1,5 +1,8 @@
 """All ORM models. Importing this package registers every table on Base.metadata."""
 
+from roost.db.models.approval import Approval
+from roost.db.models.audit import AuditLog
+from roost.db.models.auth import KioskCredential
 from roost.db.models.handbook import ChunkEmbedding, HandbookChunk, HandbookVersion
 from roost.db.models.hr import (
     Department,
@@ -14,6 +17,8 @@ from roost.db.models.hr import (
 from roost.db.models.leave import VacationRequest, VacationRequestDay
 
 __all__ = [
+    "Approval",
+    "AuditLog",
     "ChunkEmbedding",
     "Department",
     "DepartmentLocation",
@@ -22,6 +27,7 @@ __all__ = [
     "HandbookChunk",
     "HandbookVersion",
     "Holiday",
+    "KioskCredential",
     "LeaveBalance",
     "Location",
     "Shift",
