@@ -49,6 +49,7 @@ def ask(
             "channel": channel,
             "tool_rounds": 0,
             "reply": None,
+            "guardrail": None,
         }
         if employee_id is not None:
             turn["employee_id"] = employee_id

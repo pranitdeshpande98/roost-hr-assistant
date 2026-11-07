@@ -18,6 +18,7 @@ SAFE_CHECKPOINT_TYPES = [
     ("roost.llm.types", "ToolCall"),
     ("roost.core.enums", "Language"),
     ("roost.core.enums", "Channel"),
+    ("roost.guardrails.types", "Category"),
 ]
 
 

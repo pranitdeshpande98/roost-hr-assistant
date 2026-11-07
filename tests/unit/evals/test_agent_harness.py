@@ -17,6 +17,7 @@ from roost.evals.agent_harness import (
     AgentCaseRecord,
     ModelOutageError,
     RecordingChatModel,
+    RecordingScreen,
     ToolCallRecord,
     append_case_record,
     load_case_records,
@@ -25,6 +26,8 @@ from roost.evals.agent_harness import (
     returned_sections,
     run_case,
 )
+from roost.guardrails.classifier import GuardrailDecision, Source
+from roost.guardrails.types import Category
 from roost.llm.errors import LLMUnavailableError
 from roost.llm.fake import ScriptedChatModel, text_reply, tool_reply
 from roost.llm.types import ToolCall, ToolSpec
@@ -190,3 +193,18 @@ def test_record_types_are_plain_json() -> None:
     )
 
     assert AgentCaseRecord.model_validate_json(record.model_dump_json()) == record
+
+
+class _AllowEverything:
+    def classify(self, text: str) -> GuardrailDecision:
+        return GuardrailDecision(Category.NONE, Source.KEYWORD, "fake")
+
+
+def test_recording_screen_passes_decisions_through_and_hands_them_over_once() -> None:
+    screen = RecordingScreen(_AllowEverything())
+
+    decision = screen.classify("hello")
+
+    assert decision.category is Category.NONE
+    assert screen.take() == [decision]
+    assert screen.take() == []

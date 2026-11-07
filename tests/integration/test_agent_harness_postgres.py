@@ -10,15 +10,18 @@ from sqlalchemy.orm import Session
 
 from roost.agent.factory import build_agent
 from roost.core.enums import Language, PayrollClass
-from roost.db.models import Employee, Shift, VacationRequest
+from roost.db.models import Employee, Location, Shift, VacationRequest
 from roost.evals.agent_dataset import EVAL_TODAY, AgentCase, EmployeeProfile, Scenario
 from roost.evals.agent_harness import (
     RecordingChatModel,
+    RecordingScreen,
     Sessions,
     pick_employee,
     rolled_back_sessions,
     run_case,
 )
+from roost.guardrails.classifier import GuardrailDecision, Source
+from roost.guardrails.types import Category
 from roost.llm.fake import ScriptedChatModel, text_reply, tool_reply
 from roost.llm.types import ToolCall
 from roost.seed.employees import generate_seed_data
@@ -110,6 +113,7 @@ def test_a_booked_vacation_is_rolled_back_after_the_case(seeded_engine: Engine) 
             embedder=NoEmbedder(),
             checkpointer=InMemorySaver(),
             clock=lambda: EVAL_TODAY,
+            guardrails=False,  # this test is about rolling back what a tool saved
         )
 
     with rolled_back_sessions(seeded_engine) as sessions:
@@ -125,3 +129,50 @@ def test_a_booked_vacation_is_rolled_back_after_the_case(seeded_engine: Engine) 
     assert record.turns[1].tool_calls[0].result.startswith("SUBMITTED. Reference VR-")
     assert inside == 1
     assert after == 0
+
+
+class OwnDataScreen:
+    """Routes every message as an own-data question, as the real guardrail would."""
+
+    def classify(self, text: str) -> GuardrailDecision:
+        return GuardrailDecision(Category.OWN_DATA, Source.LLM, "fake")
+
+
+def test_a_routed_turn_records_the_guardrail_and_the_employees_hr_phone(
+    seeded_engine: Engine,
+) -> None:
+    scenario = Scenario.model_validate(
+        {
+            "id": "pay",
+            "category": "restricted",
+            "employee": "production_weekly",
+            "turns": [{"say": {"en": "my pay?", "es": "¿mi pago?", "vi": "lương?"}}],
+        }
+    )
+    case = AgentCase(case_id="pay-en", scenario=scenario, language=Language.EN)
+    model = RecordingChatModel(ScriptedChatModel([]))  # never called
+    screen = RecordingScreen(OwnDataScreen())
+
+    def make_agent(sessions: Sessions) -> Any:
+        return build_agent(
+            sessions,
+            model=model,
+            embedder=NoEmbedder(),
+            checkpointer=InMemorySaver(),
+            clock=lambda: EVAL_TODAY,
+            screen=screen,
+        )
+
+    with rolled_back_sessions(seeded_engine) as sessions:
+        with sessions() as session:
+            employee = pick_employee(session, EmployeeProfile.PRODUCTION_WEEKLY, EVAL_TODAY)
+            phone = session.scalar(
+                select(Location.hr_phone).join(Employee).where(Employee.id == employee)
+            )
+        record = run_case(case, make_agent, model, sessions, employee, screen)
+
+    turn = record.turns[0]
+    assert (turn.guardrail, turn.guardrail_source) == ("own_data", "llm")
+    assert turn.tool_calls == ()
+    assert f"HR, {phone}." in turn.reply
+    assert record.prompt_tokens == 0  # the agent's model was never asked

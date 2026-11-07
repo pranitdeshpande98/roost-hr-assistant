@@ -44,7 +44,7 @@ logger = logging.getLogger("judge_agent")
 
 DEFAULT_JUDGE = "groq:qwen/qwen3.8-27b"  # a different family from the agent's primary model
 CALIBRATION = Path("evals/datasets/judge_calibration_v1.yaml")
-RESULTS_DIR = Path("evals/results/agent_v1")
+RESULTS_DIR = Path("evals/results/agent_v2")
 # The judge is trusted only if it agrees with the human labels this often...
 MIN_AGREEMENT = 0.90
 # ...and catches every answer a human marked unfaithful.

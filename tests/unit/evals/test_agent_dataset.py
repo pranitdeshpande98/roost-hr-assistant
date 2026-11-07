@@ -17,6 +17,7 @@ from roost.evals.agent_dataset import (
     load_agent_scenarios,
     mentions,
 )
+from roost.guardrails.types import Route
 from roost.tools.handbook import HandbookSearchTool
 from roost.tools.payroll import PayScheduleTool
 from roost.tools.vacation import vacation_tools
@@ -85,6 +86,29 @@ def test_vacation_dates_in_the_dataset_are_after_eval_today() -> None:
         for turn in scenario.turns:
             for args in turn.expect.args.values():
                 assert all(day.date > EVAL_TODAY for day in args.days), scenario.id
+
+
+def test_v2_keeps_every_v1_scenario_and_routes_restricted_ones() -> None:
+    v1 = {s.id: s for s in load_agent_scenarios(DATASET)}
+    v2 = {s.id: s for s in load_agent_scenarios(DATASET.with_name("agent_v2.yaml"))}
+
+    assert set(v1) < set(v2)
+    assert len(v2) == 34
+    assert len(expand_cases(list(v2.values()))) == 34 * 3
+    for scenario_id, scenario in v1.items():
+        assert [t.say for t in v2[scenario_id].turns] == [t.say for t in scenario.turns]
+        for turn in v2[scenario_id].turns:
+            if turn.expect.restricted:
+                assert turn.expect.route is Route.OWN_DATA
+                assert turn.expect.tools == ()  # the model never sees the question
+
+
+def test_v2_covers_every_guardrail_route() -> None:
+    v2 = load_agent_scenarios(DATASET.with_name("agent_v2.yaml"))
+
+    routes = {t.expect.route for s in v2 for t in s.turns if t.expect.route is not None}
+    assert routes == set(Route)
+    assert {"sensitive", "injection"} <= {s.category for s in v2}
 
 
 # --- validation ---------------------------------------------------------------------

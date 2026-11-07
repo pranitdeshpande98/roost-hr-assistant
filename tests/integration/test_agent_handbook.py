@@ -97,7 +97,11 @@ def test_assembled_agent_answers_from_the_handbook(handbook: Session) -> None:
         ]
     )
     agent = build_agent(
-        lambda: nullcontext(handbook), model=model, embedder=SectionNumberEmbedder()
+        lambda: nullcontext(handbook),
+        model=model,
+        embedder=SectionNumberEmbedder(),
+        # The guardrail lets the question through: a handbook question is not routed.
+        guardrail_model=ScriptedChatModel([text_reply('{"category": "none"}')]),
     )
 
     result = agent.invoke(
