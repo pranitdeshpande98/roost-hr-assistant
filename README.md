@@ -1,6 +1,6 @@
 # Roost: Multilingual AI HR Assistant
 
-> **Status:** ✅ Phase 6 complete · 🚧 Phase 7: guardrails
+> **Status:** ✅ Phase 7 complete · 🚧 Phase 8: API layer
 
 Roost is a production-style AI assistant for **Hollow Creek Poultry Co.**, a
 fictional poultry processor with three plants and a corporate office. It helps
@@ -79,9 +79,41 @@ and citations. Method, all four runs and what each fix changed:
 | Faithfulness (LLM judge) | 90% | ✅ 94% |
 | Citation correctness (LLM judge) | 90% | ✅ 97% |
 
-The restricted gate is the known open item: a prompt rule makes leaks rarer but cannot
-make them zero, so Phase 7 adds a deterministic guardrail for own-data questions.
-Latest report: [summary.md](evals/results/agent_v1/summary.md).
+The restricted gate was the open item: a prompt rule made leaks rarer but could not
+make them zero. Phase 7's guardrail closes it (below). Phase 6 report:
+[summary.md](evals/results/agent_v1/summary.md).
+
+## Guardrails (Phase 7)
+
+Every message is screened before the model sees it:
+
+```text
+message ─► keywords ─► LLM classifier ─► (if it is down) similarity to examples
+              │
+              ├─ emergency ─► 911 / 988 first, then your HR team
+              ├─ sensitive ─► Ethics Hotline, 911, 988, then your HR team
+              ├─ own data  ─► "I can't see your personal records", then your HR team
+              ├─ injection ─► "I can only help with your own HR questions"
+              └─ allowed   ─► the agent
+```
+
+- **Routed replies are fixed, reviewed text** in three languages, with the employee's own
+  HR team and phone number from the database. The model never writes them.
+- **Every sensitive reply carries 911 and 988**, so a misclassified crisis still gets them.
+- **Citations are checked on the way out:** a section no tool returned is removed.
+
+Measured on 60 fresh messages × 3 languages, frozen before tuning ended (method, the
+failed first test split, and the alternatives that were dropped:
+[ADR-0012](docs/adr/0012-guardrails.md)):
+
+| Gate (requirements §6.2) | Threshold | Holdout |
+|---|---|---|
+| Sensitive-topic routing recall | 98% | ✅ 100% |
+| Sensitive-topic routing precision | 85% | ✅ 100% |
+| Prompt-injection attempts blocked | 95% | ✅ 100% |
+
+In the whole agent (102 cases, [summary.md](evals/results/agent_v2/summary.md)) all six
+Phase 6 gates pass, and restricted data disclosure goes from 13/15 to **21/21**.
 
 ## Model selection (Phase 4)
 
@@ -149,7 +181,7 @@ requests need; pick any employee number from the seeded data:
 
 ```bash
 uv run python scripts/chat.py --show-tools                    # handbook questions
-uv run python scripts/chat.py --language es --employee <number>  # vacation, in Spanish
+uv run python scripts/chat.py --language es --employee NUMBER  # vacation, in Spanish
 ```
 
 ## Development commands
@@ -164,17 +196,21 @@ uv run python scripts/chat.py --language es --employee <number>  # vacation, in 
 | Check models match migrations | `uv run alembic check` |
 | Run all hooks | `uv run pre-commit run --all-files` |
 | List a provider's live models | `uv run python scripts/llm_smoke.py --provider groq --list` |
-| Smoke-test an LLM | `uv run python scripts/llm_smoke.py --provider groq --model <id>` |
+| Smoke-test an LLM | `uv run python scripts/llm_smoke.py --provider groq --model openai/gpt-oss-120b` |
 | Embed with every candidate model | `uv run python scripts/embed_handbook.py --all` |
 | Retrieval eval | `uv run python scripts/eval_retrieval.py` |
-| LLM eval (resumable) | `uv run python scripts/eval_llm.py --provider groq --model <id>` |
+| LLM eval (resumable) | `uv run python scripts/eval_llm.py --provider groq --model openai/gpt-oss-120b` |
 | LLM eval report only | `uv run python scripts/eval_llm.py --report` |
-| Chat with the agent | `uv run python scripts/chat.py --employee <number> --show-tools` |
+| Chat with the agent (NUMBER: any employee number in your database) | `uv run python scripts/chat.py --employee NUMBER --show-tools` |
 | Calibrate the LLM judge | `uv run python scripts/judge_agent.py --calibrate` |
 | Agent eval (resumable) | `uv run python scripts/eval_agent.py` |
-| Re-run some scenarios | `uv run python scripts/eval_agent.py --scenario <id> --rerun` |
+| Re-run some scenarios | `uv run python scripts/eval_agent.py --scenario payday-weekly --rerun` |
 | Judge saved agent results | `uv run python scripts/judge_agent.py` |
 | Agent eval report (exit 1 on a failing gate) | `uv run python scripts/eval_agent.py --report` |
+| Guardrail eval, dev split (resumable) | `uv run python scripts/eval_guardrails.py --split dev` |
+| Guardrail eval on one model, no fallback | `uv run python scripts/eval_guardrails.py --split test --model groq:qwen/qwen3.8-27b` |
+| Guardrail eval without the LLM | `uv run python scripts/eval_guardrails.py --split dev --no-llm` |
+| Guardrail eval report (exit 1 on a failing gate) | `uv run python scripts/eval_guardrails.py --report` |
 
 ## Project structure
 
@@ -199,7 +235,7 @@ evals/            evaluation datasets and committed results
 data/             handbook source files
 migrations/       Alembic database migrations
 scripts/          seed, ingestion, embedding, smoke-test, eval and chat commands
-config/           reviewed reply templates (messages.yaml)
+config/           reviewed reply templates and guardrail rules (messages.yaml, guardrails.yaml)
 docs/             requirements, architecture and decision records
 ```
 
@@ -211,7 +247,7 @@ docs/             requirements, architecture and decision records
 - [x] Phase 4: Model selection
 - [x] Phase 5: Core logic (RAG and vacation agent)
 - [x] Phase 6: Evaluations
-- [ ] Phase 7: Guardrails
+- [x] Phase 7: Guardrails
 - [ ] Phase 8: API layer
 - [ ] Phase 9: Observability
 - [ ] Phase 10: Containers and CI/CD

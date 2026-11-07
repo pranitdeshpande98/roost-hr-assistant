@@ -143,3 +143,4 @@ in [`docs/adr/`](adr/).
 | 0009 | Embedding model, retrieval method and agent LLM chain | Accepted |
 | 0010 | Agent design: model-tool loop, deterministic rules and confirmation | Accepted |
 | 0011 | Whole-agent evaluation: scenarios, deterministic checks and a calibrated judge | Accepted |
+| 0012 | Guardrails: a layered input classifier, fixed replies and a citation check | Accepted |
