@@ -112,7 +112,18 @@ def build_graph(
             # Every model in the chain failed. Log it; finalize sends the fixed fallback.
             logger.exception("Model call failed")
             return {"messages": [ChatMessage(role="assistant", content="")]}
-        return {"messages": [result.message]}
+        message = result.message
+        if message.content and not message.tool_calls:
+            # Output guardrail, applied before the answer enters the history: what the
+            # employee sees, what a transcript shows and what the model reads next turn
+            # are the same text. A citation must point to a section some tool returned in
+            # this conversation (follow-ups may cite an earlier turn's search).
+            sources = [m.content or "" for m in state.messages if m.role == "tool"]
+            cleaned, removed = remove_unsupported_citations(message.content, sources)
+            if removed:
+                logger.warning("Removed %d unsupported citation(s)", len(removed))
+                message = message.model_copy(update={"content": cleaned})
+        return {"messages": [message]}
 
     def run_tools(state: AgentState) -> dict[str, Any]:
         # Re-runs from the top when resumed after a confirmation, so tools must not change
@@ -137,13 +148,6 @@ def build_graph(
     def finalize(state: AgentState) -> dict[str, Any]:
         last = state.messages[-1]
         answer = None if last.tool_calls else last.content
-        if answer:
-            # Output guardrail: a citation must point to a section some tool returned in
-            # this conversation (follow-ups may cite an earlier turn's search).
-            sources = [m.content or "" for m in state.messages if m.role == "tool"]
-            answer, removed = remove_unsupported_citations(answer, sources)
-            if removed:
-                logger.warning("Removed %d unsupported citation(s)", len(removed))
         return {"reply": compose_reply(answer, state.language, catalog)}
 
     graph = StateGraph(AgentState)

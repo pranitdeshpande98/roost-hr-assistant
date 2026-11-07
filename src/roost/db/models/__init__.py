@@ -15,6 +15,8 @@ from roost.db.models.hr import (
     Shift,
 )
 from roost.db.models.leave import VacationRequest, VacationRequestDay
+from roost.db.models.notification import Notification
+from roost.db.models.web import KioskSession
 
 __all__ = [
     "Approval",
@@ -28,8 +30,10 @@ __all__ = [
     "HandbookVersion",
     "Holiday",
     "KioskCredential",
+    "KioskSession",
     "LeaveBalance",
     "Location",
+    "Notification",
     "Shift",
     "VacationRequest",
     "VacationRequestDay",

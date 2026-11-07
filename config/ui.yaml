@@ -1,0 +1,145 @@
+# Kiosk interface text, in every language (ADR-0006). The agent's own replies are in
+# messages.yaml; this file holds labels, errors and notices around them.
+# {minutes} is filled in by code; every language must use the same placeholders.
+# Quote keys YAML reads as true/false ("yes", "no").
+
+title:
+  en: "Roost HR Assistant"
+  es: "Asistente de Recursos Humanos Roost"
+  vi: "Trợ lý Nhân sự Roost"
+language:
+  en: "Language"
+  es: "Idioma"
+  vi: "Ngôn ngữ"
+employee_number:
+  en: "Employee number"
+  es: "Número de empleado"
+  vi: "Mã số nhân viên"
+pin:
+  en: "PIN (6 digits)"
+  es: "PIN (6 dígitos)"
+  vi: "Mã PIN (6 chữ số)"
+sign_in:
+  en: "Sign in"
+  es: "Iniciar sesión"
+  vi: "Đăng nhập"
+invalid:
+  en: "That employee number and PIN do not match. Check them and try again."
+  es: "El número de empleado y el PIN no coinciden. Revíselos e intente de nuevo."
+  vi: "Mã số nhân viên và mã PIN không khớp. Vui lòng kiểm tra và thử lại."
+locked:
+  en: "Too many wrong PINs. You can try again in {minutes} minute(s), or ask your plant HR office to reset your PIN."
+  es: "Demasiados PIN incorrectos. Puede intentarlo de nuevo en {minutes} minuto(s), o pida a la oficina de Recursos Humanos de su planta que restablezca su PIN."
+  vi: "Nhập sai mã PIN quá nhiều lần. Bạn có thể thử lại sau {minutes} phút, hoặc nhờ văn phòng Nhân sự của nhà máy đặt lại mã PIN."
+rate_limited:
+  en: "Too many sign-in attempts at this kiosk. Please wait {minutes} minute(s) and try again."
+  es: "Demasiados intentos de inicio de sesión en este quiosco. Espere {minutes} minuto(s) e intente de nuevo."
+  vi: "Có quá nhiều lần đăng nhập tại ki-ốt này. Vui lòng đợi {minutes} phút rồi thử lại."
+change_pin_title:
+  en: "Choose your own PIN"
+  es: "Elija su propio PIN"
+  vi: "Chọn mã PIN của riêng bạn"
+change_pin_help:
+  en: "HR gave you a temporary PIN. Choose a new 6-digit PIN that only you know. Avoid your birth date and easy patterns like 123456."
+  es: "Recursos Humanos le dio un PIN temporal. Elija un nuevo PIN de 6 dígitos que solo usted conozca. Evite su fecha de nacimiento y patrones fáciles como 123456."
+  vi: "Phòng Nhân sự đã cấp cho bạn mã PIN tạm thời. Hãy chọn mã PIN mới gồm 6 chữ số mà chỉ bạn biết. Tránh dùng ngày sinh và các dãy dễ đoán như 123456."
+current_pin:
+  en: "Temporary PIN from HR"
+  es: "PIN temporal de Recursos Humanos"
+  vi: "Mã PIN tạm thời do Phòng Nhân sự cấp"
+new_pin:
+  en: "New PIN"
+  es: "PIN nuevo"
+  vi: "Mã PIN mới"
+repeat_pin:
+  en: "New PIN again"
+  es: "Repita el PIN nuevo"
+  vi: "Nhập lại mã PIN mới"
+save_pin:
+  en: "Save my PIN"
+  es: "Guardar mi PIN"
+  vi: "Lưu mã PIN"
+pins_differ:
+  en: "The two new PINs are different. Type the same PIN twice."
+  es: "Los dos PIN nuevos son diferentes. Escriba el mismo PIN dos veces."
+  vi: "Hai mã PIN mới không giống nhau. Hãy nhập cùng một mã PIN hai lần."
+wrong_current_pin:
+  en: "The temporary PIN is not correct."
+  es: "El PIN temporal no es correcto."
+  vi: "Mã PIN tạm thời không đúng."
+pin_not_six_digits:
+  en: "A PIN must be exactly 6 digits."
+  es: "El PIN debe tener exactamente 6 dígitos."
+  vi: "Mã PIN phải có đúng 6 chữ số."
+pin_repeating:
+  en: "That PIN repeats the same digits. Choose one that is harder to guess."
+  es: "Ese PIN repite los mismos dígitos. Elija uno más difícil de adivinar."
+  vi: "Mã PIN đó lặp lại cùng các chữ số. Hãy chọn mã khó đoán hơn."
+pin_sequence:
+  en: "That PIN is a sequence, like 123456. Choose one that is harder to guess."
+  es: "Ese PIN es una secuencia, como 123456. Elija uno más difícil de adivinar."
+  vi: "Mã PIN đó là một dãy liên tiếp, như 123456. Hãy chọn mã khó đoán hơn."
+pin_common:
+  en: "That PIN is one of the most common. Choose one that is harder to guess."
+  es: "Ese PIN es uno de los más comunes. Elija uno más difícil de adivinar."
+  vi: "Mã PIN đó là một trong những mã phổ biến nhất. Hãy chọn mã khó đoán hơn."
+pin_birth_date:
+  en: "Do not use your birth date as your PIN."
+  es: "No use su fecha de nacimiento como PIN."
+  vi: "Đừng dùng ngày sinh của bạn làm mã PIN."
+pin_same_as_current:
+  en: "Your new PIN must be different from the temporary one."
+  es: "Su PIN nuevo debe ser diferente del temporal."
+  vi: "Mã PIN mới phải khác mã PIN tạm thời."
+welcome:
+  en: "Ask me about the handbook, your paydays or your vacation."
+  es: "Pregúnteme sobre el manual, sus días de pago o sus vacaciones."
+  vi: "Hãy hỏi tôi về sổ tay nhân viên, ngày lãnh lương hoặc kỳ nghỉ phép của bạn."
+message:
+  en: "Your message"
+  es: "Su mensaje"
+  vi: "Tin nhắn của bạn"
+send:
+  en: "Send"
+  es: "Enviar"
+  vi: "Gửi"
+"yes":
+  en: "YES"
+  es: "SÍ"
+  vi: "CÓ"
+"no":
+  en: "NO"
+  es: "NO"
+  vi: "KHÔNG"
+working:
+  en: "Working on it…"
+  es: "Un momento…"
+  vi: "Đang xử lý…"
+you:
+  en: "You"
+  es: "Usted"
+  vi: "Bạn"
+roost:
+  en: "Roost"
+  es: "Roost"
+  vi: "Roost"
+sign_out:
+  en: "Sign out"
+  es: "Cerrar sesión"
+  vi: "Đăng xuất"
+privacy_notice:
+  en: "For your privacy, you are signed out after 2 minutes without activity."
+  es: "Por su privacidad, la sesión se cierra tras 2 minutos sin actividad."
+  vi: "Để bảo vệ quyền riêng tư, bạn sẽ bị đăng xuất sau 2 phút không hoạt động."
+signed_out:
+  en: "You are signed out."
+  es: "Ha cerrado la sesión."
+  vi: "Bạn đã đăng xuất."
+error:
+  en: "Something went wrong. Please try again, or ask your plant HR office."
+  es: "Algo salió mal. Intente de nuevo o consulte a la oficina de Recursos Humanos de su planta."
+  vi: "Đã xảy ra lỗi. Vui lòng thử lại hoặc hỏi văn phòng Nhân sự của nhà máy."
+notices:
+  en: "Updates for you"
+  es: "Novedades para usted"
+  vi: "Thông báo cho bạn"

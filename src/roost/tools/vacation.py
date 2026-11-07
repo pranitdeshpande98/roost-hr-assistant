@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from roost.agent.confirmation import Confirmation, ConfirmationReply
 from roost.agent.messages import MessageCatalog
 from roost.agent.tools import Tool, ToolContext
-from roost.core.enums import DayPortion, Language
+from roost.core.enums import DayPortion, Language, VacationRequestStatus
 from roost.leave.repository import (
     RequestNotChangeableError,
     RequestNotFoundError,
@@ -193,10 +193,11 @@ class RequestVacationTool(_VacationTool):
                 return explain(error.check)
             session.commit()
             code = request.reference_code
-        return (
-            f"SUBMITTED. Reference {code}. Status: pending supervisor and HR approval. "
-            "Give the employee the reference."
+            approved = request.status is VacationRequestStatus.APPROVED
+        status = (
+            "approved (no approval needed)" if approved else "pending supervisor and HR approval"
         )
+        return f"SUBMITTED. Reference {code}. Status: {status}. Give the employee the reference."
 
 
 class ChangeVacationTool(_VacationTool):
@@ -251,10 +252,13 @@ class ChangeVacationTool(_VacationTool):
 
         with self._sessions() as session:
             try:
-                change_request(session, employee, code, draft, today=context.today)
+                changed = change_request(session, employee, code, draft, today=context.today)
             except RuleViolationError as error:
                 return explain(error.check)
             session.commit()
+            approved = changed.status is VacationRequestStatus.APPROVED
+        if approved:
+            return f"CHANGED. {code} now has the new dates and is approved (no approval needed)."
         return f"CHANGED. {code} now has the new dates and is pending both approvals again."
 
 

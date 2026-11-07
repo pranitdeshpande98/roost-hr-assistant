@@ -18,10 +18,11 @@ from roost.core.enums import (
     AuditAction,
     DayPortion,
     EmploymentStatus,
-    LeaveType,
     VacationRequestStatus,
 )
-from roost.db.models import Employee, LeaveBalance, Shift, VacationRequest, VacationRequestDay
+from roost.db.models import Employee, Shift, VacationRequest, VacationRequestDay
+from roost.leave.approvals import notify_cancellation, start_approval
+from roost.leave.balance import balance_row, hours_by_row, release_hours
 from roost.leave.holidays import holiday_on
 from roost.leave.rules import (
     EmployeeFacts,
@@ -74,21 +75,18 @@ def load_employee_facts(session: Session, employee_id: uuid.UUID) -> EmployeeFac
     )
 
 
-def _available_hours(session: Session, employee_id: uuid.UUID, year: int) -> Decimal:
-    """Accrued + carried over - used, from the latest balance year up to `year`."""
-    balance = session.scalars(
-        select(LeaveBalance)
-        .where(
-            LeaveBalance.employee_id == employee_id,
-            LeaveBalance.leave_type == LeaveType.VACATION,
-            LeaveBalance.year <= year,
-        )
-        .order_by(LeaveBalance.year.desc())
-        .limit(1)
-    ).first()
+def _available_hours(
+    session: Session, employee_id: uuid.UUID, year: int, *, changing: VacationRequest | None
+) -> Decimal:
+    """Accrued + carried over - used, from the latest balance year up to `year`. An
+    approved request being changed counts as given back: its hours are in `used`."""
+    balance = balance_row(session, employee_id, year)
     if balance is None:
         return Decimal(0)
-    return balance.accrued_hours + balance.carried_over_hours - balance.used_hours
+    available = balance.accrued_hours + balance.carried_over_hours - balance.used_hours
+    if changing is not None and changing.status is VacationRequestStatus.APPROVED:
+        available += hours_by_row(session, changing).get(balance, Decimal(0))
+    return available
 
 
 def load_leave_facts(
@@ -146,7 +144,12 @@ def load_leave_facts(
         ).all()
     )
     return LeaveFacts(
-        available_hours=_available_hours(session, employee_id, max(days).year),
+        available_hours=_available_hours(
+            session,
+            employee_id,
+            max(days).year,
+            changing=session.get(VacationRequest, ignore_request_id) if ignore_request_id else None,
+        ),
         pending_hours=Decimal(pending_hours or 0),
         booked_days=frozenset(booked_days),
         team_size=team_size or 0,
@@ -213,6 +216,7 @@ def create_request(
     session.add(request)
     session.flush()
     _audit(session, AuditAction.REQUEST_SUBMITTED, employee_id, request)
+    start_approval(session, request)
     return request
 
 
@@ -271,27 +275,34 @@ def change_request(
     *,
     today: date,
 ) -> VacationRequest:
-    """Replace the days (FR-13). Any change sends the request back to pending, so both
-    approvals restart."""
+    """Replace the days (FR-13). Any change sends the request back to pending and starts
+    a new approval round; an approved request gives its hours back first."""
     request = get_request(session, employee_id, reference_code)
     ensure_changeable(request, today)
     _lock_team(session, employee_id)
     check = check_draft(session, employee_id, draft, today=today, ignore_request_id=request.id)
     if not check.ok:
         raise RuleViolationError(check)
+    if request.status is VacationRequestStatus.APPROVED:
+        release_hours(session, request)  # the old days, before they are replaced
     request.days = _day_rows(draft, load_employee_facts(session, employee_id).shift_hours)
     request.status = VacationRequestStatus.PENDING
     session.flush()
     _audit(session, AuditAction.REQUEST_CHANGED, employee_id, request)
+    start_approval(session, request)
     return request
 
 
 def cancel_request(
     session: Session, employee_id: uuid.UUID, reference_code: str, *, today: date
 ) -> VacationRequest:
-    """Cancel before the first day (FR-14)."""
+    """Cancel before the first day (FR-14). The approvers are told; an approved
+    request gives its hours back."""
     request = get_request(session, employee_id, reference_code)
     ensure_changeable(request, today)
+    notify_cancellation(
+        session, request, was_approved=request.status is VacationRequestStatus.APPROVED
+    )
     request.status = VacationRequestStatus.CANCELLED
     session.flush()
     _audit(session, AuditAction.REQUEST_CANCELLED, employee_id, request)

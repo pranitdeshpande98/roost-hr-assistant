@@ -113,3 +113,21 @@ class AuditAction(StrEnum):
     PIN_LOCKED = "pin_locked"
     LEGAL_HOLD_PLACED = "legal_hold_placed"
     LEGAL_HOLD_RELEASED = "legal_hold_released"
+
+
+class NotificationChannel(StrEnum):
+    """How a notification reaches someone (FR-22): Teams if they have it, else email,
+    else a notice at their next kiosk sign-in (drivers)."""
+
+    TEAMS = "teams"
+    EMAIL = "email"
+    KIOSK = "kiosk"
+
+
+class NotificationKind(StrEnum):
+    APPROVAL_NEEDED = "approval_needed"  # to the supervisor, then to HR
+    REQUEST_APPROVED = "request_approved"  # to the employee
+    REQUEST_DENIED = "request_denied"  # to the employee
+    REQUEST_CANCELLED = "request_cancelled"  # to the approvers (FR-14)
+    DECISION_OVERDUE = "decision_overdue"  # to the employee: check with HR (FR-23)
+    CEO_REQUEST = "ceo_request"  # to Corporate HR: no approval needed (FR-20)
