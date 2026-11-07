@@ -60,3 +60,23 @@ def test_line_breaks_and_lists_survive_cleaning() -> None:
     cleaned, _ = remove_unsupported_citations(answer, ["[§16.2] Report"])
 
     assert cleaned == "Steps:\n- Call HR\n- Fill the form [§16.2]"
+
+
+def test_citations_inside_the_sentence_are_checked_too() -> None:
+    # Seen in the Phase 7 agent eval: "(xem §13.2)" slipped past a brackets-only check.
+    answer = (
+        "Gọi đường dây chấm công (xem §13.2). Có thể cần giấy chứng nhận (xem §11.3). "
+        "Details in §8.3 and §4.2. [§8.3]"
+    )
+
+    cleaned, removed = remove_unsupported_citations(answer, ["[§11.3] FMLA", "[§8.3] Notice"])
+
+    assert cleaned == (
+        "Gọi đường dây chấm công. Có thể cần giấy chứng nhận (xem §11.3). "
+        "Details in §8.3 and. [§8.3]"
+    )
+    assert removed == ["13.2", "4.2"]
+
+
+def test_every_citation_form_is_found() -> None:
+    assert cited_sections("[§6.4] (see §6.1) ver §5.2, [§ 6.4]") == ["6.4", "6.1", "5.2"]

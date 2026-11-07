@@ -174,7 +174,11 @@ def _expected_checks(expect: TurnExpectation, turn: TurnRecord, answer: str) -> 
         ok = bool(set(cited) & set(expect.cites_any))
         results.append(CheckResult(Check.CITES, ok, f"cited {list(cited)}"))
     if expect.mentions:
-        missing = [m for m in expect.mentions if not mentions(answer, m)]
+        # A routed reply is all fixed text (hotline, 911, the HR phone), and that text is
+        # what the scenario checks; anywhere else only the model's own words count.
+        fixed_reply = turn.guardrail not in (None, GuardrailCategory.NONE.value)
+        text = turn.reply if fixed_reply else answer
+        missing = [m for m in expect.mentions if not mentions(text, m)]
         results.append(CheckResult(Check.MENTIONS, not missing, f"missing {missing}"))
     if expect.restricted:
         results.append(

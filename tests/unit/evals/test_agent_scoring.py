@@ -388,3 +388,17 @@ def test_report_shows_which_guardrail_layer_decided() -> None:
 
     assert "Input guardrail decided by: llm 5, similarity 1." in report
     assert "decided by" not in format_agent_report(scores, "chain")
+
+
+def test_mentions_on_a_routed_turn_check_the_fixed_reply() -> None:
+    contact = HRContact("Georgia Plant", "(555) 010-1100")
+    routed = compose_reply(
+        routed_reply(Category.INJURY, Language.EN, MESSAGES, contact), Language.EN, MESSAGES
+    )
+    turn = TurnRecord(say="q", reply=routed, paused=False, tool_calls=(), guardrail="injury")
+    expect = {"route": "sensitive", "mentions": ["1-800-555-0199", "(555) 010-", "911"]}
+
+    score = score_case(_record(turn), _scenario(expect), MESSAGES)
+
+    assert _results(score, Check.MENTIONS) == [True]
+    assert _results(score, Check.ROUTE) == [True]

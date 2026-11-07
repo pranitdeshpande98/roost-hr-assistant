@@ -8,15 +8,27 @@ the employee can look the rule up there, so an unsupported one is removed in cod
 import re
 from collections.abc import Iterable
 
-# [§6.4], [§ 6], [§6.4.1]: the format the handbook tool and the prompt use.
-_CITATION = re.compile(r"\[\s*§\s*(\d+(?:\.\d+)*)\s*\]")
+_SECTION = r"§\s*(\d+(?:\.\d+)*)"
+# Three ways the model cites, tried in this order:
+# - [§6.4]: the format the handbook tool and the prompt use;
+# - (xem §13.2), (see §6): a short parenthetical, removed whole;
+# - §13.2: inside the sentence.
+_CITATION = re.compile(
+    rf"\[\s*{_SECTION}\s*\]"
+    rf"|\(\s*[^()§\[\]\n]{{0,15}}?{_SECTION}\s*\)"
+    rf"|{_SECTION}"
+)
 _SPACE_BEFORE_PUNCTUATION = re.compile(r"[ \t]+([.,;:!?)])")
 _REPEATED_SPACES = re.compile(r"[ \t]{2,}")
 
 
+def _section(match: re.Match[str]) -> str:
+    return next(group for group in match.groups() if group)
+
+
 def cited_sections(text: str) -> list[str]:
     """Every section cited in `text`, in order, without duplicates."""
-    return list(dict.fromkeys(_CITATION.findall(text)))
+    return list(dict.fromkeys(_section(m) for m in _CITATION.finditer(text)))
 
 
 def _supported(section: str, returned: set[str]) -> bool:
@@ -31,9 +43,10 @@ def remove_unsupported_citations(answer: str, sources: Iterable[str]) -> tuple[s
     removed: list[str] = []
 
     def replace(match: re.Match[str]) -> str:
-        if _supported(match.group(1), returned):
+        section = _section(match)
+        if _supported(section, returned):
             return match.group(0)
-        removed.append(match.group(1))
+        removed.append(section)
         return ""
 
     cleaned = _CITATION.sub(replace, answer)

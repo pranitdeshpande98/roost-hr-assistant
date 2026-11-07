@@ -26,6 +26,7 @@ _SPANISH_WORDS = _words(
 # Not "a": it is also a Spanish word ("contacte a Recursos Humanos").
 _ENGLISH_WORDS = _words(
     "the and you your of to is for in are with an can must days have if but also this that be will"
+    " was were been has would should it on at by from or please"
 )
 _WORD = re.compile(r"[a-zñáéíóúü]+")
 

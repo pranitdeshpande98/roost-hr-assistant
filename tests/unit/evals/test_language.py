@@ -28,7 +28,15 @@ def test_detects_supported_languages(text: str, language: Language) -> None:
 
 
 @pytest.mark.parametrize(
-    "text", ["", "   ", "[§6.1] 10", "OK", "No, the end."]
-)  # "no" vs "the": a tie
+    "text",
+    [
+        "",
+        "   ",
+        "[§6.1] 10",
+        "OK",
+        "No, the end.",  # "no" vs "the": a tie
+        "No vacation request was submitted.",  # Phase 7 eval: "no" alone made this Spanish
+    ],
+)
 def test_returns_none_without_evidence(text: str) -> None:
     assert detect_language(text) is None
