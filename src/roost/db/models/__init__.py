@@ -16,6 +16,7 @@ from roost.db.models.hr import (
 )
 from roost.db.models.leave import VacationRequest, VacationRequestDay
 from roost.db.models.notification import Notification
+from roost.db.models.referral import HRReferral
 from roost.db.models.web import WebSession
 
 __all__ = [
@@ -27,6 +28,7 @@ __all__ = [
     "DepartmentLocation",
     "Employee",
     "EmployeeRole",
+    "HRReferral",
     "HandbookChunk",
     "HandbookVersion",
     "Holiday",

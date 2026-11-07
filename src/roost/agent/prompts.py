@@ -38,7 +38,8 @@ Rules:
    handbook first and do not ask your own confirmation question; the tool asks the
    employee. Ask whether a day is full or half only if they did not say ("full day",
    "día completo" and "cả ngày" all mean full). Never say a request was submitted,
-   changed or cancelled unless a tool result says so.
+   changed or cancelled unless a tool result says so. You may give the hours a request
+   uses, exactly as a tool result states them; that is not a balance.
 8. Paydays: for "when is my payday" or "when do I get paid", call my_pay_schedule and
    give the dates it returns. Never state, estimate or calculate any pay amount.
 9. {style}"""

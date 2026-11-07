@@ -19,6 +19,7 @@ from roost.llm.client import build_chat_model
 from roost.llm.providers import get_llm_settings
 from roost.llm.types import ChatModel
 from roost.rag.embeddings import EMBEDDING_MODELS, Embedder, SentenceTransformerEmbedder
+from roost.referrals.service import database_referrals
 from roost.tools.handbook import HANDBOOK_EMBEDDING_MODEL, HandbookSearchTool, database_search
 from roost.tools.payroll import PayScheduleTool
 from roost.tools.vacation import vacation_tools
@@ -72,4 +73,6 @@ def build_agent(
         clock=clock,
         screen=screen if guardrails else None,
         hr_contact=database_hr_contact(session_factory),
+        # FR-32: with the employee's YES, their words go to their HR team.
+        refer=database_referrals(session_factory) if guardrails else None,
     )

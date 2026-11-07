@@ -11,8 +11,8 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.types import interrupt
 
-from roost.agent.confirmation import ConfirmationReply
-from roost.agent.messages import MessageCatalog, compose_reply, default_messages
+from roost.agent.confirmation import Confirmation, ConfirmationReply
+from roost.agent.messages import MessageCatalog, MessageKey, compose_reply, default_messages
 from roost.agent.prompts import system_prompt_for
 from roost.agent.state import AgentState
 from roost.agent.tools import ToolContext, ToolRegistry
@@ -22,6 +22,7 @@ from roost.guardrails.routing import HRContact, routed_reply
 from roost.guardrails.types import Route
 from roost.llm.errors import LLMError
 from roost.llm.types import ChatMessage, ChatModel
+from roost.referrals.offer import ReferralDraft, ReferralSender, may_offer
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +62,7 @@ def build_graph(
     clock: Callable[[], date] = date.today,
     screen: Screen | None = None,
     hr_contact: Callable[[uuid.UUID | None], HRContact | None] = lambda _: None,
+    refer: ReferralSender | None = None,
 ) -> CompiledStateGraph[AgentState, Any, Any, Any]:
     """Wire the model-and-tools loop. Dependencies are passed in, so tests use fakes.
 
@@ -68,6 +70,9 @@ def build_graph(
     emergencies, sensitive matters, own-data questions and injection attempts get a fixed
     reply with the employee's HR contact, and the model never sees them. An answer to a
     confirmation question resumes the paused tool directly and is never screened.
+
+    With `refer`, a sensitive-matter reply also asks whether to send the employee's own
+    words to their HR team (FR-32). Only YES sends; the model never sees or rewrites them.
 
     With a checkpointer, state is saved after every step under the caller's thread_id,
     so the next turn continues the conversation, and tools can pause it to ask the
@@ -87,6 +92,9 @@ def build_graph(
             logger.exception("Input guardrail failed; answering without it")
             return {}
         update: dict[str, Any] = {"guardrail": decision.category}
+        if refer is not None and may_offer(decision.category, state.employee_id, text):
+            update["offer_referral"] = True  # offer_referral shows the reply and asks
+            return update
         if decision.route is not Route.ALLOWED:
             reply = routed_reply(
                 decision.category, state.language, catalog, hr_contact(state.employee_id)
@@ -96,8 +104,43 @@ def build_graph(
             update["reply"] = compose_reply(reply, state.language, catalog)
         return update
 
-    def after_screen(state: AgentState) -> Literal["call_model", "__end__"]:
+    def after_screen(state: AgentState) -> Literal["call_model", "offer_referral", "__end__"]:
+        if state.offer_referral:
+            return "offer_referral"
         return "__end__" if state.reply is not None else "call_model"
+
+    def offer_referral(state: AgentState) -> dict[str, Any]:
+        """FR-32. The sensitive reply and the question are one pause; the employee's answer
+        resumes here. Runs again from the top on resume, so nothing happens before asking."""
+        if refer is None or state.guardrail is None:  # after_screen only routes here with both
+            return {"offer_referral": False}
+        language = state.language
+        words = state.messages[-1].content or ""  # the message that raised the matter
+        routed = routed_reply(state.guardrail, language, catalog, hr_contact(state.employee_id))
+        question = f"{routed}\n\n{catalog.get('referral_offer', language)}"
+        answer = ask_employee(question)
+        if answer.answer is Confirmation.YES and state.employee_id is not None:
+            try:
+                refer(ReferralDraft(state.employee_id, state.guardrail, language, words))
+                key: MessageKey = "referral_sent"
+            except Exception:
+                logger.exception("Could not send the HR referral")
+                key = "referral_failed"
+        elif answer.answer is Confirmation.NO:
+            key = "referral_not_sent"
+        else:
+            key = "referral_unclear"
+        note = catalog.get(key, language)
+        return {
+            # The question, the answer and the outcome, so the history reads as it happened.
+            "messages": [
+                ChatMessage(role="assistant", content=question),
+                ChatMessage(role="user", content=answer.text),
+                ChatMessage(role="assistant", content=note),
+            ],
+            "reply": compose_reply(note, language, catalog),
+            "offer_referral": False,
+        }
 
     def call_model(state: AgentState) -> dict[str, Any]:
         # Out of tool rounds: stop offering tools, so the model has to answer.
@@ -158,8 +201,10 @@ def build_graph(
         graph.add_edge(START, "call_model")
     else:
         graph.add_node("screen", screen_message)
+        graph.add_node("offer_referral", offer_referral)
         graph.add_edge(START, "screen")
         graph.add_conditional_edges("screen", after_screen)
+        graph.add_edge("offer_referral", END)
     graph.add_conditional_edges("call_model", after_model)
     graph.add_edge("run_tools", "call_model")
     graph.add_edge("finalize", END)

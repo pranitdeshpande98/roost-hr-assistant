@@ -10,6 +10,7 @@
       <th scope="col">{{ t('col_reference') }}</th>
       <th scope="col">{{ t('col_employee') }}</th>
       <th scope="col">{{ t('col_dates') }}</th>
+      <th scope="col">{{ t('col_hours') }}</th>
       <th scope="col">{{ t('col_step') }}</th>
       <th scope="col">{{ t('col_waiting') }}</th>
       <th scope="col"><span class="visually-hidden">{{ t('open_request') }}</span></th>
@@ -21,6 +22,7 @@
       <td>{{ row.reference }}</td>
       <td>{{ row.employee }} <span class="muted">({{ row.employee_number }})</span></td>
       <td>{% with days = row.days %}{% include "console/_days.html" %}{% endwith %}</td>
+      <td>{{ row.hours }}</td>
       <td>{{ t('step_' ~ row.step) }}</td>
       <td>{{ row.waiting_since }}</td>
       <td><a href="/console/approvals/{{ row.id }}">{{ t('open_request') }}</a></td>

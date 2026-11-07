@@ -1,15 +1,18 @@
-"""The approver console (FR-21, FR-43): supervisors and HR sign in, see only the requests
-routed to them, and approve or deny with an optional comment.
+"""The approver console (FR-21, FR-32, FR-43): supervisors and HR sign in, see only the
+requests routed to them, and approve or deny with an optional comment. HR also reads
+what employees asked Roost to send them (Referrals) and marks it handled.
 
 Plain server-rendered forms, no JavaScript needed. Every request loads the session from
 the database (15-minute idle limit) and checks that the person may still use the
-console, so taking a role away ends access at once. The pages never show a balance
-(FR-06): an approver decides on dates, not on hours left.
+console, so taking a role away ends access at once. The pages show the hours a
+request uses; only HR sees the hours the employee would have left (ADR-0013, the one
+exception to FR-06). Supervisors decide on dates and team coverage, never balances.
 """
 
 import math
 import uuid
 from datetime import datetime
+from decimal import Decimal
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Form, Request
@@ -23,10 +26,11 @@ from roost.auth.console import (
     PasswordRejectedError,
     change_password,
     may_use_console,
+    roles_of,
 )
 from roost.auth.kiosk import NotAllowedError, SignInOutcome
-from roost.core.enums import ApprovalDecision, Language, SessionApp
-from roost.db.models import Approval, Employee, VacationRequest, WebSession
+from roost.core.enums import ApprovalDecision, Language, Role, SessionApp
+from roost.db.models import Approval, Employee, HRReferral, VacationRequest, WebSession
 from roost.leave.approvals import (
     ApprovalError,
     NotYourApprovalError,
@@ -34,6 +38,8 @@ from roost.leave.approvals import (
     decide,
     pending_for,
 )
+from roost.leave.repository import format_hours, load_leave_facts
+from roost.referrals.service import mark_handled, may_read_referrals, referral_for, referrals_for
 
 PREFIX = "/console"
 HISTORY_LIMIT = 50
@@ -61,6 +67,8 @@ def _page(
             "privacy_key": "console_privacy_notice",
             "idle_seconds": int(web_sessions.CONSOLE_IDLE_LIMIT.total_seconds()),
             "sign_out_action": f"{PREFIX}/sign-out",
+            # Set by _current: whether the Referrals page is in the menu.
+            "is_hr": getattr(request.state, "is_hr", False),
         }
         | context,
         status_code=status,
@@ -78,6 +86,8 @@ def _current(request: Request, db: Session) -> WebSession | None:
         db.delete(session)
         db.flush()
         return None
+    if session is not None:
+        request.state.is_hr = may_read_referrals(db, session.employee_id)
     return session
 
 
@@ -226,6 +236,7 @@ def _row(item: PendingApproval) -> dict[str, Any]:
         "employee": f"{item.employee.first_name} {item.employee.last_name}",
         "employee_number": item.employee.employee_number,
         "days": [(d.day.isoformat(), d.portion.value) for d in item.request.days],
+        "hours": format_hours(sum((d.hours for d in item.request.days), Decimal(0))),
         "step": item.approval.step.value,
         "waiting_since": item.approval.created_at.date().isoformat(),
     }
@@ -265,9 +276,27 @@ def approval_page(request: Request, db: Db, approval_id: int) -> Response:
         "console/approval.html",
         session.language,
         item=_row(item),
+        hours_left=_hours_left(db, session.employee_id, item),
         csrf=session.csrf_token,
         nav="queue",
     )
+
+
+def _hours_left(db: Session, viewer: uuid.UUID, item: PendingApproval) -> str | None:
+    """Vacation hours left once this request and the employee's other pending ones are
+    taken, for HR only: HR at the employee's location or an HR admin. Supervisors never
+    see a balance. This is the one exception to FR-06 (ADR-0013)."""
+    roles = roles_of(db, viewer)
+    approver = db.get_one(Employee, viewer)
+    is_hr = Role.HR_ADMIN in roles or (
+        Role.HR_GENERALIST in roles and approver.location_id == item.employee.location_id
+    )
+    if not is_hr:
+        return None
+    days = [d.day for d in item.request.days]
+    facts = load_leave_facts(db, item.employee.id, days, ignore_request_id=item.request.id)
+    this_request = sum((d.hours for d in item.request.days), Decimal(0))
+    return format_hours(facts.available_hours - facts.pending_hours - this_request)
 
 
 @router.post("/approvals/{approval_id}")
@@ -325,12 +354,95 @@ def history(request: Request, db: Db) -> Response:
                 "reference": vacation.reference_code,
                 "employee": f"{employee.first_name} {employee.last_name}",
                 "days": [(d.day.isoformat(), d.portion.value) for d in vacation.days],
+                "hours": format_hours(sum((d.hours for d in vacation.days), Decimal(0))),
                 "step": approval.step.value,
                 "decision": approval.decision.value,
                 "decided": at.date().isoformat() if at else "",
             }
         )
     return _page(request, "console/history.html", session.language, rows=decided, nav="history")
+
+
+# --- referrals: what employees asked Roost to send HR (FR-32) ---------------------------
+
+
+def _referral_row(referral: HRReferral, employee: Employee) -> dict[str, Any]:
+    return {
+        "id": referral.id,
+        "employee": f"{employee.first_name} {employee.last_name}",
+        "employee_number": employee.employee_number,
+        "topic": referral.category.value,
+        "language": referral.language.value,
+        "sent": referral.created_at.date().isoformat(),
+        "handled": referral.handled_at.date().isoformat() if referral.handled_at else None,
+        "text": referral.text,
+    }
+
+
+@router.get("/referrals")
+def referrals_page(request: Request, db: Db, done: str | None = None) -> Response:
+    session = _ready(request, db)
+    if isinstance(session, Response):
+        return session
+    if not may_read_referrals(db, session.employee_id):
+        return _page(request, "console/message.html", session.language, 404, message="not_found")
+    return _page(
+        request,
+        "console/referrals.html",
+        session.language,
+        open_rows=[_referral_row(*row) for row in referrals_for(db, session.employee_id)],
+        handled_rows=[
+            _referral_row(*row)
+            for row in referrals_for(db, session.employee_id, handled=True, limit=20)
+        ],
+        done="referral_marked" if done == "handled" else None,
+        nav="referrals",
+    )
+
+
+def _referral_id(value: str) -> uuid.UUID | None:
+    try:
+        return uuid.UUID(value)
+    except ValueError:
+        return None
+
+
+@router.get("/referrals/{referral_id}")
+def referral_page(request: Request, db: Db, referral_id: str) -> Response:
+    session = _ready(request, db)
+    if isinstance(session, Response):
+        return session
+    key = _referral_id(referral_id)
+    found = referral_for(db, session.employee_id, key) if key else None
+    if found is None:
+        return _page(request, "console/message.html", session.language, 404, message="not_found")
+    return _page(
+        request,
+        "console/referral.html",
+        session.language,
+        item=_referral_row(*found),
+        csrf=session.csrf_token,
+        nav="referrals",
+    )
+
+
+@router.post("/referrals/{referral_id}/handled")
+def referral_handled(
+    request: Request,
+    db: Db,
+    referral_id: str,
+    csrf: Annotated[str, Form(max_length=100)] = "",
+) -> Response:
+    session = _ready(request, db)
+    if isinstance(session, Response):
+        return session
+    if not web_sessions.csrf_ok(session, csrf):
+        return _page(request, "console/message.html", session.language, 403, message="error")
+    key = _referral_id(referral_id)
+    now = services_of(request).clock()
+    if key is None or not mark_handled(db, session.employee_id, key, now=now):
+        return _page(request, "console/message.html", session.language, 404, message="not_found")
+    return RedirectResponse(f"{PREFIX}/referrals?done=handled", status_code=303)
 
 
 # --- sign out -----------------------------------------------------------------------

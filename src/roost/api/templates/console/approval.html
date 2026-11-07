@@ -5,6 +5,10 @@
 <dl class="facts">
   <dt>{{ t('col_employee') }}</dt><dd>{{ item.employee }} ({{ item.employee_number }})</dd>
   <dt>{{ t('col_dates') }}</dt><dd>{% with days = item.days %}{% include "console/_days.html" %}{% endwith %}</dd>
+  <dt>{{ t('col_hours') }}</dt><dd>{{ item.hours }}</dd>
+  {% if hours_left is not none %}
+  <dt>{{ t('hours_left') }}</dt><dd class="hr-only">{{ hours_left }}</dd>
+  {% endif %}
   <dt>{{ t('col_step') }}</dt><dd>{{ t('step_' ~ item.step) }}</dd>
   <dt>{{ t('col_waiting') }}</dt><dd>{{ item.waiting_since }}</dd>
 </dl>

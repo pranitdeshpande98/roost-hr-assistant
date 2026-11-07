@@ -27,6 +27,7 @@ from roost.core.enums import (
     AuditAction,
     Language,
     LeaveType,
+    NotificationKind,
     Role,
     SessionApp,
     VacationRequestStatus,
@@ -38,15 +39,20 @@ from roost.db.models import (
     Department,
     Employee,
     EmployeeRole,
+    HRReferral,
     LeaveBalance,
     Location,
+    Notification,
     VacationRequest,
     WebSession,
 )
+from roost.guardrails.types import Category
 from roost.leave.approvals import hr_team
 from roost.leave.repository import create_request
 from roost.leave.rules import RequestedDay, VacationRequestDraft
 from roost.llm.fake import ScriptedChatModel
+from roost.referrals.offer import ReferralDraft
+from roost.referrals.service import delete_old_texts, mark_handled, referral_for, send_referral
 from roost.seed.employees import SeedData, generate_seed_data
 from roost.seed.loader import load_seed_data
 
@@ -479,3 +485,148 @@ def test_a_kiosk_session_does_not_open_the_console(org: Org) -> None:
 
     assert load_session(org.db, token, now=org.clock(), app=SessionApp.CONSOLE) is None
     assert load_session(org.db, token, now=org.clock()) is not None  # still a kiosk session
+
+
+def _fact(page: str, label: str) -> str | None:
+    match = re.search(rf"<dt>{re.escape(label)}</dt><dd[^>]*>([^<]*)</dd>", page)
+    return match.group(1) if match else None
+
+
+def test_everyone_sees_the_request_hours_but_only_hr_sees_hours_left(org: Org) -> None:
+    request = org.submit()  # 5 days of 8 hours; the employee has 80 hours
+    supervisor, hr = org.browser(), org.browser()
+    supervisor.ready(org.supervisor.employee_number)
+    hr.ready(org.hr.employee_number)
+    supervisor_step = org.step(request, ApprovalStep.SUPERVISOR)
+
+    page = supervisor.client.get(f"/console/approvals/{supervisor_step.id}").text
+    assert _fact(page, "Hours") == "40"
+    assert "Hours left" not in page  # supervisors never see a balance (FR-06)
+
+    supervisor.decide(supervisor_step.id, "approve")
+    page = hr.client.get(f"/console/approvals/{org.step(request, ApprovalStep.HR).id}").text
+    assert _fact(page, "Hours") == "40"
+    assert _fact(page, "Hours left after this request (HR only)") == "40"
+    assert "<td>40</td>" in hr.client.get("/console/queue").text
+
+
+def test_hours_left_counts_the_employees_other_pending_requests(org: Org) -> None:
+    org.submit()
+    second = create_request(
+        org.db,
+        org.alice.id,
+        VacationRequestDraft((RequestedDay(date(2027, 2, 1)),)),
+        today=TODAY,
+    )
+    supervisor, hr = org.browser(), org.browser()
+    supervisor.ready(org.supervisor.employee_number)
+    hr.ready(org.hr.employee_number)
+    supervisor.decide(org.step(second, ApprovalStep.SUPERVISOR).id, "approve")
+
+    page = hr.client.get(f"/console/approvals/{org.step(second, ApprovalStep.HR).id}").text
+
+    assert _fact(page, "Hours left after this request (HR only)") == "32"  # 80 - 40 - 8
+
+
+# --- referrals (FR-32) --------------------------------------------------------------
+
+WORDS = "My lead grabbed my arm. <b>Please</b> call me after 3pm."
+
+
+def _refer(org: Org, employee: Employee | None = None) -> HRReferral:
+    return send_referral(
+        org.db,
+        ReferralDraft((employee or org.alice).id, Category.HARASSMENT, Language.ES, WORDS),
+    )
+
+
+def test_a_referral_tells_hr_nothing_but_that_someone_asked(org: Org) -> None:
+    referral = _refer(org)
+
+    notices = org.db.scalars(
+        select(Notification).where(Notification.kind == NotificationKind.HR_REFERRAL)
+    ).all()
+    told = {n.recipient_id for n in notices}
+    assert org.hr.id in told
+    assert told <= {e.id for e in hr_team(org.db, org.alice.location_id)}
+    assert all(n.details == {} for n in notices)
+    entry = org.db.scalars(
+        select(AuditLog).where(AuditLog.action == AuditAction.HR_SUMMARY_SENT)
+    ).one()
+    assert entry.details == {"category": "harassment"}  # never the words
+    assert entry.entity_id == str(referral.id)
+    assert referral.location_id == org.alice.location_id
+
+
+def test_hr_reads_the_words_escaped_and_marks_them_handled(org: Org) -> None:
+    referral = _refer(org)
+    hr = org.browser()
+    hr.ready(org.hr.employee_number)
+
+    listing = hr.client.get("/console/referrals").text
+    assert 'href="/console/referrals"' in listing  # in the menu for HR
+    assert org.alice.last_name in listing
+    assert "Harassment" in listing
+    page = hr.client.get(f"/console/referrals/{referral.id}").text
+    assert "&lt;b&gt;Please&lt;/b&gt; call me after 3pm." in page
+    assert 'lang="es"' in page
+
+    done = hr.client.post(
+        f"/console/referrals/{referral.id}/handled",
+        data={"csrf": hr.csrf(f"/console/referrals/{referral.id}")},
+        follow_redirects=False,
+    )
+
+    assert done.headers["location"] == "/console/referrals?done=handled"
+    org.db.refresh(referral)
+    assert referral.handled_by_id == org.hr.id
+    assert "Mark as handled" not in hr.client.get(f"/console/referrals/{referral.id}").text
+    assert (
+        org.db.scalars(select(AuditLog).where(AuditLog.action == AuditAction.HR_REFERRAL_HANDLED))
+        .one()
+        .actor_employee_id
+        == org.hr.id
+    )
+
+
+def test_only_hr_at_the_location_or_an_admin_can_read_a_referral(org: Org) -> None:
+    referral = _refer(org)
+    supervisor, other = org.browser(), org.browser()
+    supervisor.ready(org.supervisor.employee_number)
+    other.ready(org.other_hr.employee_number)
+
+    assert 'href="/console/referrals"' not in supervisor.client.get("/console/queue").text
+    assert supervisor.client.get("/console/referrals").status_code == 404
+    assert supervisor.client.get(f"/console/referrals/{referral.id}").status_code == 404
+    assert org.alice.last_name not in other.client.get("/console/referrals").text
+    assert other.client.get(f"/console/referrals/{referral.id}").status_code == 404
+    forged = other.client.post(
+        f"/console/referrals/{referral.id}/handled",
+        data={"csrf": other.csrf("/console/change-password")},
+    )
+    assert forged.status_code == 404
+    assert referral_for(org.db, org.admin.id, referral.id) is not None
+    assert referral_for(org.db, org.alice.id, referral.id) is None
+
+
+def test_hr_never_sees_their_own_referral(org: Org) -> None:
+    own = _refer(org, org.hr)
+
+    assert referral_for(org.db, org.hr.id, own.id) is None
+    assert referral_for(org.db, org.admin.id, own.id) is not None
+
+
+def test_the_words_are_deleted_90_days_after_handling(org: Org) -> None:
+    referral = _refer(org)
+    handled = datetime(2026, 11, 9, 14, 0, tzinfo=UTC)
+    mark_handled(org.db, org.hr.id, referral.id, now=handled)
+
+    assert delete_old_texts(org.db, now=handled + timedelta(days=89)) == 0
+    assert delete_old_texts(org.db, now=handled + timedelta(days=91)) == 1
+
+    org.db.refresh(referral)
+    assert referral.text is None
+    assert referral.text_deleted_at == handled + timedelta(days=91)
+    hr = org.browser()
+    hr.ready(org.hr.employee_number)
+    assert "deleted 90 days after" in hr.client.get(f"/console/referrals/{referral.id}").text

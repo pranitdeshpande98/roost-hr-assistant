@@ -65,3 +65,13 @@ date_range:
   en: "{first} to {last}"
   es: "del {first} al {last}"
   vi: "từ {first} đến {last}"
+
+# No details at all: the employee's words are read only in the console (FR-32).
+subject_hr_referral:
+  en: "An employee asked HR to contact them"
+  es: "Un empleado pidió que Recursos Humanos lo contacte"
+  vi: "Một nhân viên đề nghị Nhân sự liên hệ"
+body_hr_referral:
+  en: "An employee at your location asked HR to contact them. Sign in to the Roost console and open Referrals."
+  es: "Un empleado de su centro pidió que Recursos Humanos lo contacte. Inicie sesión en la consola de Roost y abra Derivaciones."
+  vi: "Một nhân viên tại địa điểm của bạn đề nghị Nhân sự liên hệ. Hãy đăng nhập bảng điều khiển Roost và mở mục Chuyển tiếp."

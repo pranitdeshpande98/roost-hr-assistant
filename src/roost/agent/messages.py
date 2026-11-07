@@ -19,6 +19,8 @@ MessageKey = Literal[
     "confirm_cancel",
     "full_day",
     "half_day",
+    "day_hours",
+    "total_hours",
     "route_danger",
     "route_self_harm",
     "route_sensitive",
@@ -26,6 +28,11 @@ MessageKey = Literal[
     "route_injection",
     "hr_contact",
     "hr_contact_unknown",
+    "referral_offer",
+    "referral_sent",
+    "referral_not_sent",
+    "referral_unclear",
+    "referral_failed",
 ]
 
 # src/roost/agent/messages.py -> repository root -> config/messages.yaml
@@ -65,6 +72,8 @@ class MessageCatalog(BaseModel):
     confirm_cancel: Translations
     full_day: Translations
     half_day: Translations
+    day_hours: Translations
+    total_hours: Translations
     route_danger: Translations
     route_self_harm: Translations
     route_sensitive: Translations
@@ -72,6 +81,11 @@ class MessageCatalog(BaseModel):
     route_injection: Translations
     hr_contact: Translations
     hr_contact_unknown: Translations
+    referral_offer: Translations
+    referral_sent: Translations
+    referral_not_sent: Translations
+    referral_unclear: Translations
+    referral_failed: Translations
 
     def get(self, key: MessageKey, language: Language) -> str:
         """The message in one language (may be empty, meaning 'add nothing')."""

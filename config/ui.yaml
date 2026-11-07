@@ -333,3 +333,128 @@ password_same_as_current:
   en: "Choose a password different from the current one."
   es: "Elija una contraseña distinta de la actual."
   vi: "Hãy chọn mật khẩu khác với mật khẩu hiện tại."
+col_hours:
+  en: "Hours"
+  es: "Horas"
+  vi: "Số giờ"
+hours_left:
+  en: "Hours left after this request (HR only)"
+  es: "Horas que quedan tras esta solicitud (solo Recursos Humanos)"
+  vi: "Số giờ còn lại sau đơn này (chỉ Nhân sự)"
+# ── Referrals: what employees asked Roost to send HR (FR-32) ──────────────────────
+nav_referrals:
+  en: "Referrals"
+  es: "Derivaciones"
+  vi: "Chuyển tiếp"
+referrals_title:
+  en: "Employees who asked HR to contact them"
+  es: "Empleados que pidieron que Recursos Humanos los contacte"
+  vi: "Nhân viên đề nghị Nhân sự liên hệ"
+referrals_help:
+  en: "Each message is in the employee's own words, sent only because they said yes. Contact them, do not forward the message, and mark it handled when you have followed up. The words are deleted 90 days later."
+  es: "Cada mensaje está en las propias palabras del empleado y se envió solo porque dijo que sí. Comuníquese con la persona, no reenvíe el mensaje y márquelo como atendido cuando haya hecho el seguimiento. El texto se borra 90 días después."
+  vi: "Mỗi tin nhắn là lời của chính nhân viên, chỉ được gửi vì họ đồng ý. Hãy liên hệ với họ, không chuyển tiếp tin nhắn, và đánh dấu đã xử lý khi đã theo dõi xong. Nội dung sẽ bị xóa sau 90 ngày."
+referrals_empty:
+  en: "No one is waiting to be contacted."
+  es: "No hay nadie esperando que lo contacten."
+  vi: "Không có ai đang chờ được liên hệ."
+referrals_handled_title:
+  en: "Recently handled"
+  es: "Atendidas recientemente"
+  vi: "Đã xử lý gần đây"
+referral_title:
+  en: "Message from {employee}"
+  es: "Mensaje de {employee}"
+  vi: "Tin nhắn của {employee}"
+referral_words:
+  en: "In their own words"
+  es: "En sus propias palabras"
+  vi: "Bằng lời của họ"
+referral_text_deleted:
+  en: "The message was deleted 90 days after it was handled. This record remains."
+  es: "El mensaje se borró 90 días después de ser atendido. Este registro se conserva."
+  vi: "Tin nhắn đã bị xóa 90 ngày sau khi được xử lý. Bản ghi này vẫn được giữ."
+mark_handled:
+  en: "Mark as handled"
+  es: "Marcar como atendida"
+  vi: "Đánh dấu đã xử lý"
+referral_marked:
+  en: "Marked as handled."
+  es: "Marcada como atendida."
+  vi: "Đã đánh dấu đã xử lý."
+back_to_referrals:
+  en: "Back to referrals"
+  es: "Volver a las derivaciones"
+  vi: "Quay lại danh sách chuyển tiếp"
+not_found:
+  en: "There is nothing here for you. It may not exist, or it is not yours to see."
+  es: "Aquí no hay nada para usted. Puede que no exista o que no le corresponda verlo."
+  vi: "Không có gì ở đây cho bạn. Có thể mục này không tồn tại hoặc bạn không được xem."
+col_sent:
+  en: "Sent"
+  es: "Enviado"
+  vi: "Ngày gửi"
+col_topic:
+  en: "Topic"
+  es: "Tema"
+  vi: "Chủ đề"
+col_language:
+  en: "Language"
+  es: "Idioma"
+  vi: "Ngôn ngữ"
+col_handled:
+  en: "Handled"
+  es: "Atendida"
+  vi: "Đã xử lý"
+language_en:
+  en: "English"
+  es: "inglés"
+  vi: "tiếng Anh"
+language_es:
+  en: "Spanish"
+  es: "español"
+  vi: "tiếng Tây Ban Nha"
+language_vi:
+  en: "Vietnamese"
+  es: "vietnamita"
+  vi: "tiếng Việt"
+topic_harassment:
+  en: "Harassment"
+  es: "Acoso"
+  vi: "Quấy rối"
+topic_discrimination:
+  en: "Discrimination"
+  es: "Discriminación"
+  vi: "Phân biệt đối xử"
+topic_retaliation:
+  en: "Retaliation"
+  es: "Represalias"
+  vi: "Trả đũa"
+topic_violence:
+  en: "Threats or violence"
+  es: "Amenazas o violencia"
+  vi: "Đe dọa hoặc bạo lực"
+topic_injury:
+  en: "Injury"
+  es: "Lesión"
+  vi: "Chấn thương"
+topic_safety_hazard:
+  en: "Safety hazard"
+  es: "Riesgo de seguridad"
+  vi: "Mối nguy an toàn"
+topic_medical:
+  en: "Medical or accommodation"
+  es: "Médico o adaptaciones"
+  vi: "Y tế hoặc điều chỉnh công việc"
+topic_immigration:
+  en: "Immigration"
+  es: "Inmigración"
+  vi: "Di trú"
+topic_wage_dispute:
+  en: "Pay dispute"
+  es: "Disputa de pago"
+  vi: "Tranh chấp lương"
+topic_personal_crisis:
+  en: "Personal crisis"
+  es: "Crisis personal"
+  vi: "Khủng hoảng cá nhân"

@@ -200,6 +200,20 @@ def _day_rows(draft: VacationRequestDraft, shift_hours: Decimal) -> list[Vacatio
     return rows
 
 
+def draft_hours(
+    session: Session, employee_id: uuid.UUID, draft: VacationRequestDraft
+) -> list[Decimal]:
+    """The hours each requested day would use, as saving it would record them."""
+    shift_hours = load_employee_facts(session, employee_id).shift_hours
+    return [row.hours for row in _day_rows(draft, shift_hours)]
+
+
+def format_hours(hours: Decimal) -> str:
+    """8.00 -> "8", 4.50 -> "4.5": hours as people write them."""
+    text = f"{hours.normalize():f}"
+    return "0" if text in ("-0", "") else text
+
+
 def create_request(
     session: Session, employee_id: uuid.UUID, draft: VacationRequestDraft, *, today: date
 ) -> VacationRequest:

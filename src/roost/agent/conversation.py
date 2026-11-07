@@ -62,6 +62,7 @@ def ask(
             "tool_rounds": 0,
             "reply": None,
             "guardrail": None,
+            "offer_referral": False,
         }
         if employee_id is not None:
             turn["employee_id"] = employee_id

@@ -9,6 +9,7 @@
       <th scope="col">{{ t('col_reference') }}</th>
       <th scope="col">{{ t('col_employee') }}</th>
       <th scope="col">{{ t('col_dates') }}</th>
+      <th scope="col">{{ t('col_hours') }}</th>
       <th scope="col">{{ t('col_step') }}</th>
       <th scope="col">{{ t('col_decision') }}</th>
       <th scope="col">{{ t('col_decided') }}</th>
@@ -20,6 +21,7 @@
       <td>{{ row.reference }}</td>
       <td>{{ row.employee }}</td>
       <td>{% with days = row.days %}{% include "console/_days.html" %}{% endwith %}</td>
+      <td>{{ row.hours }}</td>
       <td>{{ t('step_' ~ row.step) }}</td>
       <td>{{ t('decision_' ~ row.decision) }}</td>
       <td>{{ row.decided }}</td>

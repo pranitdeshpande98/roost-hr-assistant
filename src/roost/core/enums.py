@@ -108,6 +108,7 @@ class AuditAction(StrEnum):
     REQUEST_APPROVED = "request_approved"
     REQUEST_DENIED = "request_denied"
     HR_SUMMARY_SENT = "hr_summary_sent"
+    HR_REFERRAL_HANDLED = "hr_referral_handled"
     PIN_SET = "pin_set"
     PIN_CHANGED = "pin_changed"
     PIN_LOCKED = "pin_locked"
@@ -134,6 +135,7 @@ class NotificationKind(StrEnum):
     REQUEST_CANCELLED = "request_cancelled"  # to the approvers (FR-14)
     DECISION_OVERDUE = "decision_overdue"  # to the employee: check with HR (FR-23)
     CEO_REQUEST = "ceo_request"  # to Corporate HR: no approval needed (FR-20)
+    HR_REFERRAL = "hr_referral"  # to HR: an employee asked to be contacted (FR-32)
 
 
 class SessionApp(StrEnum):
