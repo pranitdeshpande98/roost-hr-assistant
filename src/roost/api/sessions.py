@@ -1,8 +1,10 @@
-"""Kiosk sessions on the server (ADR-0008, ADR-0013; FR-40, NFR-06).
+"""Web sessions on the server, for the kiosk and the approver console (ADR-0008,
+ADR-0013; FR-40, NFR-06).
 
-The cookie holds only a random token. The 2-minute idle limit is enforced here, on
-every request: a page the browser kept open, or a request replayed later, finds the
-session gone. Sign-out deletes the row.
+The cookie holds only a random token. The idle limit (2 minutes at the kiosk, 15 in the
+console) is enforced here, on every request: a page the browser kept open, or a request
+replayed later, finds the session gone. Sign-out deletes the row. A session belongs to
+one app: a kiosk cookie does not open the console.
 """
 
 import hashlib
@@ -10,14 +12,17 @@ import secrets
 import uuid
 from datetime import datetime, timedelta
 
-from sqlalchemy import delete
+from sqlalchemy import and_, delete, or_
 from sqlalchemy.orm import Session
 
-from roost.core.enums import Language
-from roost.db.models import KioskSession
+from roost.core.enums import Language, SessionApp
+from roost.db.models import WebSession
 
-IDLE_LIMIT = timedelta(minutes=2)  # FR-40
+IDLE_LIMIT = timedelta(minutes=2)  # FR-40, the shared kiosk
+CONSOLE_IDLE_LIMIT = timedelta(minutes=15)  # approvers, on their own computers
+IDLE_LIMITS = {SessionApp.KIOSK: IDLE_LIMIT, SessionApp.CONSOLE: CONSOLE_IDLE_LIMIT}
 COOKIE_NAME = "roost_session"
+CONSOLE_COOKIE_NAME = "roost_console"
 
 
 def _hash(token: str) -> str:
@@ -32,17 +37,21 @@ def start_session(
     language: Language,
     must_change_pin: bool,
     now: datetime,
-) -> tuple[str, KioskSession]:
+    app: SessionApp = SessionApp.KIOSK,
+) -> tuple[str, WebSession]:
     """A new session and its token (for the cookie; it is not stored). Any other session
-    the employee left open on this kiosk ends: one person, one session per kiosk."""
+    the employee left open in this app on this kiosk ends: one person, one session."""
     db.execute(
-        delete(KioskSession).where(
-            KioskSession.employee_id == employee_id, KioskSession.kiosk_id == kiosk_id
+        delete(WebSession).where(
+            WebSession.employee_id == employee_id,
+            WebSession.kiosk_id == kiosk_id,
+            WebSession.app == app,
         )
     )
     token = secrets.token_urlsafe(32)
-    session = KioskSession(
+    session = WebSession(
         token_hash=_hash(token),
+        app=app,
         employee_id=employee_id,
         kiosk_id=kiosk_id,
         language=language,
@@ -56,15 +65,17 @@ def start_session(
     return token, session
 
 
-def load_session(db: Session, token: str | None, *, now: datetime) -> KioskSession | None:
-    """The live session for `token`, touched; None if there is none or it went idle
-    (an idle session is deleted on the spot)."""
+def load_session(
+    db: Session, token: str | None, *, now: datetime, app: SessionApp = SessionApp.KIOSK
+) -> WebSession | None:
+    """The live session of `app` for `token`, touched; None if there is none, it belongs
+    to the other app, or it went idle (an idle session is deleted on the spot)."""
     if not token:
         return None
-    session = db.get(KioskSession, _hash(token))
-    if session is None:
+    session = db.get(WebSession, _hash(token))
+    if session is None or session.app is not app:
         return None
-    if now - session.last_seen_at > IDLE_LIMIT:
+    if now - session.last_seen_at > IDLE_LIMITS[app]:
         db.delete(session)
         db.flush()
         return None
@@ -75,19 +86,26 @@ def load_session(db: Session, token: str | None, *, now: datetime) -> KioskSessi
 
 def end_session(db: Session, token: str | None) -> None:
     if token:
-        db.execute(delete(KioskSession).where(KioskSession.token_hash == _hash(token)))
+        db.execute(delete(WebSession).where(WebSession.token_hash == _hash(token)))
 
 
 def purge_idle_sessions(db: Session, *, now: datetime) -> int:
     """Delete every idle session; run periodically so abandoned rows do not pile up."""
     deleted = db.execute(
-        delete(KioskSession)
-        .where(KioskSession.last_seen_at < now - IDLE_LIMIT)
-        .returning(KioskSession.token_hash)
+        delete(WebSession)
+        .where(
+            or_(
+                *(
+                    and_(WebSession.app == app, WebSession.last_seen_at < now - limit)
+                    for app, limit in IDLE_LIMITS.items()
+                )
+            )
+        )
+        .returning(WebSession.token_hash)
     )
     return len(deleted.all())
 
 
-def csrf_ok(session: KioskSession, submitted: str | None) -> bool:
+def csrf_ok(session: WebSession, submitted: str | None) -> bool:
     """Every form carries the session's CSRF token; a forged cross-site form does not."""
     return submitted is not None and secrets.compare_digest(session.csrf_token, submitted)

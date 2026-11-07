@@ -22,7 +22,7 @@ from roost.api.sessions import COOKIE_NAME
 from roost.auth.kiosk import set_pin
 from roost.auth.rate_limit import AttemptLimiter
 from roost.core.enums import LocationKind, NotificationChannel, NotificationKind, Role
-from roost.db.models import Employee, EmployeeRole, KioskSession, Location, Notification
+from roost.db.models import Employee, EmployeeRole, Location, Notification, WebSession
 from roost.llm.fake import ScriptedChatModel, text_reply, tool_reply
 from roost.llm.types import ToolCall, ToolSpec
 from roost.seed.employees import generate_seed_data
@@ -205,7 +205,7 @@ def test_the_cookie_is_a_secret_the_server_keeps_only_as_a_hash(kiosk: Kiosk) ->
     assert "max-age" not in header  # a session cookie: gone when the browser closes
     assert "expires" not in header
     token = response.cookies[COOKIE_NAME]
-    stored = kiosk.db.scalars(select(KioskSession.token_hash)).one()
+    stored = kiosk.db.scalars(select(WebSession.token_hash)).one()
     assert stored != token
     assert len(stored) == 64
 
@@ -252,7 +252,7 @@ def test_two_idle_minutes_end_the_session_on_the_server(kiosk: Kiosk) -> None:
     expired = kiosk.client.get("/chat", follow_redirects=False)
 
     assert expired.headers["location"].startswith("/sign-in")
-    assert kiosk.db.scalar(select(func.count()).select_from(KioskSession)) == 0
+    assert kiosk.db.scalar(select(func.count()).select_from(WebSession)) == 0
 
 
 def test_an_htmx_request_after_expiry_replaces_the_whole_screen(kiosk: Kiosk) -> None:
@@ -350,7 +350,7 @@ def test_abandoned_sessions_are_swept_at_the_next_sign_in(kiosk: Kiosk) -> None:
         headers={"X-Kiosk-Id": "plant-2-kiosk-b"},
     )
 
-    sessions = kiosk.db.scalars(select(KioskSession)).all()
+    sessions = kiosk.db.scalars(select(WebSession)).all()
     assert len(sessions) == 1
     assert sessions[0].last_seen_at == kiosk.clock.now  # only the new one is left
 

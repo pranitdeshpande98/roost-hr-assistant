@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block header %}{% include "console/_nav.html" %}{% endblock %}
+{% block main %}
+<p class="error" role="alert">{{ t(message) }}</p>
+<p><a href="/console/queue">{{ t('back_to_queue') }}</a></p>
+{% endblock %}

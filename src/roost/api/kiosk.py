@@ -7,65 +7,34 @@ which enforces the 2-minute idle limit.
 
 import logging
 import math
-from collections.abc import Iterator
-from pathlib import Path
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Form, Request
+from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from roost.agent.conversation import ask, transcript, waiting_for_confirmation
 from roost.api import sessions as web_sessions
+from roost.api.common import TEMPLATES, Db, client_address
+from roost.api.common import language_of as _language
+from roost.api.common import services_of as _services
 from roost.api.services import Services
-from roost.api.text import kiosk_text
 from roost.auth.kiosk import NotAllowedError, PinRejectedError, SignInOutcome, change_pin, sign_in
 from roost.core.enums import Channel, Language
-from roost.db.models import KioskSession
+from roost.db.models import WebSession
 from roost.notifications.outbox import take_kiosk_notices
 from roost.notifications.render import render
 
 logger = logging.getLogger(__name__)
 
-TEMPLATES = Jinja2Templates(directory=Path(__file__).parent / "templates")
-TEMPLATES.env.filters["kiosk_text"] = kiosk_text
-
 MAX_MESSAGE_LENGTH = 1000
 router = APIRouter()
-
-
-def _services(request: Request) -> Services:
-    services: Services = request.app.state.services
-    return services
-
-
-def get_db(request: Request) -> Iterator[Session]:
-    """One transaction per request: committed when the page is ready, rolled back on error."""
-    with _services(request).sessions() as db:
-        try:
-            yield db
-            db.commit()
-        except Exception:
-            db.rollback()
-            raise
-
-
-Db = Annotated[Session, Depends(get_db)]
 
 
 def _kiosk_id(request: Request) -> str:
     """Each kiosk is configured with its own id header; without one, its address counts."""
     configured = request.headers.get("x-kiosk-id", "").strip()
-    client = request.client.host if request.client else "unknown"
-    return (configured or client)[:64]
-
-
-def _language(value: str | None) -> Language:
-    try:
-        return Language(value or "en")
-    except ValueError:
-        return Language.EN
+    return (configured or client_address(request))[:64]
 
 
 def _page(
@@ -86,7 +55,7 @@ def _page(
     )
 
 
-def _current(request: Request, db: Session) -> KioskSession | None:
+def _current(request: Request, db: Session) -> WebSession | None:
     token = request.cookies.get(web_sessions.COOKIE_NAME)
     return web_sessions.load_session(db, token, now=_services(request).clock())
 
@@ -222,7 +191,7 @@ def change_pin_submit(
 # --- chat ---------------------------------------------------------------------------
 
 
-def _conversation_context(services: Services, session: KioskSession) -> dict[str, Any]:
+def _conversation_context(services: Services, session: WebSession) -> dict[str, Any]:
     thread = str(session.thread_id)
     return {
         "lines": transcript(

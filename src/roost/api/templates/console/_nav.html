@@ -1,0 +1,7 @@
+<nav class="console-nav" aria-label="{{ t('console_title') }}">
+  <a href="/console/queue"{% if nav == 'queue' %} aria-current="page"{% endif %}>{{ t('nav_queue') }}</a>
+  <a href="/console/history"{% if nav == 'history' %} aria-current="page"{% endif %}>{{ t('nav_history') }}</a>
+  <form method="post" action="/console/sign-out" class="sign-out">
+    <button type="submit" class="secondary">{{ t('sign_out') }}</button>
+  </form>
+</nav>

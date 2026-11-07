@@ -1,4 +1,4 @@
-"""The Roost web app: kiosk pages now, the approver console next (ADR-0008, ADR-0013).
+"""The Roost web app: the kiosk and the approver console (ADR-0008, ADR-0013).
 
 Run it with:  uv run uvicorn roost.api.app:app --port 8000
 """
@@ -13,6 +13,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
+from roost.api.console import router as console_router
 from roost.api.kiosk import router as kiosk_router
 from roost.api.services import Services, production_services
 
@@ -75,6 +76,7 @@ def create_app(services: Services | None = None) -> FastAPI:
 
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
     app.include_router(kiosk_router)
+    app.include_router(console_router)
     return app
 
 

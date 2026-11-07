@@ -143,3 +143,193 @@ notices:
   en: "Updates for you"
   es: "Novedades para usted"
   vi: "Thông báo cho bạn"
+
+# ── Approver console (supervisors and HR) ─────────────────────────────────────────
+console_title:
+  en: "Roost approvals"
+  es: "Aprobaciones de Roost"
+  vi: "Phê duyệt Roost"
+console_help:
+  en: "For supervisors and HR. Sign in with your employee number and console password."
+  es: "Para supervisores y Recursos Humanos. Inicie sesión con su número de empleado y su contraseña de la consola."
+  vi: "Dành cho người giám sát và Nhân sự. Đăng nhập bằng mã số nhân viên và mật khẩu bảng điều khiển."
+password:
+  en: "Password"
+  es: "Contraseña"
+  vi: "Mật khẩu"
+console_invalid:
+  en: "That employee number and password do not match. Check them and try again."
+  es: "El número de empleado y la contraseña no coinciden. Revíselos e intente de nuevo."
+  vi: "Mã số nhân viên và mật khẩu không khớp. Vui lòng kiểm tra và thử lại."
+console_privacy_notice:
+  en: "For your privacy, you are signed out after 15 minutes without activity."
+  es: "Por su privacidad, la sesión se cierra tras 15 minutos sin actividad."
+  vi: "Để bảo vệ quyền riêng tư, bạn sẽ bị đăng xuất sau 15 phút không hoạt động."
+nav_queue:
+  en: "Waiting for you"
+  es: "Pendientes"
+  vi: "Đang chờ bạn"
+nav_history:
+  en: "Your decisions"
+  es: "Sus decisiones"
+  vi: "Quyết định của bạn"
+queue_title:
+  en: "Requests waiting for your decision"
+  es: "Solicitudes que esperan su decisión"
+  vi: "Các đơn đang chờ bạn quyết định"
+queue_empty:
+  en: "Nothing is waiting for you."
+  es: "No tiene nada pendiente."
+  vi: "Không có đơn nào đang chờ bạn."
+history_title:
+  en: "Your recent decisions"
+  es: "Sus decisiones recientes"
+  vi: "Các quyết định gần đây của bạn"
+history_empty:
+  en: "You have not decided any requests yet."
+  es: "Todavía no ha decidido ninguna solicitud."
+  vi: "Bạn chưa quyết định đơn nào."
+col_reference:
+  en: "Request"
+  es: "Solicitud"
+  vi: "Đơn"
+col_employee:
+  en: "Employee"
+  es: "Empleado"
+  vi: "Nhân viên"
+col_dates:
+  en: "Dates"
+  es: "Fechas"
+  vi: "Ngày"
+col_step:
+  en: "Your step"
+  es: "Su paso"
+  vi: "Bước của bạn"
+col_waiting:
+  en: "Waiting since"
+  es: "Esperando desde"
+  vi: "Chờ từ"
+col_decision:
+  en: "Decision"
+  es: "Decisión"
+  vi: "Quyết định"
+col_decided:
+  en: "Decided"
+  es: "Decidida"
+  vi: "Ngày quyết định"
+step_supervisor:
+  en: "Supervisor"
+  es: "Supervisor"
+  vi: "Người giám sát"
+step_hr:
+  en: "HR"
+  es: "Recursos Humanos"
+  vi: "Nhân sự"
+portion_full:
+  en: "full day"
+  es: "día completo"
+  vi: "cả ngày"
+portion_half:
+  en: "half day"
+  es: "medio día"
+  vi: "nửa ngày"
+open_request:
+  en: "Open"
+  es: "Abrir"
+  vi: "Mở"
+request_title:
+  en: "Vacation request {reference}"
+  es: "Solicitud de vacaciones {reference}"
+  vi: "Đơn nghỉ phép {reference}"
+approve:
+  en: "Approve"
+  es: "Aprobar"
+  vi: "Duyệt"
+deny:
+  en: "Deny"
+  es: "Rechazar"
+  vi: "Từ chối"
+comment_label:
+  en: "Comment (optional; the employee sees it)"
+  es: "Comentario (opcional; el empleado lo verá)"
+  vi: "Ghi chú (không bắt buộc; nhân viên sẽ thấy)"
+decision_approved:
+  en: "Approved"
+  es: "Aprobada"
+  vi: "Đã duyệt"
+decision_denied:
+  en: "Denied"
+  es: "Rechazada"
+  vi: "Đã từ chối"
+done_approved:
+  en: "Done: the request is approved at your step."
+  es: "Listo: la solicitud quedó aprobada en su paso."
+  vi: "Xong: đơn đã được duyệt ở bước của bạn."
+done_denied:
+  en: "Done: the request is denied, and the employee will be told."
+  es: "Listo: la solicitud fue rechazada y se le avisará al empleado."
+  vi: "Xong: đơn đã bị từ chối và nhân viên sẽ được thông báo."
+not_waiting:
+  en: "That request is not waiting for your decision. It may have been decided, changed or cancelled."
+  es: "Esa solicitud no espera su decisión. Puede que ya se haya decidido, cambiado o cancelado."
+  vi: "Đơn đó không chờ bạn quyết định. Có thể đơn đã được quyết định, thay đổi hoặc hủy."
+back_to_queue:
+  en: "Back to the list"
+  es: "Volver a la lista"
+  vi: "Quay lại danh sách"
+change_password_title:
+  en: "Choose your own password"
+  es: "Elija su propia contraseña"
+  vi: "Chọn mật khẩu của riêng bạn"
+change_password_help:
+  en: "At least 12 characters. A few unrelated words make a good one. Do not use your name or employee number."
+  es: "Al menos 12 caracteres. Unas cuantas palabras sin relación entre sí funcionan bien. No use su nombre ni su número de empleado."
+  vi: "Ít nhất 12 ký tự. Vài từ không liên quan đến nhau là một lựa chọn tốt. Không dùng tên hoặc mã số nhân viên của bạn."
+current_password:
+  en: "Current password"
+  es: "Contraseña actual"
+  vi: "Mật khẩu hiện tại"
+new_password:
+  en: "New password"
+  es: "Contraseña nueva"
+  vi: "Mật khẩu mới"
+repeat_password:
+  en: "New password again"
+  es: "Repita la contraseña nueva"
+  vi: "Nhập lại mật khẩu mới"
+save_password:
+  en: "Save password"
+  es: "Guardar contraseña"
+  vi: "Lưu mật khẩu"
+passwords_differ:
+  en: "The two new passwords are different."
+  es: "Las dos contraseñas nuevas no son iguales."
+  vi: "Hai mật khẩu mới không giống nhau."
+wrong_current_password:
+  en: "The current password is not right."
+  es: "La contraseña actual no es correcta."
+  vi: "Mật khẩu hiện tại không đúng."
+password_too_short:
+  en: "Use at least 12 characters."
+  es: "Use al menos 12 caracteres."
+  vi: "Hãy dùng ít nhất 12 ký tự."
+password_too_long:
+  en: "Use at most 128 characters."
+  es: "Use como máximo 128 caracteres."
+  vi: "Hãy dùng tối đa 128 ký tự."
+password_too_simple:
+  en: "Use more different characters."
+  es: "Use más caracteres distintos."
+  vi: "Hãy dùng nhiều ký tự khác nhau hơn."
+password_common:
+  en: "That password is too well known. Choose another."
+  es: "Esa contraseña es demasiado conocida. Elija otra."
+  vi: "Mật khẩu đó quá phổ biến. Hãy chọn mật khẩu khác."
+password_personal:
+  en: "Do not use your name or employee number."
+  es: "No use su nombre ni su número de empleado."
+  vi: "Không dùng tên hoặc mã số nhân viên của bạn."
+password_same_as_current:
+  en: "Choose a password different from the current one."
+  es: "Elija una contraseña distinta de la actual."
+  vi: "Hãy chọn mật khẩu khác với mật khẩu hiện tại."

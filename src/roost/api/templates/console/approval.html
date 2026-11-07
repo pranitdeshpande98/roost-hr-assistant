@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block header %}{% include "console/_nav.html" %}{% endblock %}
+{% block main %}
+<h2>{{ t('request_title', reference=item.reference) }}</h2>
+<dl class="facts">
+  <dt>{{ t('col_employee') }}</dt><dd>{{ item.employee }} ({{ item.employee_number }})</dd>
+  <dt>{{ t('col_dates') }}</dt><dd>{% with days = item.days %}{% include "console/_days.html" %}{% endwith %}</dd>
+  <dt>{{ t('col_step') }}</dt><dd>{{ t('step_' ~ item.step) }}</dd>
+  <dt>{{ t('col_waiting') }}</dt><dd>{{ item.waiting_since }}</dd>
+</dl>
+<form class="card" method="post" action="/console/approvals/{{ item.id }}">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <label for="comment">{{ t('comment_label') }}</label>
+  <textarea id="comment" name="comment" maxlength="500" rows="3"></textarea>
+  <div class="choices">
+    <button type="submit" name="decision" value="approve">{{ t('approve') }}</button>
+    <button type="submit" name="decision" value="deny" class="secondary">{{ t('deny') }}</button>
+  </div>
+</form>
+<p><a href="/console/queue">{{ t('back_to_queue') }}</a></p>
+{% endblock %}

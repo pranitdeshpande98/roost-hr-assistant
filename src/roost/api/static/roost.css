@@ -57,3 +57,16 @@ button[disabled] { opacity: 0.6; }
 .notices h2 { font-size: 1rem; margin: 0 0 0.25rem; }
 .notices ul { margin: 0; padding-left: 1.2rem; }
 .notices .comment { color: var(--muted); }
+/* Approver console */
+.console-nav { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.console-nav a[aria-current="page"] { font-weight: bold; text-decoration: none; }
+.requests { border-collapse: collapse; width: 100%; font-size: 0.85rem; }
+.requests th, .requests td { border-bottom: 1px solid #ddd; padding: 0.4rem 0.5rem; text-align: left; vertical-align: top; }
+.days { list-style: none; margin: 0; padding: 0; }
+.muted { color: var(--muted); }
+.done { border-left: 4px solid var(--accent); padding: 0.4rem 0.8rem; background: var(--employee); }
+.facts { display: grid; grid-template-columns: max-content 1fr; gap: 0.25rem 1rem; }
+.facts dt { font-weight: bold; }
+.facts dd { margin: 0; }
+.choices { display: flex; gap: 0.5rem; }
+textarea { font: inherit; padding: 0.4rem; }

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block header %}{% include "console/_nav.html" %}{% endblock %}
+{% block main %}
+<h2>{{ t('queue_title') }}</h2>
+{% if done %}<p class="done" role="status">{{ t(done) }}</p>{% endif %}
+{% if rows %}
+<table class="requests">
+  <thead>
+    <tr>
+      <th scope="col">{{ t('col_reference') }}</th>
+      <th scope="col">{{ t('col_employee') }}</th>
+      <th scope="col">{{ t('col_dates') }}</th>
+      <th scope="col">{{ t('col_step') }}</th>
+      <th scope="col">{{ t('col_waiting') }}</th>
+      <th scope="col"><span class="visually-hidden">{{ t('open_request') }}</span></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in rows %}
+    <tr>
+      <td>{{ row.reference }}</td>
+      <td>{{ row.employee }} <span class="muted">({{ row.employee_number }})</span></td>
+      <td>{% with days = row.days %}{% include "console/_days.html" %}{% endwith %}</td>
+      <td>{{ t('step_' ~ row.step) }}</td>
+      <td>{{ row.waiting_since }}</td>
+      <td><a href="/console/approvals/{{ row.id }}">{{ t('open_request') }}</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>{{ t('queue_empty') }}</p>
+{% endif %}
+{% endblock %}

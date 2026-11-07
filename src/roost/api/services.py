@@ -15,6 +15,7 @@ from roost.agent.memory import open_pooled_checkpointer
 from roost.agent.messages import MessageCatalog, default_messages
 from roost.agent.state import AgentState
 from roost.api.ui_text import UIText, default_ui_text
+from roost.auth.console import ConsoleAuthenticator, LocalPasswords
 from roost.auth.rate_limit import AttemptLimiter
 from roost.core.config import get_settings
 
@@ -38,6 +39,8 @@ class Services:
     clock: Callable[[], datetime] = utc_now
     ui: UIText = field(default_factory=default_ui_text)
     messages: MessageCatalog = field(default_factory=default_messages)
+    # Local passwords until Phase 12 brings Microsoft Entra ID (ADR-0013).
+    console_auth: ConsoleAuthenticator = field(default_factory=LocalPasswords)
 
 
 @contextmanager

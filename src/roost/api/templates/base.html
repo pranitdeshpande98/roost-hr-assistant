@@ -5,22 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {# Shared kiosk (NFR-06): htmx must not keep page copies in browser storage. #}
   <meta name="htmx-config" content='{"historyCacheSize": 0, "refreshOnHistoryMiss": true, "includeIndicatorStyles": false}'>
-  <title>{{ t('title') }}</title>
+  <title>{{ t(title_key | default('title')) }}</title>
   <link rel="stylesheet" href="/static/roost.css">
   <script src="/static/htmx.min.js" defer></script>
   <script src="/static/kiosk.js" defer></script>
 </head>
-<body data-idle-seconds="120"{% if signed_in %} data-signed-in{% endif %}>
+<body data-idle-seconds="{{ idle_seconds | default(120) }}"{% if signed_in %} data-signed-in{% endif %}>
   <header class="top">
-    <h1>{{ t('title') }}</h1>
+    <h1>{{ t(title_key | default('title')) }}</h1>
     {% block header %}{% endblock %}
   </header>
   <main id="main">
     {% block main %}{% endblock %}
   </main>
-  <footer class="bottom"><p>{{ t('privacy_notice') }}</p></footer>
+  <footer class="bottom"><p>{{ t(privacy_key | default('privacy_notice')) }}</p></footer>
   {% if signed_in %}
-  <form id="idle-sign-out" method="post" action="/sign-out" hidden></form>
+  <form id="idle-sign-out" method="post" action="{{ sign_out_action | default('/sign-out') }}" hidden></form>
   {% endif %}
 </body>
 </html>

@@ -111,6 +111,9 @@ class AuditAction(StrEnum):
     PIN_SET = "pin_set"
     PIN_CHANGED = "pin_changed"
     PIN_LOCKED = "pin_locked"
+    PASSWORD_SET = "password_set"  # noqa: S105 (an audit action name, not a secret)
+    PASSWORD_CHANGED = "password_changed"  # noqa: S105
+    PASSWORD_LOCKED = "password_locked"  # noqa: S105
     LEGAL_HOLD_PLACED = "legal_hold_placed"
     LEGAL_HOLD_RELEASED = "legal_hold_released"
 
@@ -131,3 +134,11 @@ class NotificationKind(StrEnum):
     REQUEST_CANCELLED = "request_cancelled"  # to the approvers (FR-14)
     DECISION_OVERDUE = "decision_overdue"  # to the employee: check with HR (FR-23)
     CEO_REQUEST = "ceo_request"  # to Corporate HR: no approval needed (FR-20)
+
+
+class SessionApp(StrEnum):
+    """Which web app a session belongs to (ADR-0013). A kiosk session cannot open the
+    approver console, and the other way round."""
+
+    KIOSK = "kiosk"
+    CONSOLE = "console"
