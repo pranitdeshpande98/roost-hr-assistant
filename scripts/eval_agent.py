@@ -31,6 +31,7 @@ from roost.evals.agent_harness import (
     Agent,
     ModelOutageError,
     RecordingChatModel,
+    RecordingScreen,
     Sessions,
     append_case_record,
     load_case_records,
@@ -42,6 +43,7 @@ from roost.evals.agent_harness import (
 )
 from roost.evals.agent_scoring import report_results
 from roost.evals.judge import judgments_path, remove_judgments
+from roost.guardrails.factory import build_input_guardrail
 from roost.llm.client import build_chat_model
 from roost.llm.errors import LLMRequestError
 from roost.llm.providers import get_llm_settings
@@ -50,8 +52,8 @@ from roost.tools.handbook import HANDBOOK_EMBEDDING_MODEL
 
 logger = logging.getLogger("eval_agent")
 
-DATASET = Path("evals/datasets/agent_v1.yaml")
-RESULTS_DIR = Path("evals/results/agent_v1")
+DATASET = Path("evals/datasets/agent_v2.yaml")
+RESULTS_DIR = Path("evals/results/agent_v2")
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -117,12 +119,18 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     embedder = SentenceTransformerEmbedder(EMBEDDING_MODELS[HANDBOOK_EMBEDDING_MODEL])
+    # The guardrail's first model only, no fallback chain: if it fails, the guardrail
+    # falls back to similarity, and the report's "decided by" line shows it.
+    guardrail_ref = get_llm_settings().guardrail_model_refs[0]
+    screen = RecordingScreen(build_input_guardrail(embedder, build_chat_model([guardrail_ref])))
+    logger.info("Input guardrail: keywords, then %s, then similarity", guardrail_ref)
 
     def make_agent(sessions: Sessions) -> Agent:
         return build_agent(
             sessions,
             model=model,
             embedder=embedder,
+            screen=screen,
             # Memory per case; nothing written to Postgres. Same type allowlist as production.
             checkpointer=InMemorySaver(
                 serde=JsonPlusSerializer(allowed_msgpack_modules=SAFE_CHECKPOINT_TYPES)
@@ -139,7 +147,7 @@ def main(argv: list[str] | None = None) -> int:
                 with sessions() as session:
                     employee = pick_employee(session, case.scenario.employee, EVAL_TODAY)
                 try:
-                    record = run_case(case, make_agent, model, sessions, employee)
+                    record = run_case(case, make_agent, model, sessions, employee, screen)
                 except ModelOutageError as error:
                     logger.warning(
                         "Stopped at %s: %s. Progress is saved; re-run the same command later.",

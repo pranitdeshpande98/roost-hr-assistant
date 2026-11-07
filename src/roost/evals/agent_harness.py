@@ -20,6 +20,7 @@ from sqlalchemy import Engine, exists, select
 from sqlalchemy.orm import Session
 
 from roost.agent.conversation import ask
+from roost.agent.graph import Screen
 from roost.agent.state import AgentState
 from roost.core.enums import (
     Channel,
@@ -31,6 +32,7 @@ from roost.core.enums import (
 from roost.db.models import Employee, LeaveBalance, Shift, VacationRequest
 from roost.evals.agent_dataset import AgentCase, EmployeeProfile
 from roost.evals.llm_eval import parse_citations
+from roost.guardrails.classifier import GuardrailDecision
 from roost.llm.errors import LLMUnavailableError
 from roost.llm.types import ChatMessage, ChatModel, ChatResult, ToolSpec
 
@@ -60,6 +62,8 @@ class TurnRecord(BaseModel):
     paused: bool
     tool_calls: tuple[ToolCallRecord, ...] = ()
     retrieved_sections: tuple[str, ...] = ()  # sections cited in any tool result
+    guardrail: str | None = None  # the input guardrail's category; None if it did not run
+    guardrail_source: str | None = None  # keyword, llm or similarity (the fallback)
     models: tuple[str, ...] = ()  # which model answered each call (shows fallbacks)
 
 
@@ -240,20 +244,42 @@ def _record_turn(
     )
 
 
+class RecordingScreen:
+    """Wraps the input guardrail and remembers its decisions, so a turn records which
+    layer decided (a run that fell back to similarity is visible in the report)."""
+
+    def __init__(self, inner: Screen) -> None:
+        self._inner = inner
+        self._decisions: list[GuardrailDecision] = []
+
+    def classify(self, text: str) -> GuardrailDecision:
+        decision = self._inner.classify(text)
+        self._decisions.append(decision)
+        return decision
+
+    def take(self) -> list[GuardrailDecision]:
+        decisions, self._decisions = self._decisions, []
+        return decisions
+
+
 def run_case(
     case: AgentCase,
     make_agent: MakeAgent,
     model: RecordingChatModel,
     sessions: Sessions,
     employee_id: uuid.UUID | None,
+    screen: RecordingScreen | None = None,
 ) -> AgentCaseRecord:
-    """Run every turn of one case. Raises ModelOutageError if the chain went down."""
+    """Run every turn of one case. Raises ModelOutageError if the chain went down.
+    `screen` is the recorder the agent's guardrail was wrapped in, if any."""
     agent = make_agent(sessions)
     thread = case.case_id
     turns: list[TurnRecord] = []
     started = time.perf_counter()
     prompt_tokens = completion_tokens = 0
     model.take()  # start clean
+    if screen is not None:
+        screen.take()
 
     for say in case.messages:
         seen = len(_messages(agent, thread))
@@ -271,7 +297,17 @@ def run_case(
         state = agent.get_state({"configurable": {"thread_id": thread}})
         paused = any(task.interrupts for task in state.tasks)
         history = _messages(agent, thread)
-        turns.append(_record_turn(say, reply, paused, history, seen, calls))
+        turn = _record_turn(say, reply, paused, history, seen, calls)
+        category = state.values.get("guardrail")
+        decisions = screen.take() if screen is not None else []
+        turns.append(
+            turn.model_copy(
+                update={
+                    "guardrail": category.value if category is not None else None,
+                    "guardrail_source": decisions[-1].source.value if decisions else None,
+                }
+            )
+        )
 
     return AgentCaseRecord(
         case_id=case.case_id,

@@ -11,6 +11,7 @@ import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from roost.core.enums import DayPortion, Language
+from roost.guardrails.types import Route
 
 # The harness pins the agent's clock here, so relative dates in the questions are stable.
 EVAL_TODAY = date(2026, 11, 2)  # a Monday
@@ -27,7 +28,16 @@ KNOWN_TOOLS = frozenset(
     }
 )
 
-Category = Literal["handbook", "payday", "vacation", "restricted", "out_of_scope", "multi_turn"]
+Category = Literal[
+    "handbook",
+    "payday",
+    "vacation",
+    "restricted",
+    "out_of_scope",
+    "multi_turn",
+    "sensitive",  # sensitive matters and emergencies: a fixed reply (ADR-0012)
+    "injection",
+]
 _CITATION = re.compile(r"§\s*\d+(?:\.\d+)?")
 _NUMBER = re.compile(r"\d+")
 
@@ -77,6 +87,7 @@ class TurnExpectation(BaseModel):
     cites_any: tuple[str, ...] = ()
     mentions: tuple[str, ...] = ()
     restricted: bool = False
+    route: Route | None = None  # where the input guardrail must send the message
 
     @model_validator(mode="after")
     def _known_tools(self) -> "TurnExpectation":
