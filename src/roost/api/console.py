@@ -167,14 +167,7 @@ def sign_in_submit(
     )
     target = "change-password" if session.must_change_pin else "queue"
     response = RedirectResponse(f"{PREFIX}/{target}", status_code=303)
-    response.set_cookie(
-        web_sessions.CONSOLE_COOKIE_NAME,
-        token,
-        httponly=True,
-        secure=True,
-        samesite="strict",
-        path=PREFIX,  # never sent to the kiosk pages
-    )
+    web_sessions.set_cookie(response, web_sessions.CONSOLE_COOKIE_NAME, token, path=PREFIX)
     return response
 
 
@@ -223,7 +216,10 @@ def change_password_submit(
     except PasswordRejectedError as rejected:
         return again(400, f"password_{rejected.problem.value}")
     session.must_change_pin = False
-    return RedirectResponse(f"{PREFIX}/queue", status_code=303)
+    response = RedirectResponse(f"{PREFIX}/queue", status_code=303)
+    token = web_sessions.rotate_token(db, session)
+    web_sessions.set_cookie(response, web_sessions.CONSOLE_COOKIE_NAME, token, path=PREFIX)
+    return response
 
 
 # --- the queue and one request --------------------------------------------------------

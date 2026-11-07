@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 
 from sqlalchemy import and_, delete, or_
 from sqlalchemy.orm import Session
+from starlette.responses import Response
 
 from roost.core.enums import Language, SessionApp
 from roost.db.models import WebSession
@@ -82,6 +83,23 @@ def load_session(
     session.last_seen_at = now
     db.flush()
     return session
+
+
+def rotate_token(db: Session, session: WebSession) -> str:
+    """A new token (and CSRF token) for the same session, after a PIN or password change:
+    a cookie anyone copied before the change stops working (session fixation)."""
+    token = secrets.token_urlsafe(32)
+    session.token_hash = _hash(token)
+    session.csrf_token = secrets.token_urlsafe(32)
+    db.flush()
+    return token
+
+
+def set_cookie(response: Response, name: str, token: str, *, path: str = "/") -> None:
+    """A session cookie (no expiry date): gone when the browser closes, and useless once
+    idle anyway, because the server checks every request. Never readable by scripts,
+    never sent over plain HTTP, never sent with a request from another site."""
+    response.set_cookie(name, token, httponly=True, secure=True, samesite="strict", path=path)
 
 
 def end_session(db: Session, token: str | None) -> None:

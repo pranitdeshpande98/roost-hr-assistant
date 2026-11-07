@@ -20,8 +20,8 @@ from roost.api.common import language_of as _language
 from roost.api.common import services_of as _services
 from roost.api.services import Services
 from roost.auth.kiosk import NotAllowedError, PinRejectedError, SignInOutcome, change_pin, sign_in
-from roost.core.enums import Channel, Language
-from roost.db.models import WebSession
+from roost.core.enums import Channel, EmploymentStatus, Language
+from roost.db.models import Employee, WebSession
 from roost.notifications.outbox import take_kiosk_notices
 from roost.notifications.render import render
 
@@ -56,8 +56,18 @@ def _page(
 
 
 def _current(request: Request, db: Session) -> WebSession | None:
+    """The live kiosk session, if any. It ends at once when the employee is no longer
+    active, so a termination closes an open kiosk too."""
     token = request.cookies.get(web_sessions.COOKIE_NAME)
-    return web_sessions.load_session(db, token, now=_services(request).clock())
+    session = web_sessions.load_session(db, token, now=_services(request).clock())
+    if session is None:
+        return None
+    employee = db.get(Employee, session.employee_id)
+    if employee is None or employee.employment_status is not EmploymentStatus.ACTIVE:
+        db.delete(session)
+        db.flush()
+        return None
+    return session
 
 
 def _to_sign_in(language: Language = Language.EN, request: Request | None = None) -> Response:
@@ -125,16 +135,7 @@ def sign_in_submit(
     )
     target = "/change-pin" if session.must_change_pin else "/chat"
     response = RedirectResponse(target, status_code=303)
-    # A session cookie (no expiry date): gone when the browser closes, and useless after
-    # 2 idle minutes anyway, because the server checks every request.
-    response.set_cookie(
-        web_sessions.COOKIE_NAME,
-        token,
-        httponly=True,
-        secure=True,
-        samesite="strict",
-        path="/",
-    )
+    web_sessions.set_cookie(response, web_sessions.COOKIE_NAME, token)
     return response
 
 
@@ -185,7 +186,10 @@ def change_pin_submit(
     except PinRejectedError as rejected:
         return again(f"pin_{rejected.problem.value}")
     session.must_change_pin = False
-    return RedirectResponse("/chat", status_code=303)
+    response = RedirectResponse("/chat", status_code=303)
+    token = web_sessions.rotate_token(db, session)
+    web_sessions.set_cookie(response, web_sessions.COOKIE_NAME, token)
+    return response
 
 
 # --- chat ---------------------------------------------------------------------------
