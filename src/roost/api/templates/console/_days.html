@@ -1,0 +1,3 @@
+<ul class="days">
+  {% for day, portion in days %}<li><time datetime="{{ day }}">{{ day }}</time> · {{ t('portion_' ~ portion) }}</li>{% endfor %}
+</ul>

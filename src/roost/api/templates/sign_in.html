@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block header %}
+<nav class="languages" aria-label="{{ t('language') }}">
+  <a href="/sign-in?lang=en" lang="en"{% if lang.value == 'en' %} aria-current="true"{% endif %}>English</a>
+  <a href="/sign-in?lang=es" lang="es"{% if lang.value == 'es' %} aria-current="true"{% endif %}>Español</a>
+  <a href="/sign-in?lang=vi" lang="vi"{% if lang.value == 'vi' %} aria-current="true"{% endif %}>Tiếng Việt</a>
+</nav>
+{% endblock %}
+{% block main %}
+<form class="card" method="post" action="/sign-in" autocomplete="off">
+  <input type="hidden" name="language" value="{{ lang.value }}">
+  {% if error %}
+  <p class="error" role="alert">{{ t(error[0], minutes=error[1]) }}</p>
+  {% endif %}
+  <label for="employee_number">{{ t('employee_number') }}</label>
+  <input id="employee_number" name="employee_number" inputmode="numeric" pattern="[0-9]*"
+         maxlength="6" required autofocus autocomplete="off">
+  <label for="pin">{{ t('pin') }}</label>
+  <input id="pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]*"
+         maxlength="6" required autocomplete="off">
+  <button type="submit">{{ t('sign_in') }}</button>
+</form>
+{% endblock %}

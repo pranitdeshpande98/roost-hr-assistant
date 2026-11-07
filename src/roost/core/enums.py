@@ -83,3 +83,64 @@ class VacationRequestStatus(StrEnum):
     APPROVED = "approved"
     DENIED = "denied"
     CANCELLED = "cancelled"
+
+
+class ApprovalStep(StrEnum):
+    """The two approvals a vacation request needs, in order (FR-20)."""
+
+    SUPERVISOR = "supervisor"
+    HR = "hr"
+
+
+class ApprovalDecision(StrEnum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    DENIED = "denied"
+
+
+class AuditAction(StrEnum):
+    """Everything the permanent audit log records (FR-24, FR-48, section 4.7)."""
+
+    REQUEST_SUBMITTED = "request_submitted"
+    REQUEST_CHANGED = "request_changed"
+    REQUEST_CANCELLED = "request_cancelled"
+    APPROVAL_DECIDED = "approval_decided"
+    REQUEST_APPROVED = "request_approved"
+    REQUEST_DENIED = "request_denied"
+    HR_SUMMARY_SENT = "hr_summary_sent"
+    HR_REFERRAL_HANDLED = "hr_referral_handled"
+    PIN_SET = "pin_set"
+    PIN_CHANGED = "pin_changed"
+    PIN_LOCKED = "pin_locked"
+    PASSWORD_SET = "password_set"  # noqa: S105 (an audit action name, not a secret)
+    PASSWORD_CHANGED = "password_changed"  # noqa: S105
+    PASSWORD_LOCKED = "password_locked"  # noqa: S105
+    LEGAL_HOLD_PLACED = "legal_hold_placed"
+    LEGAL_HOLD_RELEASED = "legal_hold_released"
+
+
+class NotificationChannel(StrEnum):
+    """How a notification reaches someone (FR-22): Teams if they have it, else email,
+    else a notice at their next kiosk sign-in (drivers)."""
+
+    TEAMS = "teams"
+    EMAIL = "email"
+    KIOSK = "kiosk"
+
+
+class NotificationKind(StrEnum):
+    APPROVAL_NEEDED = "approval_needed"  # to the supervisor, then to HR
+    REQUEST_APPROVED = "request_approved"  # to the employee
+    REQUEST_DENIED = "request_denied"  # to the employee
+    REQUEST_CANCELLED = "request_cancelled"  # to the approvers (FR-14)
+    DECISION_OVERDUE = "decision_overdue"  # to the employee: check with HR (FR-23)
+    CEO_REQUEST = "ceo_request"  # to Corporate HR: no approval needed (FR-20)
+    HR_REFERRAL = "hr_referral"  # to HR: an employee asked to be contacted (FR-32)
+
+
+class SessionApp(StrEnum):
+    """Which web app a session belongs to (ADR-0013). A kiosk session cannot open the
+    approver console, and the other way round."""
+
+    KIOSK = "kiosk"
+    CONSOLE = "console"

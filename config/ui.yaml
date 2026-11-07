@@ -1,0 +1,460 @@
+# Kiosk interface text, in every language (ADR-0006). The agent's own replies are in
+# messages.yaml; this file holds labels, errors and notices around them.
+# {minutes} is filled in by code; every language must use the same placeholders.
+# Quote keys YAML reads as true/false ("yes", "no").
+
+title:
+  en: "Roost HR Assistant"
+  es: "Asistente de Recursos Humanos Roost"
+  vi: "Trợ lý Nhân sự Roost"
+language:
+  en: "Language"
+  es: "Idioma"
+  vi: "Ngôn ngữ"
+employee_number:
+  en: "Employee number"
+  es: "Número de empleado"
+  vi: "Mã số nhân viên"
+pin:
+  en: "PIN (6 digits)"
+  es: "PIN (6 dígitos)"
+  vi: "Mã PIN (6 chữ số)"
+sign_in:
+  en: "Sign in"
+  es: "Iniciar sesión"
+  vi: "Đăng nhập"
+invalid:
+  en: "That employee number and PIN do not match. Check them and try again."
+  es: "El número de empleado y el PIN no coinciden. Revíselos e intente de nuevo."
+  vi: "Mã số nhân viên và mã PIN không khớp. Vui lòng kiểm tra và thử lại."
+locked:
+  en: "Too many wrong PINs. You can try again in {minutes} minute(s), or ask your plant HR office to reset your PIN."
+  es: "Demasiados PIN incorrectos. Puede intentarlo de nuevo en {minutes} minuto(s), o pida a la oficina de Recursos Humanos de su planta que restablezca su PIN."
+  vi: "Nhập sai mã PIN quá nhiều lần. Bạn có thể thử lại sau {minutes} phút, hoặc nhờ văn phòng Nhân sự của nhà máy đặt lại mã PIN."
+rate_limited:
+  en: "Too many sign-in attempts at this kiosk. Please wait {minutes} minute(s) and try again."
+  es: "Demasiados intentos de inicio de sesión en este quiosco. Espere {minutes} minuto(s) e intente de nuevo."
+  vi: "Có quá nhiều lần đăng nhập tại ki-ốt này. Vui lòng đợi {minutes} phút rồi thử lại."
+change_pin_title:
+  en: "Choose your own PIN"
+  es: "Elija su propio PIN"
+  vi: "Chọn mã PIN của riêng bạn"
+change_pin_help:
+  en: "HR gave you a temporary PIN. Choose a new 6-digit PIN that only you know. Avoid your birth date and easy patterns like 123456."
+  es: "Recursos Humanos le dio un PIN temporal. Elija un nuevo PIN de 6 dígitos que solo usted conozca. Evite su fecha de nacimiento y patrones fáciles como 123456."
+  vi: "Phòng Nhân sự đã cấp cho bạn mã PIN tạm thời. Hãy chọn mã PIN mới gồm 6 chữ số mà chỉ bạn biết. Tránh dùng ngày sinh và các dãy dễ đoán như 123456."
+current_pin:
+  en: "Temporary PIN from HR"
+  es: "PIN temporal de Recursos Humanos"
+  vi: "Mã PIN tạm thời do Phòng Nhân sự cấp"
+new_pin:
+  en: "New PIN"
+  es: "PIN nuevo"
+  vi: "Mã PIN mới"
+repeat_pin:
+  en: "New PIN again"
+  es: "Repita el PIN nuevo"
+  vi: "Nhập lại mã PIN mới"
+save_pin:
+  en: "Save my PIN"
+  es: "Guardar mi PIN"
+  vi: "Lưu mã PIN"
+pins_differ:
+  en: "The two new PINs are different. Type the same PIN twice."
+  es: "Los dos PIN nuevos son diferentes. Escriba el mismo PIN dos veces."
+  vi: "Hai mã PIN mới không giống nhau. Hãy nhập cùng một mã PIN hai lần."
+wrong_current_pin:
+  en: "The temporary PIN is not correct."
+  es: "El PIN temporal no es correcto."
+  vi: "Mã PIN tạm thời không đúng."
+pin_not_six_digits:
+  en: "A PIN must be exactly 6 digits."
+  es: "El PIN debe tener exactamente 6 dígitos."
+  vi: "Mã PIN phải có đúng 6 chữ số."
+pin_repeating:
+  en: "That PIN repeats the same digits. Choose one that is harder to guess."
+  es: "Ese PIN repite los mismos dígitos. Elija uno más difícil de adivinar."
+  vi: "Mã PIN đó lặp lại cùng các chữ số. Hãy chọn mã khó đoán hơn."
+pin_sequence:
+  en: "That PIN is a sequence, like 123456. Choose one that is harder to guess."
+  es: "Ese PIN es una secuencia, como 123456. Elija uno más difícil de adivinar."
+  vi: "Mã PIN đó là một dãy liên tiếp, như 123456. Hãy chọn mã khó đoán hơn."
+pin_common:
+  en: "That PIN is one of the most common. Choose one that is harder to guess."
+  es: "Ese PIN es uno de los más comunes. Elija uno más difícil de adivinar."
+  vi: "Mã PIN đó là một trong những mã phổ biến nhất. Hãy chọn mã khó đoán hơn."
+pin_birth_date:
+  en: "Do not use your birth date as your PIN."
+  es: "No use su fecha de nacimiento como PIN."
+  vi: "Đừng dùng ngày sinh của bạn làm mã PIN."
+pin_same_as_current:
+  en: "Your new PIN must be different from the temporary one."
+  es: "Su PIN nuevo debe ser diferente del temporal."
+  vi: "Mã PIN mới phải khác mã PIN tạm thời."
+welcome:
+  en: "Ask me about the handbook, your paydays or your vacation."
+  es: "Pregúnteme sobre el manual, sus días de pago o sus vacaciones."
+  vi: "Hãy hỏi tôi về sổ tay nhân viên, ngày lãnh lương hoặc kỳ nghỉ phép của bạn."
+message:
+  en: "Your message"
+  es: "Su mensaje"
+  vi: "Tin nhắn của bạn"
+send:
+  en: "Send"
+  es: "Enviar"
+  vi: "Gửi"
+"yes":
+  en: "YES"
+  es: "SÍ"
+  vi: "CÓ"
+"no":
+  en: "NO"
+  es: "NO"
+  vi: "KHÔNG"
+working:
+  en: "Working on it…"
+  es: "Un momento…"
+  vi: "Đang xử lý…"
+you:
+  en: "You"
+  es: "Usted"
+  vi: "Bạn"
+roost:
+  en: "Roost"
+  es: "Roost"
+  vi: "Roost"
+sign_out:
+  en: "Sign out"
+  es: "Cerrar sesión"
+  vi: "Đăng xuất"
+privacy_notice:
+  en: "For your privacy, you are signed out after 2 minutes without activity."
+  es: "Por su privacidad, la sesión se cierra tras 2 minutos sin actividad."
+  vi: "Để bảo vệ quyền riêng tư, bạn sẽ bị đăng xuất sau 2 phút không hoạt động."
+signed_out:
+  en: "You are signed out."
+  es: "Ha cerrado la sesión."
+  vi: "Bạn đã đăng xuất."
+error:
+  en: "Something went wrong. Please try again, or ask your plant HR office."
+  es: "Algo salió mal. Intente de nuevo o consulte a la oficina de Recursos Humanos de su planta."
+  vi: "Đã xảy ra lỗi. Vui lòng thử lại hoặc hỏi văn phòng Nhân sự của nhà máy."
+notices:
+  en: "Updates for you"
+  es: "Novedades para usted"
+  vi: "Thông báo cho bạn"
+
+# ── Approver console (supervisors and HR) ─────────────────────────────────────────
+console_title:
+  en: "Roost approvals"
+  es: "Aprobaciones de Roost"
+  vi: "Phê duyệt Roost"
+console_help:
+  en: "For supervisors and HR. Sign in with your employee number and console password."
+  es: "Para supervisores y Recursos Humanos. Inicie sesión con su número de empleado y su contraseña de la consola."
+  vi: "Dành cho người giám sát và Nhân sự. Đăng nhập bằng mã số nhân viên và mật khẩu bảng điều khiển."
+password:
+  en: "Password"
+  es: "Contraseña"
+  vi: "Mật khẩu"
+console_invalid:
+  en: "That employee number and password do not match. Check them and try again."
+  es: "El número de empleado y la contraseña no coinciden. Revíselos e intente de nuevo."
+  vi: "Mã số nhân viên và mật khẩu không khớp. Vui lòng kiểm tra và thử lại."
+console_privacy_notice:
+  en: "For your privacy, you are signed out after 15 minutes without activity."
+  es: "Por su privacidad, la sesión se cierra tras 15 minutos sin actividad."
+  vi: "Để bảo vệ quyền riêng tư, bạn sẽ bị đăng xuất sau 15 phút không hoạt động."
+nav_queue:
+  en: "Waiting for you"
+  es: "Pendientes"
+  vi: "Đang chờ bạn"
+nav_history:
+  en: "Your decisions"
+  es: "Sus decisiones"
+  vi: "Quyết định của bạn"
+queue_title:
+  en: "Requests waiting for your decision"
+  es: "Solicitudes que esperan su decisión"
+  vi: "Các đơn đang chờ bạn quyết định"
+queue_empty:
+  en: "Nothing is waiting for you."
+  es: "No tiene nada pendiente."
+  vi: "Không có đơn nào đang chờ bạn."
+history_title:
+  en: "Your recent decisions"
+  es: "Sus decisiones recientes"
+  vi: "Các quyết định gần đây của bạn"
+history_empty:
+  en: "You have not decided any requests yet."
+  es: "Todavía no ha decidido ninguna solicitud."
+  vi: "Bạn chưa quyết định đơn nào."
+col_reference:
+  en: "Request"
+  es: "Solicitud"
+  vi: "Đơn"
+col_employee:
+  en: "Employee"
+  es: "Empleado"
+  vi: "Nhân viên"
+col_dates:
+  en: "Dates"
+  es: "Fechas"
+  vi: "Ngày"
+col_step:
+  en: "Your step"
+  es: "Su paso"
+  vi: "Bước của bạn"
+col_waiting:
+  en: "Waiting since"
+  es: "Esperando desde"
+  vi: "Chờ từ"
+col_decision:
+  en: "Decision"
+  es: "Decisión"
+  vi: "Quyết định"
+col_decided:
+  en: "Decided"
+  es: "Decidida"
+  vi: "Ngày quyết định"
+step_supervisor:
+  en: "Supervisor"
+  es: "Supervisor"
+  vi: "Người giám sát"
+step_hr:
+  en: "HR"
+  es: "Recursos Humanos"
+  vi: "Nhân sự"
+portion_full:
+  en: "full day"
+  es: "día completo"
+  vi: "cả ngày"
+portion_half:
+  en: "half day"
+  es: "medio día"
+  vi: "nửa ngày"
+open_request:
+  en: "Open"
+  es: "Abrir"
+  vi: "Mở"
+request_title:
+  en: "Vacation request {reference}"
+  es: "Solicitud de vacaciones {reference}"
+  vi: "Đơn nghỉ phép {reference}"
+approve:
+  en: "Approve"
+  es: "Aprobar"
+  vi: "Duyệt"
+deny:
+  en: "Deny"
+  es: "Rechazar"
+  vi: "Từ chối"
+comment_label:
+  en: "Comment (optional; the employee sees it)"
+  es: "Comentario (opcional; el empleado lo verá)"
+  vi: "Ghi chú (không bắt buộc; nhân viên sẽ thấy)"
+decision_approved:
+  en: "Approved"
+  es: "Aprobada"
+  vi: "Đã duyệt"
+decision_denied:
+  en: "Denied"
+  es: "Rechazada"
+  vi: "Đã từ chối"
+done_approved:
+  en: "Done: the request is approved at your step."
+  es: "Listo: la solicitud quedó aprobada en su paso."
+  vi: "Xong: đơn đã được duyệt ở bước của bạn."
+done_denied:
+  en: "Done: the request is denied, and the employee will be told."
+  es: "Listo: la solicitud fue rechazada y se le avisará al empleado."
+  vi: "Xong: đơn đã bị từ chối và nhân viên sẽ được thông báo."
+not_waiting:
+  en: "That request is not waiting for your decision. It may have been decided, changed or cancelled."
+  es: "Esa solicitud no espera su decisión. Puede que ya se haya decidido, cambiado o cancelado."
+  vi: "Đơn đó không chờ bạn quyết định. Có thể đơn đã được quyết định, thay đổi hoặc hủy."
+back_to_queue:
+  en: "Back to the list"
+  es: "Volver a la lista"
+  vi: "Quay lại danh sách"
+change_password_title:
+  en: "Choose your own password"
+  es: "Elija su propia contraseña"
+  vi: "Chọn mật khẩu của riêng bạn"
+change_password_help:
+  en: "At least 12 characters. A few unrelated words make a good one. Do not use your name or employee number."
+  es: "Al menos 12 caracteres. Unas cuantas palabras sin relación entre sí funcionan bien. No use su nombre ni su número de empleado."
+  vi: "Ít nhất 12 ký tự. Vài từ không liên quan đến nhau là một lựa chọn tốt. Không dùng tên hoặc mã số nhân viên của bạn."
+current_password:
+  en: "Current password"
+  es: "Contraseña actual"
+  vi: "Mật khẩu hiện tại"
+new_password:
+  en: "New password"
+  es: "Contraseña nueva"
+  vi: "Mật khẩu mới"
+repeat_password:
+  en: "New password again"
+  es: "Repita la contraseña nueva"
+  vi: "Nhập lại mật khẩu mới"
+save_password:
+  en: "Save password"
+  es: "Guardar contraseña"
+  vi: "Lưu mật khẩu"
+passwords_differ:
+  en: "The two new passwords are different."
+  es: "Las dos contraseñas nuevas no son iguales."
+  vi: "Hai mật khẩu mới không giống nhau."
+wrong_current_password:
+  en: "The current password is not right."
+  es: "La contraseña actual no es correcta."
+  vi: "Mật khẩu hiện tại không đúng."
+password_too_short:
+  en: "Use at least 12 characters."
+  es: "Use al menos 12 caracteres."
+  vi: "Hãy dùng ít nhất 12 ký tự."
+password_too_long:
+  en: "Use at most 128 characters."
+  es: "Use como máximo 128 caracteres."
+  vi: "Hãy dùng tối đa 128 ký tự."
+password_too_simple:
+  en: "Use more different characters."
+  es: "Use más caracteres distintos."
+  vi: "Hãy dùng nhiều ký tự khác nhau hơn."
+password_common:
+  en: "That password is too well known. Choose another."
+  es: "Esa contraseña es demasiado conocida. Elija otra."
+  vi: "Mật khẩu đó quá phổ biến. Hãy chọn mật khẩu khác."
+password_personal:
+  en: "Do not use your name or employee number."
+  es: "No use su nombre ni su número de empleado."
+  vi: "Không dùng tên hoặc mã số nhân viên của bạn."
+password_same_as_current:
+  en: "Choose a password different from the current one."
+  es: "Elija una contraseña distinta de la actual."
+  vi: "Hãy chọn mật khẩu khác với mật khẩu hiện tại."
+col_hours:
+  en: "Hours"
+  es: "Horas"
+  vi: "Số giờ"
+hours_left:
+  en: "Hours left after this request (HR only)"
+  es: "Horas que quedan tras esta solicitud (solo Recursos Humanos)"
+  vi: "Số giờ còn lại sau đơn này (chỉ Nhân sự)"
+# ── Referrals: what employees asked Roost to send HR (FR-32) ──────────────────────
+nav_referrals:
+  en: "Referrals"
+  es: "Derivaciones"
+  vi: "Chuyển tiếp"
+referrals_title:
+  en: "Employees who asked HR to contact them"
+  es: "Empleados que pidieron que Recursos Humanos los contacte"
+  vi: "Nhân viên đề nghị Nhân sự liên hệ"
+referrals_help:
+  en: "Each message is in the employee's own words, sent only because they said yes. Contact them, do not forward the message, and mark it handled when you have followed up. The words are deleted 90 days later."
+  es: "Cada mensaje está en las propias palabras del empleado y se envió solo porque dijo que sí. Comuníquese con la persona, no reenvíe el mensaje y márquelo como atendido cuando haya hecho el seguimiento. El texto se borra 90 días después."
+  vi: "Mỗi tin nhắn là lời của chính nhân viên, chỉ được gửi vì họ đồng ý. Hãy liên hệ với họ, không chuyển tiếp tin nhắn, và đánh dấu đã xử lý khi đã theo dõi xong. Nội dung sẽ bị xóa sau 90 ngày."
+referrals_empty:
+  en: "No one is waiting to be contacted."
+  es: "No hay nadie esperando que lo contacten."
+  vi: "Không có ai đang chờ được liên hệ."
+referrals_handled_title:
+  en: "Recently handled"
+  es: "Atendidas recientemente"
+  vi: "Đã xử lý gần đây"
+referral_title:
+  en: "Message from {employee}"
+  es: "Mensaje de {employee}"
+  vi: "Tin nhắn của {employee}"
+referral_words:
+  en: "In their own words"
+  es: "En sus propias palabras"
+  vi: "Bằng lời của họ"
+referral_text_deleted:
+  en: "The message was deleted 90 days after it was handled. This record remains."
+  es: "El mensaje se borró 90 días después de ser atendido. Este registro se conserva."
+  vi: "Tin nhắn đã bị xóa 90 ngày sau khi được xử lý. Bản ghi này vẫn được giữ."
+mark_handled:
+  en: "Mark as handled"
+  es: "Marcar como atendida"
+  vi: "Đánh dấu đã xử lý"
+referral_marked:
+  en: "Marked as handled."
+  es: "Marcada como atendida."
+  vi: "Đã đánh dấu đã xử lý."
+back_to_referrals:
+  en: "Back to referrals"
+  es: "Volver a las derivaciones"
+  vi: "Quay lại danh sách chuyển tiếp"
+not_found:
+  en: "There is nothing here for you. It may not exist, or it is not yours to see."
+  es: "Aquí no hay nada para usted. Puede que no exista o que no le corresponda verlo."
+  vi: "Không có gì ở đây cho bạn. Có thể mục này không tồn tại hoặc bạn không được xem."
+col_sent:
+  en: "Sent"
+  es: "Enviado"
+  vi: "Ngày gửi"
+col_topic:
+  en: "Topic"
+  es: "Tema"
+  vi: "Chủ đề"
+col_language:
+  en: "Language"
+  es: "Idioma"
+  vi: "Ngôn ngữ"
+col_handled:
+  en: "Handled"
+  es: "Atendida"
+  vi: "Đã xử lý"
+language_en:
+  en: "English"
+  es: "inglés"
+  vi: "tiếng Anh"
+language_es:
+  en: "Spanish"
+  es: "español"
+  vi: "tiếng Tây Ban Nha"
+language_vi:
+  en: "Vietnamese"
+  es: "vietnamita"
+  vi: "tiếng Việt"
+topic_harassment:
+  en: "Harassment"
+  es: "Acoso"
+  vi: "Quấy rối"
+topic_discrimination:
+  en: "Discrimination"
+  es: "Discriminación"
+  vi: "Phân biệt đối xử"
+topic_retaliation:
+  en: "Retaliation"
+  es: "Represalias"
+  vi: "Trả đũa"
+topic_violence:
+  en: "Threats or violence"
+  es: "Amenazas o violencia"
+  vi: "Đe dọa hoặc bạo lực"
+topic_injury:
+  en: "Injury"
+  es: "Lesión"
+  vi: "Chấn thương"
+topic_safety_hazard:
+  en: "Safety hazard"
+  es: "Riesgo de seguridad"
+  vi: "Mối nguy an toàn"
+topic_medical:
+  en: "Medical or accommodation"
+  es: "Médico o adaptaciones"
+  vi: "Y tế hoặc điều chỉnh công việc"
+topic_immigration:
+  en: "Immigration"
+  es: "Inmigración"
+  vi: "Di trú"
+topic_wage_dispute:
+  en: "Pay dispute"
+  es: "Disputa de pago"
+  vi: "Tranh chấp lương"
+topic_personal_crisis:
+  en: "Personal crisis"
+  es: "Crisis personal"
+  vi: "Khủng hoảng cá nhân"

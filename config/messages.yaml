@@ -43,6 +43,17 @@ half_day:
   es: "medio día"
   vi: "nửa ngày"
 
+# The hours a request uses (never a balance, FR-06). {hours} is like 8 or 4.5.
+day_hours:
+  en: "{hours} h"
+  es: "{hours} h"
+  vi: "{hours} giờ"
+
+total_hours:
+  en: "Total: {hours} hours"
+  es: "Total: {hours} horas"
+  vi: "Tổng cộng: {hours} giờ"
+
 # --- Input guardrail replies (ADR-0012) ---------------------------------------------
 # The model never sees these messages. Every sensitive reply carries the crisis line too:
 # the classifier can confuse a crisis with another sensitive topic, the reply must not.
@@ -82,3 +93,31 @@ hr_contact_unknown:
   en: "Your HR team's phone number is in the handbook, section 2.3. Each plant HR office is next to the main break room."
   es: "El teléfono de su equipo de Recursos Humanos está en el manual, sección 2.3. Cada oficina de Recursos Humanos está junto al comedor principal."
   vi: "Số điện thoại Phòng Nhân sự của bạn có trong sổ tay, mục 2.3. Văn phòng Nhân sự của mỗi nhà máy nằm cạnh phòng nghỉ chính."
+
+# FR-32: after a sensitive-matter reply, offer to send HR the employee's own words.
+# Asked only of a signed-in employee who did not ask to stay anonymous; never in an
+# emergency. Nothing is sent without YES, and nothing ever goes to the Ethics Hotline.
+referral_offer:
+  en: "Would you like me to send your HR team what you just wrote, so they can contact you? Only your HR team will see it. Reply YES to send it or NO to keep it private."
+  es: "¿Quiere que envíe a su equipo de Recursos Humanos lo que acaba de escribir, para que se comuniquen con usted? Solo su equipo de Recursos Humanos lo verá. Responda SÍ para enviarlo o NO para mantenerlo privado."
+  vi: "Bạn có muốn tôi gửi cho Phòng Nhân sự những gì bạn vừa viết để họ liên hệ với bạn không? Chỉ Phòng Nhân sự của bạn xem được. Trả lời CÓ để gửi hoặc KHÔNG để giữ kín."
+
+referral_sent:
+  en: "Sent. Your HR team has your message and will contact you. The phone number and the Ethics Hotline above are still there if you need them."
+  es: "Enviado. Su equipo de Recursos Humanos tiene su mensaje y se comunicará con usted. El teléfono y la Línea de Ética de arriba siguen disponibles si los necesita."
+  vi: "Đã gửi. Phòng Nhân sự đã nhận tin nhắn của bạn và sẽ liên hệ với bạn. Số điện thoại và Đường dây nóng Đạo đức ở trên vẫn có thể dùng nếu bạn cần."
+
+referral_not_sent:
+  en: "Okay, nothing was sent. You can still use the phone number or the Ethics Hotline above at any time."
+  es: "De acuerdo, no se envió nada. Puede usar el teléfono o la Línea de Ética de arriba en cualquier momento."
+  vi: "Được, không có gì được gửi đi. Bạn vẫn có thể dùng số điện thoại hoặc Đường dây nóng Đạo đức ở trên bất cứ lúc nào."
+
+referral_unclear:
+  en: "I did not send anything. If you want your HR team to have your message, write it again and answer YES."
+  es: "No envié nada. Si quiere que su equipo de Recursos Humanos reciba su mensaje, escríbalo de nuevo y responda SÍ."
+  vi: "Tôi chưa gửi gì cả. Nếu bạn muốn Phòng Nhân sự nhận tin nhắn của bạn, hãy viết lại và trả lời CÓ."
+
+referral_failed:
+  en: "I could not send it right now. Please call your HR team at the number above."
+  es: "No pude enviarlo en este momento. Llame a su equipo de Recursos Humanos al número de arriba."
+  vi: "Hiện tôi không gửi được. Vui lòng gọi Phòng Nhân sự theo số ở trên."

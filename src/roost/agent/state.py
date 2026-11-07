@@ -28,3 +28,6 @@ class AgentState(BaseModel):
     # What the input guardrail decided about this turn's message. Telemetry records the
     # category, never the text (FR-49). None when no guardrail ran.
     guardrail: Category | None = None
+    # Set by the guardrail when this turn should offer to send HR the employee's words
+    # (FR-32); cleared once the offer is answered.
+    offer_referral: bool = False

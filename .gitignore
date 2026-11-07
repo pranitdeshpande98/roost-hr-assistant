@@ -45,3 +45,6 @@ logs/
 Thumbs.db
 Desktop.ini
 .DS_Store
+
+# ── Local outbox (scripts/deliver_outbox.py) ──
+var/

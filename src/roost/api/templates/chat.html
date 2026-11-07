@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block header %}
+<form method="post" action="/sign-out" class="sign-out">
+  <button type="submit" class="secondary">{{ t('sign_out') }}</button>
+</form>
+{% endblock %}
+{% block main %}
+<p class="welcome">{{ t('welcome') }}</p>
+{% if notices %}
+<section class="notices" aria-labelledby="notices-heading" role="status">
+  <h2 id="notices-heading">{{ t('notices') }}</h2>
+  <ul>
+    {% for notice in notices %}
+    <li>{{ notice.body }}{% if notice.comment %}<br><span class="comment">{{ notice.comment }}</span>{% endif %}</li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+{% include "_conversation.html" %}
+<form class="composer" method="post" action="/chat/messages" autocomplete="off"
+      hx-post="/chat/messages" hx-target="#conversation" hx-swap="outerHTML"
+      hx-indicator="#working" hx-disabled-elt="find button" data-reset-after-send>
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <label for="text" class="visually-hidden">{{ t('message') }}</label>
+  <input id="text" name="text" maxlength="1000" required autofocus autocomplete="off"
+         placeholder="{{ t('message') }}">
+  <button type="submit">{{ t('send') }}</button>
+</form>
+<p id="working" class="working" aria-live="polite">{{ t('working') }}</p>
+{% endblock %}

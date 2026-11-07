@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block header %}{% include "console/_nav.html" %}{% endblock %}
+{% block main %}
+<h2>{{ t('history_title') }}</h2>
+{% if rows %}
+<table class="requests">
+  <thead>
+    <tr>
+      <th scope="col">{{ t('col_reference') }}</th>
+      <th scope="col">{{ t('col_employee') }}</th>
+      <th scope="col">{{ t('col_dates') }}</th>
+      <th scope="col">{{ t('col_hours') }}</th>
+      <th scope="col">{{ t('col_step') }}</th>
+      <th scope="col">{{ t('col_decision') }}</th>
+      <th scope="col">{{ t('col_decided') }}</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in rows %}
+    <tr>
+      <td>{{ row.reference }}</td>
+      <td>{{ row.employee }}</td>
+      <td>{% with days = row.days %}{% include "console/_days.html" %}{% endwith %}</td>
+      <td>{{ row.hours }}</td>
+      <td>{{ t('step_' ~ row.step) }}</td>
+      <td>{{ t('decision_' ~ row.decision) }}</td>
+      <td>{{ row.decided }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>{{ t('history_empty') }}</p>
+{% endif %}
+{% endblock %}

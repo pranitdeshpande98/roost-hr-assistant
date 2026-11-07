@@ -165,3 +165,10 @@ def test_citations_no_tool_returned_are_removed_from_the_reply() -> None:
 
     assert first.startswith("Ask 14 days ahead [§6.4]. Your supervisor decides.\n")
     assert follow_up.startswith("Yes, still 14 days [§6.4].\n")
+    # The history holds the cleaned text too: the model never rereads its invention.
+    history = _state(agent, "t1")["messages"]
+    answers = [m.content for m in history if m.role == "assistant" and not m.tool_calls]
+    assert answers == [
+        "Ask 14 days ahead [§6.4]. Your supervisor decides.",
+        "Yes, still 14 days [§6.4].",
+    ]

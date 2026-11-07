@@ -1,0 +1,20 @@
+<section id="conversation" class="conversation" aria-live="polite">
+  {% for line in lines %}
+  <article class="line {{ 'employee' if line.from_employee else 'roost' }}">
+    <h3>{{ t('you') if line.from_employee else t('roost') }}</h3>
+    <p>{{ line.text | kiosk_text }}</p>
+  </article>
+  {% endfor %}
+  {% if error %}
+  <p class="error" role="alert">{{ t(error) }}</p>
+  {% endif %}
+  {% if awaiting %}
+  <form class="confirm" method="post" action="/chat/messages"
+        hx-post="/chat/messages" hx-target="#conversation" hx-swap="outerHTML"
+        hx-indicator="#working" hx-disabled-elt="find button">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <button type="submit" name="text" value="{{ t('yes') }}">{{ t('yes') }}</button>
+    <button type="submit" name="text" value="{{ t('no') }}" class="secondary">{{ t('no') }}</button>
+  </form>
+  {% endif %}
+</section>

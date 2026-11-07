@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block header %}{% include "console/_nav.html" %}{% endblock %}
+{% block main %}
+<h2>{{ t('referrals_title') }}</h2>
+{% if done %}<p class="done" role="status">{{ t(done) }}</p>{% endif %}
+<p class="muted">{{ t('referrals_help') }}</p>
+{% if open_rows %}
+<table class="requests">
+  <thead>
+    <tr>
+      <th scope="col">{{ t('col_sent') }}</th>
+      <th scope="col">{{ t('col_employee') }}</th>
+      <th scope="col">{{ t('col_topic') }}</th>
+      <th scope="col">{{ t('col_language') }}</th>
+      <th scope="col"><span class="visually-hidden">{{ t('open_request') }}</span></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in open_rows %}
+    <tr>
+      <td>{{ row.sent }}</td>
+      <td>{{ row.employee }} <span class="muted">({{ row.employee_number }})</span></td>
+      <td>{{ t('topic_' ~ row.topic) }}</td>
+      <td>{{ t('language_' ~ row.language) }}</td>
+      <td><a href="/console/referrals/{{ row.id }}">{{ t('open_request') }}</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>{{ t('referrals_empty') }}</p>
+{% endif %}
+{% if handled_rows %}
+<h3>{{ t('referrals_handled_title') }}</h3>
+<table class="requests">
+  <thead>
+    <tr>
+      <th scope="col">{{ t('col_sent') }}</th>
+      <th scope="col">{{ t('col_employee') }}</th>
+      <th scope="col">{{ t('col_topic') }}</th>
+      <th scope="col">{{ t('col_handled') }}</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in handled_rows %}
+    <tr>
+      <td>{{ row.sent }}</td>
+      <td><a href="/console/referrals/{{ row.id }}">{{ row.employee }}</a></td>
+      <td>{{ t('topic_' ~ row.topic) }}</td>
+      <td>{{ row.handled }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}

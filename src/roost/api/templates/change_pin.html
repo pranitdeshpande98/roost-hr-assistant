@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block main %}
+<form class="card" method="post" action="/change-pin" autocomplete="off">
+  <h2>{{ t('change_pin_title') }}</h2>
+  <p>{{ t('change_pin_help') }}</p>
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  {% if error %}
+  <p class="error" role="alert">{{ t(error) }}</p>
+  {% endif %}
+  <label for="current_pin">{{ t('current_pin') }}</label>
+  <input id="current_pin" name="current_pin" type="password" inputmode="numeric" maxlength="6" required autocomplete="off">
+  <label for="new_pin">{{ t('new_pin') }}</label>
+  <input id="new_pin" name="new_pin" type="password" inputmode="numeric" maxlength="6" required autocomplete="off">
+  <label for="repeat_pin">{{ t('repeat_pin') }}</label>
+  <input id="repeat_pin" name="repeat_pin" type="password" inputmode="numeric" maxlength="6" required autocomplete="off">
+  <button type="submit">{{ t('save_pin') }}</button>
+</form>
+{% endblock %}

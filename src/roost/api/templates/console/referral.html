@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block header %}{% include "console/_nav.html" %}{% endblock %}
+{% block main %}
+<h2>{{ t('referral_title', employee=item.employee) }}</h2>
+<dl class="facts">
+  <dt>{{ t('col_employee') }}</dt><dd>{{ item.employee }} ({{ item.employee_number }})</dd>
+  <dt>{{ t('col_topic') }}</dt><dd>{{ t('topic_' ~ item.topic) }}</dd>
+  <dt>{{ t('col_language') }}</dt><dd>{{ t('language_' ~ item.language) }}</dd>
+  <dt>{{ t('col_sent') }}</dt><dd>{{ item.sent }}</dd>
+  {% if item.handled %}<dt>{{ t('col_handled') }}</dt><dd>{{ item.handled }}</dd>{% endif %}
+</dl>
+<h3>{{ t('referral_words') }}</h3>
+{% if item.text is not none %}
+<blockquote class="words" lang="{{ item.language }}">{{ item.text }}</blockquote>
+{% else %}
+<p class="muted">{{ t('referral_text_deleted') }}</p>
+{% endif %}
+{% if not item.handled %}
+<form class="card" method="post" action="/console/referrals/{{ item.id }}/handled">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <button type="submit">{{ t('mark_handled') }}</button>
+</form>
+{% endif %}
+<p><a href="/console/referrals">{{ t('back_to_referrals') }}</a></p>
+{% endblock %}

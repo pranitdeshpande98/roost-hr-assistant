@@ -1,0 +1,77 @@
+# What notifications say (FR-22). Every key needs en, es and vi with the same
+# {placeholders}. Never put balances, pay or conversation text here (FR-06, FR-24).
+# {reference} is the request code; {dates} the day, or date_range for several days.
+
+subject_approval_needed:
+  en: "Vacation request {reference} needs your decision"
+  es: "La solicitud de vacaciones {reference} necesita su decisión"
+  vi: "Đơn nghỉ phép {reference} cần bạn quyết định"
+body_approval_needed:
+  en: "A vacation request ({reference}, {dates}) is waiting for your decision."
+  es: "Una solicitud de vacaciones ({reference}, {dates}) espera su decisión."
+  vi: "Một đơn nghỉ phép ({reference}, {dates}) đang chờ bạn quyết định."
+
+subject_request_approved:
+  en: "Vacation request {reference} approved"
+  es: "Solicitud de vacaciones {reference} aprobada"
+  vi: "Đơn nghỉ phép {reference} đã được duyệt"
+body_request_approved:
+  en: "Your vacation request {reference} ({dates}) was approved."
+  es: "Su solicitud de vacaciones {reference} ({dates}) fue aprobada."
+  vi: "Đơn nghỉ phép {reference} ({dates}) của bạn đã được duyệt."
+
+subject_request_denied:
+  en: "Vacation request {reference} not approved"
+  es: "Solicitud de vacaciones {reference} no aprobada"
+  vi: "Đơn nghỉ phép {reference} không được duyệt"
+body_request_denied:
+  en: "Your vacation request {reference} ({dates}) was not approved. Your supervisor or HR office can tell you more."
+  es: "Su solicitud de vacaciones {reference} ({dates}) no fue aprobada. Su supervisor o la oficina de Recursos Humanos le pueden dar más información."
+  vi: "Đơn nghỉ phép {reference} ({dates}) của bạn không được duyệt. Người giám sát hoặc văn phòng Nhân sự có thể giải thích thêm."
+
+subject_request_cancelled:
+  en: "Vacation request {reference} cancelled"
+  es: "Solicitud de vacaciones {reference} cancelada"
+  vi: "Đơn nghỉ phép {reference} đã bị hủy"
+body_request_cancelled:
+  en: "The vacation request {reference} ({dates}) was cancelled by the employee. Nothing more is needed from you."
+  es: "El empleado canceló la solicitud de vacaciones {reference} ({dates}). No necesita hacer nada más."
+  vi: "Nhân viên đã hủy đơn nghỉ phép {reference} ({dates}). Bạn không cần làm gì thêm."
+
+subject_decision_overdue:
+  en: "Vacation request {reference}: no decision yet"
+  es: "Solicitud de vacaciones {reference}: aún sin decisión"
+  vi: "Đơn nghỉ phép {reference}: chưa có quyết định"
+body_decision_overdue:
+  en: "Your vacation request {reference} ({dates}) has no decision yet. Please check with your HR office in person."
+  es: "Su solicitud de vacaciones {reference} ({dates}) aún no tiene decisión. Por favor, consulte en persona con su oficina de Recursos Humanos."
+  vi: "Đơn nghỉ phép {reference} ({dates}) của bạn chưa có quyết định. Vui lòng đến hỏi trực tiếp văn phòng Nhân sự."
+
+subject_ceo_request:
+  en: "CEO vacation {reference} recorded"
+  es: "Vacaciones del director general {reference} registradas"
+  vi: "Đã ghi nhận kỳ nghỉ của Tổng giám đốc {reference}"
+body_ceo_request:
+  en: "The CEO's vacation {reference} ({dates}) needs no approval and is recorded as approved."
+  es: "Las vacaciones del director general {reference} ({dates}) no requieren aprobación y quedan registradas como aprobadas."
+  vi: "Kỳ nghỉ {reference} ({dates}) của Tổng giám đốc không cần duyệt và đã được ghi nhận là đã duyệt."
+
+comment:
+  en: "Comment: {comment}"
+  es: "Comentario: {comment}"
+  vi: "Ghi chú: {comment}"
+
+date_range:
+  en: "{first} to {last}"
+  es: "del {first} al {last}"
+  vi: "từ {first} đến {last}"
+
+# No details at all: the employee's words are read only in the console (FR-32).
+subject_hr_referral:
+  en: "An employee asked HR to contact them"
+  es: "Un empleado pidió que Recursos Humanos lo contacte"
+  vi: "Một nhân viên đề nghị Nhân sự liên hệ"
+body_hr_referral:
+  en: "An employee at your location asked HR to contact them. Sign in to the Roost console and open Referrals."
+  es: "Un empleado de su centro pidió que Recursos Humanos lo contacte. Inicie sesión en la consola de Roost y abra Derivaciones."
+  vi: "Một nhân viên tại địa điểm của bạn đề nghị Nhân sự liên hệ. Hãy đăng nhập bảng điều khiển Roost và mở mục Chuyển tiếp."

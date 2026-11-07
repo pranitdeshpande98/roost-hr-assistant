@@ -7,15 +7,21 @@ requires-python = ">=3.12,<3.13"
 authors = [{ name = "Pranit Deshpande" }]
 dependencies = [
     "alembic>=1.20.1",
+    "argon2-cffi>=23.1",
+    "fastapi>=0.120",
+    "jinja2>=3.1",
     "langgraph>=1.2.19",
     "langgraph-checkpoint-postgres>=3.2.0",
     "openai>=3.42.0",
     "pgvector>=0.5.1",
+    "psycopg-pool>=3.2",
     "psycopg[binary]>=3.3.6",
     "pydantic-settings>=2.16.2",
+    "python-multipart>=0.0.20",
     "pyyaml>=6.0.3",
     "sentence-transformers>=6.2.0",
     "sqlalchemy>=2.1.6",
+    "uvicorn>=0.38",
 ]
 
 [build-system]
@@ -25,6 +31,7 @@ build-backend = "uv_build"
 [dependency-groups]
 dev = [
     "faker>=40.44.0",
+    "httpx>=0.28",
     "httpx2>=2.16.0",
     "mypy>=2.4.1",
     "pre-commit>=4.7.0",

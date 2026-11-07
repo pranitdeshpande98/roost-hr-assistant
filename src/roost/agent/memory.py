@@ -7,6 +7,7 @@ import psycopg
 from langgraph.checkpoint.postgres import PostgresSaver
 from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
 from psycopg.rows import dict_row
+from psycopg_pool import ConnectionPool
 
 # Created by an Alembic migration; LangGraph creates and migrates the tables inside it.
 MEMORY_SCHEMA = "agent_memory"
@@ -31,8 +32,8 @@ def psycopg_url(sqlalchemy_url: str) -> str:
 def open_checkpointer(database_url: str) -> Iterator[PostgresSaver]:
     """A checkpointer on one dedicated connection, closed on exit.
 
-    One connection suits a single process like the terminal chat; the API (Phase 8) will
-    use a connection pool instead.
+    One connection suits a single process like the terminal chat; the API uses
+    open_pooled_checkpointer instead.
     """
     with psycopg.connect(
         psycopg_url(database_url),
@@ -45,4 +46,28 @@ def open_checkpointer(database_url: str) -> Iterator[PostgresSaver]:
             connection, serde=JsonPlusSerializer(allowed_msgpack_modules=SAFE_CHECKPOINT_TYPES)
         )
         saver.setup()  # creates or upgrades LangGraph's own tables; safe to run every time
+        yield saver
+
+
+@contextmanager
+def open_pooled_checkpointer(database_url: str, max_size: int = 10) -> Iterator[PostgresSaver]:
+    """A checkpointer on a connection pool, for the API: concurrent requests each borrow
+    their own connection instead of sharing one (NFR-02)."""
+    with ConnectionPool(
+        psycopg_url(database_url),
+        min_size=1,
+        max_size=max_size,
+        kwargs={
+            "autocommit": True,
+            "prepare_threshold": 0,
+            "row_factory": dict_row,
+            "options": f"-c search_path={MEMORY_SCHEMA}",
+        },
+        open=True,
+    ) as pool:
+        saver = PostgresSaver(
+            pool,  # type: ignore[arg-type]  # a pool of dict-row connections, as required
+            serde=JsonPlusSerializer(allowed_msgpack_modules=SAFE_CHECKPOINT_TYPES),
+        )
+        saver.setup()
         yield saver

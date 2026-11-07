@@ -5,6 +5,7 @@ import uuid
 from collections.abc import Callable, Sequence
 from contextlib import AbstractContextManager
 from datetime import date
+from decimal import Decimal
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
@@ -13,7 +14,7 @@ from sqlalchemy.orm import Session
 from roost.agent.confirmation import Confirmation, ConfirmationReply
 from roost.agent.messages import MessageCatalog
 from roost.agent.tools import Tool, ToolContext
-from roost.core.enums import DayPortion, Language
+from roost.core.enums import DayPortion, Language, VacationRequestStatus
 from roost.leave.repository import (
     RequestNotChangeableError,
     RequestNotFoundError,
@@ -22,7 +23,9 @@ from roost.leave.repository import (
     change_request,
     check_draft,
     create_request,
+    draft_hours,
     ensure_changeable,
+    format_hours,
     get_request,
     list_requests,
 )
@@ -112,12 +115,25 @@ def explain(check: RuleCheck) -> str:
     )
 
 
-def _details(draft: VacationRequestDraft, language: Language, messages: MessageCatalog) -> str:
+def _details(
+    draft: VacationRequestDraft,
+    hours: Sequence[Decimal],
+    language: Language,
+    messages: MessageCatalog,
+) -> str:
+    """One line per day with its hours, then the total (the request's hours, FR-06 allows
+    them: they are not a balance)."""
     portion = {
         DayPortion.FULL: messages.get("full_day", language),
         DayPortion.HALF: messages.get("half_day", language),
     }
-    return "\n".join(f"- {d.day.isoformat()} ({portion[d.portion]})" for d in draft.days)
+    per_day = messages.get("day_hours", language)
+    lines = [
+        f"- {d.day.isoformat()} ({portion[d.portion]}, {per_day.format(hours=format_hours(h))})"
+        for d, h in zip(draft.days, hours, strict=True)
+    ]
+    total = messages.get("total_hours", language).format(hours=format_hours(sum(hours, Decimal(0))))
+    return "\n".join([*lines, total])
 
 
 def _declined(reply: ConfirmationReply, action: str) -> str:
@@ -176,12 +192,13 @@ class RequestVacationTool(_VacationTool):
 
         with self._sessions() as session:  # read-only: safe to repeat when resumed
             check = check_draft(session, employee, draft, today=context.today)
+            hours = draft_hours(session, employee, draft)
         if not check.ok:
             return explain(check)
 
         question = self._messages.get("confirm_submit", context.language)
         reply = context.confirm(
-            question.format(details=_details(draft, context.language, self._messages))
+            question.format(details=_details(draft, hours, context.language, self._messages))
         )
         if reply.answer is not Confirmation.YES:
             return _declined(reply, "SUBMITTED")
@@ -193,8 +210,13 @@ class RequestVacationTool(_VacationTool):
                 return explain(error.check)
             session.commit()
             code = request.reference_code
+            approved = request.status is VacationRequestStatus.APPROVED
+        status = (
+            "approved (no approval needed)" if approved else "pending supervisor and HR approval"
+        )
+        total = format_hours(sum(hours, Decimal(0)))
         return (
-            f"SUBMITTED. Reference {code}. Status: pending supervisor and HR approval. "
+            f"SUBMITTED. Reference {code}. Status: {status}. Uses {total} hours of vacation. "
             "Give the employee the reference."
         )
 
@@ -239,11 +261,12 @@ class ChangeVacationTool(_VacationTool):
             check = check_draft(
                 session, employee, draft, today=context.today, ignore_request_id=request.id
             )
+            hours = draft_hours(session, employee, draft)
         if not check.ok:
             return explain(check)
 
         question = self._messages.get("confirm_change", context.language).format(
-            reference=code, details=_details(draft, context.language, self._messages)
+            reference=code, details=_details(draft, hours, context.language, self._messages)
         )
         reply = context.confirm(question)
         if reply.answer is not Confirmation.YES:
@@ -251,11 +274,15 @@ class ChangeVacationTool(_VacationTool):
 
         with self._sessions() as session:
             try:
-                change_request(session, employee, code, draft, today=context.today)
+                changed = change_request(session, employee, code, draft, today=context.today)
             except RuleViolationError as error:
                 return explain(error.check)
             session.commit()
-        return f"CHANGED. {code} now has the new dates and is pending both approvals again."
+            approved = changed.status is VacationRequestStatus.APPROVED
+        uses = f"Uses {format_hours(sum(hours, Decimal(0)))} hours of vacation."
+        if approved:
+            return f"CHANGED. {code} now has the new dates and is approved (no approval needed). {uses}"
+        return f"CHANGED. {code} now has the new dates and is pending both approvals again. {uses}"
 
 
 class CancelVacationTool(_VacationTool):
@@ -315,19 +342,25 @@ class ListVacationTool(_VacationTool):
         with self._sessions() as session:
             requests = list_requests(session, context.employee_id)
             lines = [
-                _summary(r.reference_code, r.status.value, [d.day for d in r.days])
+                _summary(
+                    r.reference_code,
+                    r.status.value,
+                    [d.day for d in r.days],
+                    sum((d.hours for d in r.days), Decimal(0)),
+                )
                 for r in requests
             ]
         return "\n".join(lines) if lines else "The employee has no vacation requests."
 
 
-def _summary(code: str, status: str, days: Sequence[date]) -> str:
+def _summary(code: str, status: str, days: Sequence[date], hours: Decimal) -> str:
     span = (
         days[0].isoformat()
         if len(days) == 1
         else f"{days[0].isoformat()} to {days[-1].isoformat()}"
     )
-    return f"{code}: {status}, {span} ({len(days)} day{'s' if len(days) != 1 else ''})"
+    count = f"{len(days)} day{'s' if len(days) != 1 else ''}"
+    return f"{code}: {status}, {span} ({count}, {format_hours(hours)} hours)"
 
 
 def vacation_tools(sessions: Sessions, messages: MessageCatalog) -> list[Tool]:

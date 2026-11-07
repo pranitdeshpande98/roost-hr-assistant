@@ -5,6 +5,7 @@ and resumes that tool instead of starting a new question.
 """
 
 import uuid
+from dataclasses import dataclass
 from typing import Any
 
 from langgraph.graph.state import CompiledStateGraph
@@ -16,11 +17,22 @@ from roost.core.enums import Channel, Language
 from roost.llm.types import ChatMessage
 
 
-def _waiting_for_confirmation(
+def _pending_question(
+    agent: CompiledStateGraph[AgentState, Any, Any, Any], thread_id: str
+) -> str | None:
+    """The confirmation question the thread is paused on, if any."""
+    state = agent.get_state({"configurable": {"thread_id": thread_id}})
+    for task in state.tasks:
+        for pending in task.interrupts:
+            return str(pending.value)
+    return None
+
+
+def waiting_for_confirmation(
     agent: CompiledStateGraph[AgentState, Any, Any, Any], thread_id: str
 ) -> bool:
-    state = agent.get_state({"configurable": {"thread_id": thread_id}})
-    return any(task.interrupts for task in state.tasks)
+    """Whether the next message answers "submit this?" (YES / NO) instead of asking."""
+    return _pending_question(agent, thread_id) is not None
 
 
 def ask(
@@ -39,7 +51,7 @@ def ask(
     which Teams may switch between messages. History carries over; `employee_id` is set
     when given (after sign-in) and otherwise kept from earlier turns.
     """
-    if _waiting_for_confirmation(agent, thread_id):
+    if waiting_for_confirmation(agent, thread_id):
         resume: Command[Any] = Command(resume=question)
         result = agent.invoke(resume, {"configurable": {"thread_id": thread_id}})
     else:
@@ -50,6 +62,7 @@ def ask(
             "tool_rounds": 0,
             "reply": None,
             "guardrail": None,
+            "offer_referral": False,
         }
         if employee_id is not None:
             turn["employee_id"] = employee_id
@@ -60,3 +73,34 @@ def ask(
         # Paused for confirmation: show the fixed-template question (plus footer).
         return compose_reply(str(pending[0].value), language, messages or default_messages())
     return str(result["reply"])
+
+
+@dataclass(frozen=True, slots=True)
+class TranscriptLine:
+    from_employee: bool
+    text: str
+
+
+def transcript(
+    agent: CompiledStateGraph[AgentState, Any, Any, Any],
+    thread_id: str,
+    *,
+    language: Language,
+    messages: MessageCatalog | None = None,
+) -> list[TranscriptLine]:
+    """The conversation as the employee saw it: their messages and each reply with its
+    footer, then a pending confirmation question if there is one. Tool calls and results
+    are not shown."""
+    catalog = messages or default_messages()
+    state = agent.get_state({"configurable": {"thread_id": thread_id}})
+    lines = []
+    for message in state.values.get("messages", []):
+        if message.role == "user":
+            lines.append(TranscriptLine(True, message.content or ""))
+        elif message.role == "assistant" and not message.tool_calls:
+            # An empty answer is a model outage: compose_reply shows the fixed fallback.
+            lines.append(TranscriptLine(False, compose_reply(message.content, language, catalog)))
+    question = _pending_question(agent, thread_id)
+    if question is not None:
+        lines.append(TranscriptLine(False, compose_reply(question, language, catalog)))
+    return lines

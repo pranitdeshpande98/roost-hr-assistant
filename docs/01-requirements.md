@@ -70,7 +70,7 @@ and the channel layer is designed so Teams plugs in without changing the agent.
 | FR-03 | Reply in English, Spanish or Vietnamese. Kiosk: language chosen on the start screen. Teams: detected from the message, switchable on request. Non-English answers state the English handbook is binding. | P0 |
 | FR-04 | Every reply ends with the disclaimer footer (informational only; HR decisions are final). | P0 |
 | FR-05 | Answer payroll schedule questions (pay period, payday, holiday payday rule) based on the employee's payroll class. | P0 |
-| FR-06 | Never disclose pay, vacation or sick balances, attendance point totals, deductions, benefit elections or bank data. Decline and refer to HR. | P0 |
+| FR-06 | Never disclose pay, vacation or sick balances, attendance point totals, deductions, benefit elections or bank data. Decline and refer to HR. One exception: HR (not supervisors, not the kiosk) sees the hours left after a request on its approval page ([ADR-0013](adr/0013-api-layer.md)). | P0 |
 | FR-07 | Redirect out-of-scope requests (e.g. shift swaps) to the right person per the handbook. | P0 |
 
 ### 4.2 Vacation requests

@@ -99,7 +99,9 @@ def test_yes_submits_and_returns_a_reference(alice: tuple[Session, uuid.UUID]) -
 
     assert result.startswith("SUBMITTED. Reference VR-")
     assert len(_requests(session, employee_id)) == 1
-    assert "2027-01-11 (full day)" in employee.questions[0]
+    assert "2027-01-11 (full day, 8 h)" in employee.questions[0]
+    assert "Total: 40 hours" in employee.questions[0]
+    assert "Uses 40 hours of vacation." in result
 
 
 def test_no_saves_nothing(alice: tuple[Session, uuid.UUID]) -> None:
@@ -149,7 +151,8 @@ def test_confirmation_question_is_in_the_employees_language(
     result = tool.run(_days(WEEK[0], portion="half"), _context(employee_id, employee, Language.ES))
 
     assert result.startswith("SUBMITTED.")
-    assert "2027-01-11 (medio día)" in employee.questions[0]
+    assert "2027-01-11 (medio día, 4 h)" in employee.questions[0]
+    assert "Total: 4 horas" in employee.questions[0]
     assert "Responda SÍ" in employee.questions[0]
 
 
@@ -192,7 +195,7 @@ def test_change_then_cancel(alice: tuple[Session, uuid.UUID]) -> None:
     )
 
     assert changed.startswith(f"CHANGED. {code}")
-    assert listed == f"{code}: pending, 2027-01-11 to 2027-01-12 (2 days)"
+    assert listed == f"{code}: pending, 2027-01-11 to 2027-01-12 (2 days, 16 hours)"
     assert cancelled.startswith(f"CANCELLED. {code}")
     assert _requests(session, employee_id)[0].status is VacationRequestStatus.CANCELLED
 
