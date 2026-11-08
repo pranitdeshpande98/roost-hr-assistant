@@ -1,0 +1,133 @@
+# The quality gates that need real models (requirements 6.2, ADR-0015): retrieval with
+# the embedding model, the guardrail on its frozen holdout, and the whole agent.
+# Weekly and on demand only: a full agent run uses most of a day's free-tier quota, so
+# pull requests never spend it. Needs the GROQ_API_KEY and OPENROUTER_API_KEY secrets.
+name: Evals
+
+on:
+  schedule:
+    - cron: "23 7 * * 1" # Mondays 07:23 UTC
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: Which evals to run
+        type: choice
+        options: [all, retrieval, guardrails, agent]
+        default: all
+
+permissions:
+  contents: read
+
+concurrency:
+  group: evals
+  cancel-in-progress: false
+
+jobs:
+  evals:
+    name: Quality gates
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: roost
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: roost
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U roost -d roost"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      DATABASE_URL: postgresql+psycopg://roost:ci-only-password@localhost:5432/roost
+      ENVIRONMENT: test
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      SUITE: ${{ inputs.suite || 'all' }}
+      OUT: var/evals
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: The model keys are configured
+        if: env.SUITE != 'retrieval'
+        run: |
+          if [ -z "$GROQ_API_KEY" ] || [ -z "$OPENROUTER_API_KEY" ]; then
+            echo "::error::Add GROQ_API_KEY and OPENROUTER_API_KEY under Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+
+      - uses: astral-sh/setup-uv@v8.1.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Install
+        run: uv sync --frozen
+
+      - name: Cache the embedding model (bge-m3, ~2.2 GB)
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: hf-bge-m3-v1
+
+      - name: Database with the handbook (as in the README)
+        run: |
+          uv run alembic upgrade head
+          uv run python scripts/seed_db.py
+          uv run python scripts/ingest_handbook.py data/raw/handbook/handbook-v1.0.md \
+            --version-label 1.0 --effective-date 2026-11-01 --publish
+          uv run python scripts/embed_handbook.py --model bge-m3
+
+      - name: Retrieval (hit@5 at least 90% with the agent's vector search)
+        id: retrieval
+        if: env.SUITE == 'all' || env.SUITE == 'retrieval'
+        continue-on-error: true
+        run: uv run python scripts/eval_retrieval.py --model bge-m3 --out "$OUT/retrieval" --gate vector:bge-m3
+
+      - name: Guardrails (the frozen holdout)
+        id: guardrails
+        if: env.SUITE == 'all' || env.SUITE == 'guardrails'
+        continue-on-error: true
+        run: |
+          uv run python scripts/eval_guardrails.py --split test --out "$OUT/guardrails"
+          uv run python scripts/eval_guardrails.py --report --out "$OUT/guardrails"
+
+      - name: Agent (34 scenarios, 102 cases, all six gates)
+        id: agent
+        if: env.SUITE == 'all' || env.SUITE == 'agent'
+        continue-on-error: true
+        run: |
+          uv run python scripts/eval_agent.py --out "$OUT/agent"
+          uv run python scripts/eval_agent.py --report --out "$OUT/agent"
+
+      - name: Keep the reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-reports
+          path: var/evals
+          if-no-files-found: warn
+
+      - name: Show the reports on the run page
+        if: always()
+        run: |
+          for report in "$OUT"/retrieval/*.md "$OUT"/guardrails/summary.md "$OUT"/agent/summary.md; do
+            if [ -f "$report" ]; then
+              { echo "## $report"; echo; cat "$report"; echo; } >> "$GITHUB_STEP_SUMMARY"
+            fi
+          done
+
+      - name: Every gate passed
+        if: always()
+        run: |
+          failed=""
+          for step in "retrieval:${{ steps.retrieval.outcome }}" "guardrails:${{ steps.guardrails.outcome }}" "agent:${{ steps.agent.outcome }}"; do
+            case "$step" in *:failure) failed="$failed ${step%%:*}";; esac
+          done
+          if [ -n "$failed" ]; then
+            echo "::error::Quality gates failed:$failed (reports attached to this run)"
+            exit 1
+          fi
+          echo "All the gates that ran passed."

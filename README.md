@@ -1,6 +1,8 @@
 # Roost: Multilingual AI HR Assistant
 
-> **Status:** ✅ Phase 9 complete · 🚧 Phase 10: CI/CD
+[![CI](https://github.com/pranitdeshpande98/roost-hr-assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/pranitdeshpande98/roost-hr-assistant/actions/workflows/ci.yml)
+
+> **Status:** ✅ Phase 10 complete · 🚧 Phase 11: Deployment
 
 Roost is a production-style AI assistant for **Hollow Creek Poultry Co.**, a
 fictional poultry processor with three plants and a corporate office. It helps
@@ -178,6 +180,22 @@ GET /chat/stream
 
 Design and trade-offs: [ADR-0014](docs/adr/0014-observability.md).
 
+## CI/CD and containers (Phase 10)
+
+| Workflow | When | What |
+|---|---|---|
+| **CI** ([ci.yml](.github/workflows/ci.yml)) | Every pull request and push to `master` | Ruff, mypy strict, file hygiene, migrations match the models, all tests against real Postgres + pgvector (coverage at least 90%), and the Docker image builds and runs as non-root |
+| **Evals** ([evals.yml](.github/workflows/evals.yml)) | Mondays 07:23 UTC, and on demand from the Actions tab | Builds the database, then runs the retrieval, guardrail and agent evals against their gates; reports are attached to the run |
+| **Dependabot** | Weekly | Update PRs for Python packages, actions and base images |
+
+- **Merges into `master` need a green CI** (branch protection).
+- **Pull requests never spend model quota:** the model evals run weekly; the deterministic
+  checks are unit tests.
+- **The image** (`Dockerfile`) is two-stage, runs as a non-root user, uses CPU-only torch,
+  and contains no `.env` or tests. bge-m3 is downloaded on first start into a volume.
+
+Design and trade-offs: [ADR-0015](docs/adr/0015-ci-cd-and-containers.md).
+
 ## Model selection (Phase 4)
 
 Chosen by evaluation, not leaderboards: 90 questions (30 intents x English, Spanish, Vietnamese).
@@ -209,6 +227,8 @@ Reproduce: `uv run python scripts/eval_retrieval.py` and `uv run python scripts/
 | Lint and format | Ruff |
 | Type checking | mypy (strict) |
 | Testing | pytest, pytest-cov (unit + integration against real Postgres; LLM calls mocked at the HTTP layer) |
+| CI/CD | GitHub Actions, Dependabot |
+| Containers | Docker (multi-stage, non-root), Docker Compose |
 | Git hooks | pre-commit |
 
 ## Getting started
@@ -267,6 +287,22 @@ uv run python scripts/set_console_password.py --employee NUMBER --hr HR_NUMBER -
 `NUMBER` is the employee's number; `HR_NUMBER` is an HR generalist at the same location
 or an HR admin. Console passwords are only for supervisors and HR.
 
+**Or run everything in Docker** (the app, Postgres and Jaeger). The app applies
+migrations itself; seed and ingest as above first. The first start downloads bge-m3
+(about 2 GB, kept in a volume), so it takes a few minutes to report healthy:
+
+```bash
+docker compose --profile app up -d --build
+```
+
+**Evals in GitHub Actions** need the two LLM keys as repository secrets (each command
+asks for the value):
+
+```bash
+gh secret set GROQ_API_KEY
+gh secret set OPENROUTER_API_KEY
+```
+
 ## Development commands
 
 | Task | Command |
@@ -302,6 +338,9 @@ or an HR admin. Console passwords are only for supervisors and HR.
 | Erase referral texts 90 days after handling (daily) | `uv run python scripts/delete_old_referrals.py` |
 | Daily retention: transcripts after 45 days (unless held), metrics after 30, referral texts | `uv run python scripts/apply_retention.py` |
 | See traces | <http://localhost:16686> (service `roost`) |
+| Build and run the app container | `docker compose --profile app up -d --build` |
+| Retrieval eval with the CI gate | `uv run python scripts/eval_retrieval.py --model bge-m3 --gate vector:bge-m3` |
+| Run the evals on GitHub | `gh workflow run evals.yml -f suite=all` |
 
 ## Project structure
 
@@ -332,6 +371,8 @@ migrations/       Alembic database migrations
 scripts/          seed, ingestion, embedding, smoke-test, eval and chat commands
 config/           reviewed text and rules: replies, kiosk and console pages, notices, guardrails
 docs/             requirements, architecture and decision records
+.github/          CI and eval workflows, Dependabot
+Dockerfile        the app image (compose.yaml runs it with --profile app)
 ```
 
 ## Roadmap
@@ -345,6 +386,6 @@ docs/             requirements, architecture and decision records
 - [x] Phase 7: Guardrails
 - [x] Phase 8: API layer
 - [x] Phase 9: Observability
-- [ ] Phase 10: Containers and CI/CD
+- [x] Phase 10: Containers and CI/CD
 - [ ] Phase 11: Deployment
 - [ ] Phase 12: Teams integration and post-launch
