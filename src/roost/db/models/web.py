@@ -32,5 +32,8 @@ class WebSession(Base):
     csrf_token: Mapped[str] = mapped_column(String(64))
     # Signed in with a PIN or password HR set: only the "choose your own" page (FR-41).
     must_change_pin: Mapped[bool] = mapped_column(Boolean, server_default=text("false"))
+    # Kiosk streaming: the message just sent, held only until the stream picks it up
+    # (a second or two), then cleared. The transcript is the record, not this.
+    pending_text: Mapped[str | None] = mapped_column(String(1000))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

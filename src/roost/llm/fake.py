@@ -1,10 +1,11 @@
 """A scripted chat model for tests and offline runs. Never touches the network."""
 
+import re
 from collections import deque
 from collections.abc import Iterable
 from dataclasses import dataclass
 
-from roost.llm.types import ChatMessage, ChatResult, ToolCall, ToolSpec, Usage
+from roost.llm.types import ChatMessage, ChatResult, TextSink, ToolCall, ToolSpec, Usage
 from roost.observability import turns
 
 
@@ -59,6 +60,7 @@ class ScriptedChatModel:
         tools: list[ToolSpec] | None = None,
         temperature: float = 0.0,
         max_tokens: int | None = None,
+        on_text: TextSink | None = None,
     ) -> ChatResult:
         self.requests.append(ChatRequest(list(messages), tools, temperature, max_tokens))
         if not self._script:
@@ -67,6 +69,10 @@ class ScriptedChatModel:
         if isinstance(item, Exception):
             turns.record_model_call(self._name, 0, 0, 0.0, ok=False)
             raise item
+        if on_text is not None and item.message.content:
+            # Stream the scripted answer a word at a time, like a provider would.
+            for word in re.findall(r"\S+\s*", item.message.content):
+                on_text.text(word)
         usage = item.usage
         turns.record_model_call(
             item.model, usage.prompt_tokens, usage.completion_tokens, item.latency_ms, ok=True

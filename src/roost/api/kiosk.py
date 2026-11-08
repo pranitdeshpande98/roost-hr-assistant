@@ -3,14 +3,25 @@
 Pages are server-rendered and work without JavaScript; htmx only makes sending a
 message smoother. Every request after sign-in loads the session from the database,
 which enforces the 2-minute idle limit.
+
+Streaming (NFR-01, ADR-0014): kiosk.js sends messages with `X-Roost-Stream: 1`. The POST
+then only holds the message and answers at once with an empty Roost bubble; the browser
+opens /chat/stream, which runs the turn and sends the answer as it is written, then the
+final, checked conversation, which replaces the bubble. Without the header (no
+JavaScript, or tests), the POST runs the turn and returns the finished reply, as before.
 """
 
+import contextvars
+import json
 import logging
 import math
+import queue
+import threading
+from collections.abc import Iterator
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Form, Request
-from fastapi.responses import HTMLResponse, RedirectResponse, Response
+from fastapi.responses import HTMLResponse, RedirectResponse, Response, StreamingResponse
 from sqlalchemy.orm import Session
 
 from roost.agent.conversation import TranscriptLine, ask, waiting_for_confirmation
@@ -54,6 +65,17 @@ def _page(
         }
         | context,
         status_code=status,
+    )
+
+
+def _render(request: Request, template: str, language: Language, **context: Any) -> str:
+    """A template as text, for the stream's final event."""
+    services = _services(request)
+    return TEMPLATES.env.get_template(template).render(
+        request=request,
+        t=lambda key, **f: services.ui.get(key, language).format(**f),
+        lang=language,
+        **context,
     )
 
 
@@ -275,6 +297,11 @@ def chat_send(
     services = _services(request)
     error = None
     said = text.strip()
+    streaming = request.headers.get("x-roost-stream") == "1" and _is_htmx(request)
+    if said and streaming:
+        session.pending_text = said  # /chat/stream picks it up and clears it
+        context = _conversation_context(db, services, session)
+        return _page(request, "_conversation.html", session.language, pending=said, **context)
     if said:
         finished: list[TurnStats] = []
 
@@ -301,10 +328,110 @@ def chat_send(
             error = "error"
         _record(db, services, session, said, reply, finished[0] if finished else None)
 
-    if request.headers.get("hx-request") != "true":  # no JavaScript: back to the page
+    if not _is_htmx(request):  # no JavaScript: back to the page
         return RedirectResponse("/chat", status_code=303)
     context = _conversation_context(db, services, session)
     return _page(request, "_conversation.html", session.language, error=error, **context)
+
+
+def _is_htmx(request: Request) -> bool:
+    return request.headers.get("hx-request") == "true"
+
+
+class _QueueSink:
+    """Streamed text, handed from the turn's thread to the response."""
+
+    def __init__(self, events: "queue.Queue[tuple[str, str]]") -> None:
+        self._events = events
+
+    def text(self, delta: str) -> None:
+        self._events.put(("token", delta))
+
+    def reset(self) -> None:
+        self._events.put(("reset", ""))
+
+
+def _event(name: str, data: str) -> str:
+    """One server-sent event. JSON keeps the data on a single line."""
+    return f"event: {name}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
+
+
+@router.get("/chat/stream")
+def chat_stream(request: Request) -> Response:
+    """Run the message the POST just held, streaming the answer (server-sent events).
+    204 tells the browser there is nothing to stream, and not to reconnect."""
+    services = _services(request)
+    with services.sessions() as db:
+        session = _current(request, db)
+        said = session.pending_text if session is not None else None
+        if session is None or session.must_change_pin or not said:
+            db.commit()
+            return Response(status_code=204)
+        session.pending_text = None  # taken once: a reconnect does not run it again
+        db.commit()
+        token_hash = session.token_hash
+        thread_id, employee_id, language = session.thread_id, session.employee_id, session.language
+
+    events: queue.Queue[tuple[str, str]] = queue.Queue()
+
+    def run_turn() -> None:
+        finished: list[TurnStats] = []
+
+        def on_turn(stats: TurnStats) -> None:
+            finished.append(stats)
+            if services.record_turn is not None:
+                services.record_turn(stats)
+
+        reply: str | None = None
+        error = None
+        try:
+            reply = ask(
+                services.agent,
+                str(thread_id),
+                said,
+                language=language,
+                channel=Channel.KIOSK,
+                employee_id=employee_id,
+                messages=services.messages,
+                on_turn=on_turn,
+                on_text=_QueueSink(events),
+            )
+        except Exception:
+            logger.exception("Kiosk turn failed")
+            error = "error"
+        try:
+            with services.sessions() as db:
+                current = db.get(WebSession, token_hash)
+                if current is not None:
+                    _record(db, services, current, said, reply, finished[0] if finished else None)
+                    context = _conversation_context(db, services, current)
+                    html = _render(request, "_conversation.html", language, error=error, **context)
+                else:  # signed out while it was answering: the turn is still recorded
+                    html = ""
+                db.commit()
+        except Exception:
+            logger.exception("Could not finish the kiosk turn")
+            html = ""
+        events.put(("done", html))
+
+    # The turn runs in its own thread, in this request's context (so its spans belong to
+    # this request's trace); the response sends whatever it produces as it arrives.
+    worker = threading.Thread(target=contextvars.copy_context().run, args=(run_turn,))
+    worker.start()
+
+    def stream() -> Iterator[str]:
+        while True:
+            name, data = events.get()
+            yield _event(name, data)
+            if name == "done":
+                break
+        worker.join()
+
+    return StreamingResponse(
+        stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"},
+    )
 
 
 # --- sign out -----------------------------------------------------------------------

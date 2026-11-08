@@ -67,6 +67,9 @@ TODAY = date(2026, 11, 2)
 MESSAGES = default_messages()
 # Pages anyone may open without signing in.
 PUBLIC = {"/sign-in", "/console/sign-in", "/health"}
+# Event streams answer 204 without a session: EventSource cannot follow a redirect, and
+# 204 tells it not to reconnect. Nothing is sent.
+STREAMS = {"/chat/stream"}
 # Forms that are posted before there is a session, or must always work (idle sign-out).
 NO_SESSION_FORMS = {"/sign-in", "/console/sign-in", "/sign-out", "/console/sign-out"}
 
@@ -270,8 +273,12 @@ def _fill(path: str) -> str:
 
 def test_every_page_needs_a_signed_in_session(world: World) -> None:
     client = world.client()
-    pages = [p for p in _routes("GET") if p not in PUBLIC]
+    pages = [p for p in _routes("GET") if p not in PUBLIC | STREAMS]
     assert len(pages) >= 9  # the kiosk and console pages, read from the app
+
+    for path in STREAMS:
+        response = client.get(path)
+        assert (response.status_code, response.content) == (204, b""), path
 
     for path in pages:
         response = client.get(_fill(path), follow_redirects=False)

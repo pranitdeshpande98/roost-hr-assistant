@@ -17,6 +17,7 @@ from roost.agent.confirmation import Confirmation, ConfirmationReply
 from roost.agent.messages import MessageCatalog, MessageKey, compose_reply, default_messages
 from roost.agent.prompts import system_prompt_for
 from roost.agent.state import AgentState
+from roost.agent.streaming import current_sink
 from roost.agent.tools import ToolContext, ToolRegistry
 from roost.guardrails.citations import remove_unsupported_citations
 from roost.guardrails.classifier import GuardrailDecision
@@ -189,7 +190,12 @@ def build_graph(
             *recent_turns(state.messages, max_history_turns),
         ]
         try:
-            result = model.chat(history, tools=offer)
+            sink = current_sink()
+            if sink is None:
+                result = model.chat(history, tools=offer)
+            else:
+                sink.reset()  # anything streamed before a tool call is not the answer
+                result = model.chat(history, tools=offer, on_text=sink)
         except LLMError:
             # Every model in the chain failed. Log it; finalize sends the fixed fallback.
             logger.exception("Model call failed")

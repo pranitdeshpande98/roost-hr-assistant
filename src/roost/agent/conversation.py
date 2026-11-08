@@ -13,10 +13,11 @@ from langgraph.types import Command
 
 from roost.agent.messages import MessageCatalog, compose_reply, default_messages
 from roost.agent.state import AgentState
+from roost.agent.streaming import streaming_to
 from roost.core.enums import Channel, Language
 from roost.guardrails.citations import cited_sections
 from roost.guardrails.types import ROUTE_OF, Route
-from roost.llm.types import ChatMessage
+from roost.llm.types import ChatMessage, TextSink
 from roost.observability import turns
 from roost.observability.tracing import set_attributes, span
 from roost.observability.turns import OnTurn
@@ -50,6 +51,7 @@ def ask(
     employee_id: uuid.UUID | None = None,
     messages: MessageCatalog | None = None,
     on_turn: OnTurn | None = None,
+    on_text: TextSink | None = None,
 ) -> str:
     """Run one turn on `thread_id`. The same call starts a new thread or continues one.
 
@@ -59,6 +61,9 @@ def ask(
 
     Each turn is one trace span, and its numbers (tokens, cost, tools, guardrail
     category, latency; never text) go to `on_turn` when given (NFR-11, FR-51).
+
+    With `on_text`, the agent's answer is streamed to it while it is written; the
+    returned reply is the final, checked text, which the caller shows in its place.
     """
     resumed = waiting_for_confirmation(agent, thread_id)
     with (
@@ -73,9 +78,10 @@ def ask(
         ) as current,
     ):
         try:
-            reply, kind, answer = _run_turn(
-                agent, thread_id, question, resumed, language, channel, employee_id, messages
-            )
+            with streaming_to(on_text):
+                reply, kind, answer = _run_turn(
+                    agent, thread_id, question, resumed, language, channel, employee_id, messages
+                )
         except Exception:
             stats.reply_kind = "error"
             raise

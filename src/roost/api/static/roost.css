@@ -73,3 +73,5 @@ textarea { font: inherit; padding: 0.4rem; }
 .words { white-space: pre-line; border-left: 4px solid var(--muted); margin: 0.5rem 0; padding: 0.5rem 0.9rem; background: var(--roost); }
 .filters { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
 .transcript { max-height: none; }
+.line.streaming p { min-height: 1.5em; }
+.line.streaming[aria-busy="true"] p:empty::after { content: "…"; }
