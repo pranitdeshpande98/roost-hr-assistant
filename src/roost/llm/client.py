@@ -9,7 +9,7 @@ from typing import Any, cast
 import openai
 from openai.types.chat import ChatCompletionMessageParam, ChatCompletionToolParam
 
-from roost.llm.errors import LLMRequestError, LLMResponseError, LLMUnavailableError
+from roost.llm.errors import LLMError, LLMRequestError, LLMResponseError, LLMUnavailableError
 from roost.llm.providers import (
     PROVIDERS,
     LLMSettings,
@@ -18,6 +18,8 @@ from roost.llm.providers import (
     parse_model_ref,
 )
 from roost.llm.types import ChatMessage, ChatModel, ChatResult, ToolCall, ToolSpec, Usage
+from roost.observability import turns
+from roost.observability.tracing import set_attributes, span
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +56,17 @@ def _to_openai_tool(tool: ToolSpec) -> ChatCompletionToolParam:
             "description": tool.description,
             "parameters": tool.parameters,
         },
+    }
+
+
+def _call_attributes(call: turns.ModelCall, *, outcome: str) -> dict[str, object]:
+    return {
+        "gen_ai.usage.input_tokens": call.input_tokens,
+        "gen_ai.usage.output_tokens": call.output_tokens,
+        "roost.llm.purpose": call.purpose,
+        "roost.llm.fallback_position": call.fallback_position,
+        "roost.llm.cost_usd": float(call.cost_usd),
+        "roost.llm.outcome": outcome,
     }
 
 
@@ -117,7 +130,41 @@ class OpenAICompatibleChatModel:
         temperature: float = 0.0,
         max_tokens: int | None = None,
     ) -> ChatResult:
-        started = time.perf_counter()
+        # One span per call, with the model, tokens and estimated cost; never the messages.
+        with span(
+            "llm.chat",
+            {"gen_ai.system": self._provider.key, "gen_ai.request.model": self._model},
+        ) as current:
+            started = time.perf_counter()
+            try:
+                result = self._call(messages, tools, temperature, max_tokens, started)
+            except LLMError as error:
+                elapsed = (time.perf_counter() - started) * 1000
+                call = turns.record_model_call(self.name, 0, 0, elapsed, ok=False)
+                set_attributes(current, _call_attributes(call, outcome=type(error).__name__))
+                raise
+            call = turns.record_model_call(
+                self.name,
+                result.usage.prompt_tokens,
+                result.usage.completion_tokens,
+                result.latency_ms,
+                ok=True,
+            )
+            set_attributes(
+                current,
+                _call_attributes(call, outcome="ok")
+                | {"gen_ai.response.finish_reasons": (result.finish_reason or "unknown",)},
+            )
+            return result
+
+    def _call(
+        self,
+        messages: list[ChatMessage],
+        tools: list[ToolSpec] | None,
+        temperature: float,
+        max_tokens: int | None,
+        started: float,
+    ) -> ChatResult:
         try:
             completion = self._client.chat.completions.create(
                 model=self._model,
@@ -185,11 +232,12 @@ class FallbackChatModel:
         max_tokens: int | None = None,
     ) -> ChatResult:
         last_error: LLMUnavailableError | None = None
-        for model in self._models:
+        for position, model in enumerate(self._models):
             try:
-                return model.chat(
-                    messages, tools=tools, temperature=temperature, max_tokens=max_tokens
-                )
+                with turns.fallback_position(position):
+                    return model.chat(
+                        messages, tools=tools, temperature=temperature, max_tokens=max_tokens
+                    )
             except LLMUnavailableError as exc:
                 logger.warning("%s unavailable (%s); trying the next model", model.name, exc)
                 last_error = exc

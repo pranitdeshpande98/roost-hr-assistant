@@ -11,11 +11,15 @@ from pathlib import Path
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from sqlalchemy import text
 
 from roost.api.console import router as console_router
 from roost.api.kiosk import router as kiosk_router
 from roost.api.services import Services, production_services
+from roost.core.config import get_settings
+from roost.observability.logs import configure_logging
+from roost.observability.tracing import setup_tracing
 
 logger = logging.getLogger(__name__)
 
@@ -47,9 +51,18 @@ def create_app(services: Services | None = None) -> FastAPI:
             app.state.services = services
             yield
             return
-        with production_services() as built:
-            app.state.services = built
-            yield
+        settings = get_settings()
+        configure_logging(settings.log_level)
+        provider = setup_tracing(
+            settings.otel_exporter_otlp_endpoint, environment=settings.environment
+        )
+        try:
+            with production_services() as built:
+                app.state.services = built
+                yield
+        finally:
+            if provider is not None:
+                provider.shutdown()  # send the last spans
 
     # No interactive API docs: nothing here is for browsing by the public.
     app = FastAPI(title="Roost", lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
@@ -74,6 +87,11 @@ def create_app(services: Services | None = None) -> FastAPI:
             return JSONResponse({"status": "unavailable"}, status_code=503)
         return JSONResponse({"status": "ok"})
 
+    # A span per request: method, route, status and timing. Static files and health checks
+    # are left out; no headers or bodies are recorded.
+    FastAPIInstrumentor.instrument_app(
+        app, excluded_urls="static,health", exclude_spans=["receive", "send"]
+    )
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
     app.include_router(kiosk_router)
     app.include_router(console_router)

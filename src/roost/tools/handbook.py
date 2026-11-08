@@ -4,11 +4,14 @@ from collections.abc import Callable, Sequence
 from contextlib import AbstractContextManager
 from typing import Any
 
+from opentelemetry import trace
 from pydantic import BaseModel, Field, ValidationError
 from sqlalchemy.orm import Session
 
 from roost.agent.tools import ToolContext
 from roost.llm.types import ToolSpec
+from roost.observability import turns
+from roost.observability.tracing import set_attributes
 from roost.rag.embeddings import Embedder
 from roost.rag.retrieval import SectionText, get_sections, vector_search
 
@@ -64,7 +67,18 @@ class HandbookSearchTool:
         query = args.query.strip()
         if not query:
             return "Error: call search_handbook with a non-blank 'query'."
-        return format_sections(self._search(query))
+        sections = self._search(query)
+        stats = turns.current()
+        if stats is not None:
+            stats.search_hits += len(sections)
+        set_attributes(
+            trace.get_current_span(),
+            {
+                "roost.rag.hits": len(sections),
+                "roost.rag.sections": [s.section_number for s in sections],
+            },
+        )
+        return format_sections(sections)
 
 
 def database_search(

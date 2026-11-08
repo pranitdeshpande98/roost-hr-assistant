@@ -5,6 +5,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 
 from roost.llm.types import ChatMessage, ChatResult, ToolCall, ToolSpec, Usage
+from roost.observability import turns
 
 
 def text_reply(content: str, *, model: str = "fake/scripted") -> ChatResult:
@@ -64,5 +65,10 @@ class ScriptedChatModel:
             raise AssertionError(f"{self._name}: no scripted reply left")
         item = self._script.popleft()
         if isinstance(item, Exception):
+            turns.record_model_call(self._name, 0, 0, 0.0, ok=False)
             raise item
+        usage = item.usage
+        turns.record_model_call(
+            item.model, usage.prompt_tokens, usage.completion_tokens, item.latency_ms, ok=True
+        )
         return item

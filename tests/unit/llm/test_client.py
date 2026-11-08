@@ -225,3 +225,30 @@ def test_build_chat_model_with_several_refs_returns_a_chain() -> None:
 def test_build_chat_model_needs_at_least_one_ref() -> None:
     with pytest.raises(LLMRequestError, match="no models configured"):
         build_chat_model([], settings=LLMSettings(_env_file=None))
+
+
+def test_each_call_is_a_span_with_tokens_and_cost_but_no_messages(spans: Any) -> None:
+    model = _model(_reply_with(_completion({"role": "assistant", "content": "Hola"})))
+
+    model.chat([ChatMessage(role="user", content="My secret question about my lead")])
+
+    span = spans.one("llm.chat")
+    assert span.attributes["gen_ai.system"] == "groq"
+    assert span.attributes["gen_ai.request.model"] == "test-model"
+    assert span.attributes["gen_ai.usage.input_tokens"] == 12
+    assert span.attributes["gen_ai.usage.output_tokens"] == 5
+    assert span.attributes["roost.llm.outcome"] == "ok"
+    assert span.attributes["gen_ai.response.finish_reasons"] == ("stop",)
+    assert "secret" not in str(dict(span.attributes)).lower()
+
+
+def test_a_failed_call_records_only_the_error_type(spans: Any) -> None:
+    model = _model(lambda _: httpx2.Response(503, json={"error": {"message": "busy"}}))
+
+    with pytest.raises(LLMUnavailableError):
+        model.chat([ChatMessage(role="user", content="Hi")])
+
+    span = spans.one("llm.chat")
+    assert span.attributes["roost.llm.outcome"] == "LLMUnavailableError"
+    assert span.attributes["roost.error.type"] == "LLMUnavailableError"
+    assert span.events == ()  # no exception message or stack trace

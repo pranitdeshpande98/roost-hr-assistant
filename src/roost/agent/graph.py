@@ -7,9 +7,11 @@ from datetime import date
 from typing import Any, Literal, Protocol
 
 from langgraph.checkpoint.base import BaseCheckpointSaver
+from langgraph.errors import GraphBubbleUp
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.types import interrupt
+from opentelemetry import trace
 
 from roost.agent.confirmation import Confirmation, ConfirmationReply
 from roost.agent.messages import MessageCatalog, MessageKey, compose_reply, default_messages
@@ -22,6 +24,8 @@ from roost.guardrails.routing import HRContact, routed_reply
 from roost.guardrails.types import Route
 from roost.llm.errors import LLMError
 from roost.llm.types import ChatMessage, ChatModel
+from roost.observability import turns
+from roost.observability.tracing import set_attributes, span
 from roost.referrals.offer import ReferralDraft, ReferralSender, may_offer
 
 logger = logging.getLogger(__name__)
@@ -43,6 +47,39 @@ class Screen(Protocol):
     """The input guardrail (roost.guardrails.classifier.InputGuardrail)."""
 
     def classify(self, text: str) -> GuardrailDecision: ...
+
+
+class Node(Protocol):
+    def __call__(self, state: AgentState) -> dict[str, Any]: ...
+
+
+def _traced(name: str, node: Node, *, llm_purpose: str = "agent") -> Node:
+    """A span per graph step; model calls inside it are counted under `llm_purpose`.
+    Pausing for a confirmation is control flow, not an error."""
+
+    def run(state: AgentState) -> dict[str, Any]:
+        with (
+            span(f"agent.{name}", {"roost.agent.node": name}, passthrough=(GraphBubbleUp,)),
+            turns.purpose(llm_purpose),
+        ):
+            return node(state)
+
+    return run
+
+
+def _record_guardrail(decision: GuardrailDecision) -> None:
+    """The decision as categories only (FR-49): on the span and on the turn."""
+    attributes = {
+        "roost.guardrail.category": decision.category.value,
+        "roost.guardrail.source": decision.source.value,
+        "roost.route": decision.route.value,
+    }
+    set_attributes(trace.get_current_span(), attributes)
+    stats = turns.current()
+    if stats is not None:
+        stats.category = decision.category.value
+        stats.guardrail_source = decision.source.value
+        stats.route = decision.route.value
 
 
 def ask_employee(question: str) -> ConfirmationReply:
@@ -92,6 +129,7 @@ def build_graph(
             logger.exception("Input guardrail failed; answering without it")
             return {}
         update: dict[str, Any] = {"guardrail": decision.category}
+        _record_guardrail(decision)
         if refer is not None and may_offer(decision.category, state.employee_id, text):
             update["offer_referral"] = True  # offer_referral shows the reply and asks
             return update
@@ -119,6 +157,7 @@ def build_graph(
         routed = routed_reply(state.guardrail, language, catalog, hr_contact(state.employee_id))
         question = f"{routed}\n\n{catalog.get('referral_offer', language)}"
         answer = ask_employee(question)
+        set_attributes(trace.get_current_span(), {"roost.referral.answer": answer.answer.value})
         if answer.answer is Confirmation.YES and state.employee_id is not None:
             try:
                 refer(ReferralDraft(state.employee_id, state.guardrail, language, words))
@@ -194,14 +233,14 @@ def build_graph(
         return {"reply": compose_reply(answer, state.language, catalog)}
 
     graph = StateGraph(AgentState)
-    graph.add_node("call_model", call_model)
-    graph.add_node("run_tools", run_tools)
-    graph.add_node("finalize", finalize)
+    graph.add_node("call_model", _traced("call_model", call_model))
+    graph.add_node("run_tools", _traced("run_tools", run_tools))
+    graph.add_node("finalize", _traced("finalize", finalize))
     if screen is None:
         graph.add_edge(START, "call_model")
     else:
-        graph.add_node("screen", screen_message)
-        graph.add_node("offer_referral", offer_referral)
+        graph.add_node("screen", _traced("screen", screen_message, llm_purpose="guardrail"))
+        graph.add_node("offer_referral", _traced("offer_referral", offer_referral))
         graph.add_edge(START, "screen")
         graph.add_conditional_edges("screen", after_screen)
         graph.add_edge("offer_referral", END)

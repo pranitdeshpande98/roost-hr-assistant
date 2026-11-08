@@ -248,6 +248,7 @@ def chat_send(
                 channel=Channel.KIOSK,
                 employee_id=session.employee_id,
                 messages=services.messages,
+                on_turn=services.record_turn,
             )
         except Exception:
             # The agent already falls back on model outages; this is anything else.

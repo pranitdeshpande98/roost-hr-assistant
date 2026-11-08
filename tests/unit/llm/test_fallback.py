@@ -82,3 +82,21 @@ def test_name_shows_the_whole_chain() -> None:
     models = [ScriptedChatModel([], name=n) for n in ("a", "b", "c")]
 
     assert FallbackChatModel(*models).name == "a -> b -> c"
+
+
+def test_the_turn_knows_which_model_in_the_chain_answered() -> None:
+    from roost.observability import turns
+
+    primary = ScriptedChatModel([LLMUnavailableError("down")], name="groq/a")
+    backup = ScriptedChatModel([text_reply("ok", model="groq/b")], name="groq/b")
+    chain = FallbackChatModel(primary, backup)
+
+    with turns.turn("kiosk", "en", resumed=False) as stats:
+        chain.chat([ChatMessage(role="user", content="hi")])
+
+    assert [(c.model, c.ok, c.fallback_position) for c in stats.model_calls] == [
+        ("groq/a", False, 0),
+        ("groq/b", True, 1),
+    ]
+    assert stats.fallback_used
+    assert stats.agent_model == "groq/b"
