@@ -12,7 +12,17 @@ from typing import TextIO
 
 from opentelemetry import trace
 
-_NOISY = ("httpx", "httpcore", "openai", "sentence_transformers", "urllib3")
+# Libraries that log every HTTP request or download step at INFO.
+_NOISY = (
+    "httpx",
+    "httpx2",
+    "httpcore",
+    "openai",
+    "huggingface_hub",
+    "sentence_transformers",
+    "transformers",
+    "urllib3",
+)
 
 
 class JsonFormatter(logging.Formatter):

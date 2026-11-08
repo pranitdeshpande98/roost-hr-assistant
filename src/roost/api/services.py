@@ -7,7 +7,6 @@ from datetime import UTC, datetime
 from typing import Any
 
 from langgraph.graph.state import CompiledStateGraph
-from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -56,7 +55,6 @@ def production_services() -> Iterator[Services]:
     engine = create_engine(
         url, pool_size=DB_POOL_SIZE, max_overflow=DB_MAX_OVERFLOW, pool_pre_ping=True
     )
-    SQLAlchemyInstrumentor().instrument(engine=engine)  # query timings in traces, no values
     factory = sessionmaker(engine, expire_on_commit=False)
     try:
         with open_pooled_checkpointer(url) as checkpointer:
