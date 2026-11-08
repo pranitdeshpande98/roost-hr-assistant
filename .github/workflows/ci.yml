@@ -1,0 +1,108 @@
+# Every push to master and every pull request: lint, types, tests against real
+# Postgres, migrations, and the Docker image. Branch protection makes these checks
+# required, so a failing change cannot be merged (NFR-12, ADR-0015).
+# No model calls here: the LLM evals run weekly in evals.yml.
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Lint, types and tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17 # the same image as compose.yaml
+        env:
+          POSTGRES_USER: roost
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: roost
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U roost -d roost"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      DATABASE_URL: postgresql+psycopg://roost:ci-only-password@localhost:5432/roost
+      # A database CI cannot reach is a failure, never a skipped test.
+      REQUIRE_INTEGRATION: "1"
+      ENVIRONMENT: test
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@v8.1.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Install (exactly the locked versions)
+        run: uv sync --frozen
+
+      - name: Ruff lint
+        run: uv run ruff check --output-format=github .
+
+      - name: Ruff format
+        run: uv run ruff format --check .
+
+      - name: mypy (strict)
+        run: uv run mypy
+
+      - name: File hygiene (the pre-commit hooks that are not Python tools)
+        run: uv run pre-commit run --all-files --show-diff-on-failure
+        env:
+          SKIP: ruff-check,ruff-format,mypy
+
+      - name: Migrations apply and match the models
+        run: |
+          uv run alembic upgrade head
+          uv run alembic check
+
+      - name: Tests (unit and integration) with coverage
+        run: uv run pytest --cov=roost --cov-report=term --cov-report=xml
+
+      - name: Keep the coverage report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage
+          path: coverage.xml
+          if-no-files-found: ignore
+
+  image:
+    name: Docker image builds
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build (not pushed; publishing comes with deployment)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: roost:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: The image starts and runs as a non-root user
+        run: |
+          test "$(docker run --rm --entrypoint id roost:ci -u)" != "0"
+          docker run --rm --entrypoint python roost:ci -c "import roost.api.app, torch; assert not torch.cuda.is_available(); print('ok', torch.__version__)"

@@ -25,6 +25,9 @@ dependencies = [
     "pyyaml>=6.0.3",
     "sentence-transformers>=6.2.0",
     "sqlalchemy>=2.1.6",
+    # Listed directly (sentence-transformers needs it) so Linux can use the CPU-only
+    # build below: uv applies an index only to direct dependencies.
+    "torch>=2.15.0",
     "uvicorn>=0.38",
 ]
 
@@ -119,6 +122,7 @@ source = ["roost"]
 branch = true
 
 [tool.coverage.report]
+fail_under = 90 # NFR-12 asks for 80% on core packages; Roost is at 96% overall
 show_missing = true
 skip_empty = true
 exclude_also = [
@@ -126,3 +130,15 @@ exclude_also = [
     "raise NotImplementedError",
     "@overload",
 ]
+
+# ─────────────────────────── uv: CPU-only torch on Linux ───────────────────────────
+# PyPI's Linux torch wheels pull several GB of NVIDIA GPU libraries. Roost runs the
+# embedding model on CPU, so Linux (CI and the Docker image) uses PyTorch's CPU-only
+# index. Windows and macOS keep PyPI, whose wheels are already CPU-only there.
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true

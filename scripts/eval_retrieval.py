@@ -20,7 +20,14 @@ from sqlalchemy.orm import Session
 from roost.core.config import get_settings
 from roost.db.models import ChunkEmbedding
 from roost.evals.dataset import load_retrieval_cases
-from roost.evals.retrieval_eval import CaseOutcome, format_markdown, score_case, summarize
+from roost.evals.retrieval_eval import (
+    ALL_LANGUAGES,
+    CaseOutcome,
+    MetricRow,
+    format_markdown,
+    score_case,
+    summarize,
+)
 from roost.rag.embeddings import EMBEDDING_MODELS, SentenceTransformerEmbedder
 from roost.rag.retrieval import hybrid_search, keyword_search, vector_search
 
@@ -29,6 +36,7 @@ logger = logging.getLogger("eval_retrieval")
 DATASET = Path("evals/datasets/retrieval_v1.yaml")
 RESULTS_DIR = Path("evals/results")
 TOP_K = 5
+HIT_RATE_GATE = 0.90  # requirements 6.2: retrieval hit rate @5
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -41,6 +49,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--dataset", type=Path, default=DATASET)
     parser.add_argument("--out", type=Path, default=RESULTS_DIR)
+    parser.add_argument(
+        "--gate",
+        metavar="METHOD",
+        help=f"exit 1 if this method's hit@{TOP_K} over all languages is below "
+        f"{HIT_RATE_GATE:.0%} (requirements 6.2), e.g. vector:bge-m3, what the agent uses",
+    )
     return parser.parse_args(argv)
 
 
@@ -75,7 +89,8 @@ def main(argv: list[str] | None = None) -> int:
     finally:
         engine.dispose()
 
-    table = format_markdown(summarize(outcomes, k=TOP_K), k=TOP_K)
+    rows = summarize(outcomes, k=TOP_K)
+    table = format_markdown(rows, k=TOP_K)
     sys.stdout.write(table)
 
     args.out.mkdir(parents=True, exist_ok=True)
@@ -88,7 +103,28 @@ def main(argv: list[str] | None = None) -> int:
         newline="\n",
     )
     logger.info("Wrote %s/%s.md and %s_cases.json", args.out, stem, stem)
+    if args.gate:
+        return gate(rows, args.gate)
     return 0
+
+
+def gate(rows: list[MetricRow], method: str) -> int:
+    """Exit code for the hit-rate gate on one method, over all languages."""
+    found = [r for r in rows if r.method == method and r.language == ALL_LANGUAGES]
+    if not found:
+        logger.error("No results for %s: is that model embedded?", method)
+        return 1
+    hit_rate = found[0].hit_at_k
+    passed = hit_rate >= HIT_RATE_GATE
+    logger.info(
+        "Gate %s hit@%d: %.0f%% (needs %.0f%%): %s",
+        method,
+        TOP_K,
+        hit_rate * 100,
+        HIT_RATE_GATE * 100,
+        "PASS" if passed else "FAIL",
+    )
+    return 0 if passed else 1
 
 
 if __name__ == "__main__":

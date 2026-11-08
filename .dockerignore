@@ -1,0 +1,21 @@
+# Only what the app needs goes into the image. Secrets never do.
+.env
+.env.*
+!.env.example
+.git
+.github
+.venv
+venv
+var
+**/__pycache__
+**/*.pyc
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.coverage
+coverage.xml
+htmlcov
+tests
+evals/results
+data/processed
+*.log
