@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block header %}{% include "console/_nav.html" %}{% endblock %}
+{% block main %}
+<h2>{{ t('transcripts_title') }}</h2>
+<p class="muted">{{ t('transcripts_help') }}</p>
+<form class="filters" method="get" action="/console/transcripts">
+  <label for="employee">{{ t('employee_number') }}</label>
+  <input id="employee" name="employee" value="{{ employee }}" inputmode="numeric" maxlength="6" pattern="[0-9]*">
+  <label><input type="checkbox" name="held" value="1"{% if held %} checked{% endif %}> {{ t('held_only') }}</label>
+  <button type="submit" class="secondary">{{ t('filter') }}</button>
+</form>
+{% if rows %}
+<table class="requests">
+  <thead>
+    <tr>
+      <th scope="col">{{ t('col_last_message') }}</th>
+      <th scope="col">{{ t('col_employee') }}</th>
+      <th scope="col">{{ t('col_language') }}</th>
+      <th scope="col">{{ t('col_messages') }}</th>
+      <th scope="col">{{ t('col_flags') }}</th>
+      <th scope="col"><span class="visually-hidden">{{ t('open_request') }}</span></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in rows %}
+    <tr>
+      <td>{{ row.last }}</td>
+      <td>{{ row.employee }} <span class="muted">({{ row.employee_number }})</span></td>
+      <td>{{ t('language_' ~ row.language) }}</td>
+      <td>{{ row.messages }}</td>
+      <td>{% if row.routed %}{{ t('flag_routed') }}{% endif %}{% if row.held %} · <strong>{{ t('flag_held') }}</strong>{% endif %}</td>
+      <td><a href="/console/transcripts/{{ row.id }}">{{ t('open_request') }}</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>{{ t('transcripts_empty') }}</p>
+{% endif %}
+{% endblock %}

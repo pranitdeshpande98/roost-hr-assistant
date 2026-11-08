@@ -13,7 +13,7 @@ from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from sqlalchemy.orm import Session
 
-from roost.agent.conversation import ask, transcript, waiting_for_confirmation
+from roost.agent.conversation import TranscriptLine, ask, waiting_for_confirmation
 from roost.api import sessions as web_sessions
 from roost.api.common import TEMPLATES, Db, client_address
 from roost.api.common import language_of as _language
@@ -24,6 +24,8 @@ from roost.core.enums import Channel, EmploymentStatus, Language
 from roost.db.models import Employee, WebSession
 from roost.notifications.outbox import take_kiosk_notices
 from roost.notifications.render import render
+from roost.observability.turns import TurnStats
+from roost.transcripts.service import conversation_for, messages_for_thread, record_turn
 
 logger = logging.getLogger(__name__)
 
@@ -195,13 +197,47 @@ def change_pin_submit(
 # --- chat ---------------------------------------------------------------------------
 
 
-def _conversation_context(services: Services, session: WebSession) -> dict[str, Any]:
-    thread = str(session.thread_id)
+def _record(
+    db: Session,
+    services: Services,
+    session: WebSession,
+    said: str,
+    reply: str | None,
+    stats: TurnStats | None,
+) -> None:
+    """Add the turn to the transcript (FR-45), as the employee saw it."""
+    now = services.clock()
+    conversation = conversation_for(
+        db,
+        thread_id=session.thread_id,
+        employee_id=session.employee_id,
+        channel=Channel.KIOSK,
+        language=session.language,
+        now=now,
+    )
+    routed = stats is not None and stats.route not in (None, "allowed")
+    record_turn(
+        db,
+        conversation,
+        said=said,
+        reply=reply,
+        kind=stats.reply_kind if stats is not None and reply is not None else "error",
+        category=stats.category if stats is not None and routed else None,
+        resumed=stats.resumed if stats is not None else False,
+        now=now,
+    )
+
+
+def _conversation_context(db: Session, services: Services, session: WebSession) -> dict[str, Any]:
+    """The screen is drawn from the transcript record, so a confirmation question stays
+    visible after it is answered, and the screen and the record never differ."""
+    lines = [
+        TranscriptLine(message.role == "employee", message.content)
+        for message in messages_for_thread(db, session.thread_id)
+    ]
     return {
-        "lines": transcript(
-            services.agent, thread, language=session.language, messages=services.messages
-        ),
-        "awaiting": waiting_for_confirmation(services.agent, thread),
+        "lines": lines,
+        "awaiting": waiting_for_confirmation(services.agent, str(session.thread_id)),
         "csrf": session.csrf_token,
     }
 
@@ -214,7 +250,7 @@ def chat_page(request: Request, db: Db) -> Response:
     if session.must_change_pin:  # FR-41: nothing else until the employee chooses a PIN
         return RedirectResponse("/change-pin", status_code=303)
     services = _services(request)
-    context = _conversation_context(services, session)
+    context = _conversation_context(db, services, session)
     # Kiosk-only employees (no Teams, no email) get their notifications here, once (FR-22).
     notices = take_kiosk_notices(db, session.employee_id, now=services.clock())
     context["notices"] = [render(n, session.language) for n in notices]
@@ -238,26 +274,36 @@ def chat_send(
 
     services = _services(request)
     error = None
-    if text.strip():
+    said = text.strip()
+    if said:
+        finished: list[TurnStats] = []
+
+        def on_turn(stats: TurnStats) -> None:
+            finished.append(stats)
+            if services.record_turn is not None:
+                services.record_turn(stats)
+
+        reply: str | None = None
         try:
-            ask(
+            reply = ask(
                 services.agent,
                 str(session.thread_id),
-                text.strip(),
+                said,
                 language=session.language,
                 channel=Channel.KIOSK,
                 employee_id=session.employee_id,
                 messages=services.messages,
-                on_turn=services.record_turn,
+                on_turn=on_turn,
             )
         except Exception:
             # The agent already falls back on model outages; this is anything else.
             logger.exception("Kiosk turn failed")
             error = "error"
+        _record(db, services, session, said, reply, finished[0] if finished else None)
 
     if request.headers.get("hx-request") != "true":  # no JavaScript: back to the page
         return RedirectResponse("/chat", status_code=303)
-    context = _conversation_context(services, session)
+    context = _conversation_context(db, services, session)
     return _page(request, "_conversation.html", session.language, error=error, **context)
 
 

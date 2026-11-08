@@ -458,3 +458,120 @@ topic_personal_crisis:
   en: "Personal crisis"
   es: "Crisis personal"
   vi: "Khủng hoảng cá nhân"
+topic_danger:
+  en: "Emergency"
+  es: "Emergencia"
+  vi: "Khẩn cấp"
+topic_self_harm:
+  en: "Self-harm"
+  es: "Autolesión"
+  vi: "Tự làm hại bản thân"
+topic_own_data:
+  en: "Own records asked"
+  es: "Pidió sus propios datos"
+  vi: "Hỏi hồ sơ cá nhân"
+topic_injection:
+  en: "Rule-breaking attempt"
+  es: "Intento de saltar las reglas"
+  vi: "Cố vượt quy tắc"
+# ── Transcripts: HR admins only (FR-46, FR-48) ───────────────────────────────────
+nav_transcripts:
+  en: "Transcripts"
+  es: "Transcripciones"
+  vi: "Bản ghi hội thoại"
+transcripts_title:
+  en: "Conversation transcripts"
+  es: "Transcripciones de conversaciones"
+  vi: "Bản ghi các cuộc hội thoại"
+transcripts_help:
+  en: "Kept 45 days after the last message, unless on legal hold. Opening one is recorded in the audit log."
+  es: "Se guardan 45 días después del último mensaje, salvo que tengan retención legal. Abrir una queda registrado en la auditoría."
+  vi: "Được lưu 45 ngày sau tin nhắn cuối, trừ khi đang bị giữ theo yêu cầu pháp lý. Mỗi lần mở đều được ghi vào nhật ký kiểm tra."
+transcripts_empty:
+  en: "No conversations match."
+  es: "Ninguna conversación coincide."
+  vi: "Không có cuộc hội thoại nào phù hợp."
+held_only:
+  en: "On legal hold only"
+  es: "Solo con retención legal"
+  vi: "Chỉ những bản đang bị giữ"
+filter:
+  en: "Filter"
+  es: "Filtrar"
+  vi: "Lọc"
+col_last_message:
+  en: "Last message"
+  es: "Último mensaje"
+  vi: "Tin nhắn cuối"
+col_started:
+  en: "Started"
+  es: "Inicio"
+  vi: "Bắt đầu"
+col_messages:
+  en: "Messages"
+  es: "Mensajes"
+  vi: "Số tin nhắn"
+col_flags:
+  en: "Notes"
+  es: "Notas"
+  vi: "Ghi chú"
+col_hold:
+  en: "Legal hold"
+  es: "Retención legal"
+  vi: "Giữ theo yêu cầu pháp lý"
+flag_routed:
+  en: "Guardrail routed"
+  es: "Desviada por la protección"
+  vi: "Đã được chuyển hướng"
+flag_held:
+  en: "On hold"
+  es: "Retenida"
+  vi: "Đang giữ"
+transcript_title:
+  en: "Conversation transcript"
+  es: "Transcripción de la conversación"
+  vi: "Bản ghi cuộc hội thoại"
+transcript_viewed_notice:
+  en: "Your viewing of this transcript has been recorded in the audit log."
+  es: "Su consulta de esta transcripción quedó registrada en la auditoría."
+  vi: "Việc bạn xem bản ghi này đã được ghi vào nhật ký kiểm tra."
+transcript_employee:
+  en: "Employee"
+  es: "Empleado"
+  vi: "Nhân viên"
+hold_since:
+  en: "On hold since {when}"
+  es: "Retenida desde {when}"
+  vi: "Đang giữ từ {when}"
+hold_none:
+  en: "None: deleted 45 days after the last message"
+  es: "Ninguna: se borra 45 días después del último mensaje"
+  vi: "Không: sẽ bị xóa 45 ngày sau tin nhắn cuối"
+hold_reason:
+  en: "Reason for the hold (for example a case number)"
+  es: "Motivo de la retención (por ejemplo, un número de caso)"
+  vi: "Lý do giữ (ví dụ số hồ sơ vụ việc)"
+place_hold:
+  en: "Place legal hold"
+  es: "Aplicar retención legal"
+  vi: "Áp dụng giữ theo yêu cầu pháp lý"
+release_hold:
+  en: "Release legal hold"
+  es: "Quitar retención legal"
+  vi: "Bỏ giữ theo yêu cầu pháp lý"
+release_help:
+  en: "Released conversations are deleted 45 days after their last message, which may be at the next daily run."
+  es: "Al quitar la retención, la conversación se borra 45 días después de su último mensaje, lo que puede ocurrir en el próximo proceso diario."
+  vi: "Sau khi bỏ giữ, cuộc hội thoại sẽ bị xóa 45 ngày sau tin nhắn cuối, có thể ngay ở lần chạy hằng ngày tiếp theo."
+hold_placed:
+  en: "Legal hold placed. This conversation will not be deleted until it is released."
+  es: "Retención legal aplicada. Esta conversación no se borrará hasta que se quite."
+  vi: "Đã áp dụng giữ. Cuộc hội thoại này sẽ không bị xóa cho đến khi được bỏ giữ."
+hold_released:
+  en: "Legal hold released."
+  es: "Retención legal quitada."
+  vi: "Đã bỏ giữ."
+back_to_transcripts:
+  en: "Back to transcripts"
+  es: "Volver a las transcripciones"
+  vi: "Quay lại danh sách bản ghi"

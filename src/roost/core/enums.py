@@ -117,6 +117,7 @@ class AuditAction(StrEnum):
     PASSWORD_LOCKED = "password_locked"  # noqa: S105
     LEGAL_HOLD_PLACED = "legal_hold_placed"
     LEGAL_HOLD_RELEASED = "legal_hold_released"
+    TRANSCRIPT_VIEWED = "transcript_viewed"
 
 
 class NotificationChannel(StrEnum):
