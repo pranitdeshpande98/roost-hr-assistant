@@ -30,6 +30,7 @@ from roost.auth.kiosk import set_pin
 from roost.auth.rate_limit import AttemptLimiter
 from roost.core.enums import (
     ApprovalStep,
+    Channel,
     EmploymentStatus,
     Language,
     LeaveType,
@@ -56,6 +57,7 @@ from roost.referrals.service import send_referral
 from roost.seed.employees import SeedData, generate_seed_data
 from roost.seed.loader import load_seed_data
 from roost.tools.vacation import vacation_tools
+from roost.transcripts.service import conversation_for, place_hold, record_turn
 
 pytestmark = pytest.mark.integration
 
@@ -65,6 +67,9 @@ TODAY = date(2026, 11, 2)
 MESSAGES = default_messages()
 # Pages anyone may open without signing in.
 PUBLIC = {"/sign-in", "/console/sign-in", "/health"}
+# Event streams answer 204 without a session: EventSource cannot follow a redirect, and
+# 204 tells it not to reconnect. Nothing is sent.
+STREAMS = {"/chat/stream"}
 # Forms that are posted before there is a session, or must always work (idle sign-out).
 NO_SESSION_FORMS = {"/sign-in", "/console/sign-in", "/sign-out", "/console/sign-out"}
 
@@ -131,15 +136,19 @@ class World:
         assert self.alice.supervisor_id is not None
         self.supervisor = db.get_one(Employee, self.alice.supervisor_id)
         self.hr = next(e for e in hr_team(db, self.alice.location_id) if e.id != self.supervisor.id)
-        admin = db.scalars(
-            select(Employee).join(EmployeeRole).where(EmployeeRole.role == Role.HR_ADMIN)
-        ).first()
-        assert admin is not None
+        admins = db.scalars(
+            select(Employee)
+            .join(EmployeeRole)
+            .where(EmployeeRole.role == Role.HR_ADMIN)
+            .order_by(Employee.employee_number)
+        ).all()
+        admin, self.admin = admins[0], admins[1]
         for person in (self.alice, self.bob):
             set_pin(db, person.employee_number, TEMP_PIN, by=self.hr.id)
-        for person in (self.supervisor, self.hr):
+        for person in (self.supervisor, self.hr, self.admin):
             set_password(db, person.employee_number, TEMP_PASSWORD, by=admin.id)
         self.clock = Clock()
+        self.own_password: set[uuid.UUID] = set()  # who already chose their own PIN/password
         self.model = QueueModel()
         agent = build_graph(
             self.model,
@@ -172,11 +181,17 @@ class World:
 
     def kiosk(self, person: Employee, *, choose_pin: bool = True) -> TestClient:
         client = self.client()
+        changed = person.id in self.own_password
         client.post(
             "/sign-in",
-            data={"employee_number": person.employee_number, "pin": TEMP_PIN, "language": "en"},
+            data={
+                "employee_number": person.employee_number,
+                "pin": OWN_PIN if changed else TEMP_PIN,
+                "language": "en",
+            },
         )
-        if choose_pin:
+        if choose_pin and not changed:
+            self.own_password.add(person.id)
             client.post(
                 "/change-pin",
                 data={
@@ -190,11 +205,16 @@ class World:
 
     def console(self, person: Employee, *, choose_password: bool = True) -> TestClient:
         client = self.client()
+        changed = person.id in self.own_password
         client.post(
             "/console/sign-in",
-            data={"employee_number": person.employee_number, "password": TEMP_PASSWORD},
+            data={
+                "employee_number": person.employee_number,
+                "password": OWN_PASSWORD if changed else TEMP_PASSWORD,
+            },
         )
-        if choose_password:
+        if choose_password and not changed:
+            self.own_password.add(person.id)
             client.post(
                 "/console/change-password",
                 data={
@@ -259,8 +279,12 @@ def _fill(path: str) -> str:
 
 def test_every_page_needs_a_signed_in_session(world: World) -> None:
     client = world.client()
-    pages = [p for p in _routes("GET") if p not in PUBLIC]
+    pages = [p for p in _routes("GET") if p not in PUBLIC | STREAMS]
     assert len(pages) >= 9  # the kiosk and console pages, read from the app
+
+    for path in STREAMS:
+        response = client.get(path)
+        assert (response.status_code, response.content) == (204, b""), path
 
     for path in pages:
         response = client.get(_fill(path), follow_redirects=False)
@@ -279,10 +303,34 @@ def test_every_form_needs_the_sessions_csrf_token(world: World) -> None:
             Approval.request_id == request.id, Approval.step == ApprovalStep.SUPERVISOR
         )
     ).one()
+    unheld, held = (
+        conversation_for(
+            world.db,
+            thread_id=uuid.uuid4(),
+            employee_id=world.alice.id,
+            channel=Channel.KIOSK,
+            language=Language.EN,
+            now=world.clock(),
+        )
+        for _ in range(2)
+    )
+    for conversation in (unheld, held):
+        record_turn(
+            world.db,
+            conversation,
+            said="hi",
+            reply="Hello.",
+            kind="answer",
+            category=None,
+            resumed=False,
+            now=world.clock(),
+        )
+    assert place_hold(world.db, world.admin.id, held.id, reason="case", now=world.clock())
     # Per form: who must be signed in, the fields, and a real target if it acts on one.
     forms: dict[str, tuple[Callable[[], TestClient], dict[str, str]]] = {
         "/change-pin": (lambda: world.kiosk(world.alice, choose_pin=False), {}),
         "/chat/messages": (lambda: world.kiosk(world.bob), {"text": "hello"}),
+        "/chat/rating": (lambda: world.kiosk(world.bob), {"message_id": "1", "value": "up"}),
         "/console/change-password": (
             lambda: world.console(world.supervisor, choose_password=False),
             {},
@@ -292,20 +340,30 @@ def test_every_form_needs_the_sessions_csrf_token(world: World) -> None:
             {"decision": "approve"},
         ),
         "/console/referrals/{referral_id}/handled": (lambda: world.console(world.hr), {}),
+        "/console/transcripts/{conversation_id}/hold": (
+            lambda: world.console(world.admin),
+            {"reason": "case"},
+        ),
+        "/console/transcripts/{conversation_id}/release": (lambda: world.console(world.admin), {}),
     }
     assert set(forms) == {p for p in _routes("POST") if p not in NO_SESSION_FORMS}
 
     for template, (sign_in, data) in forms.items():
         path = template.replace("{approval_id}", str(step.id))
         path = path.replace("{referral_id}", str(referral.id))
+        target = held if template.endswith("/release") else unheld
+        path = path.replace("{conversation_id}", str(target.id))
         client = sign_in()
         response = client.post(path, data={**data, "csrf": "forged"}, follow_redirects=False)
         assert response.status_code == 403, path
 
     world.db.refresh(step)
     world.db.refresh(referral)
+    world.db.refresh(unheld)
+    world.db.refresh(held)
     assert step.decided_by_id is None
     assert referral.handled_at is None
+    assert (unheld.legal_hold, held.legal_hold) == (False, True)
 
 
 def test_every_kind_of_response_carries_the_security_headers(world: World) -> None:

@@ -3,17 +3,29 @@
 Pages are server-rendered and work without JavaScript; htmx only makes sending a
 message smoother. Every request after sign-in loads the session from the database,
 which enforces the 2-minute idle limit.
+
+Streaming (NFR-01, ADR-0014): kiosk.js sends messages with `X-Roost-Stream: 1`. The POST
+then only holds the message and answers at once with an empty Roost bubble; the browser
+opens /chat/stream, which runs the turn and sends the answer as it is written, then the
+final, checked conversation, which replaces the bubble. Without the header (no
+JavaScript, or tests), the POST runs the turn and returns the finished reply, as before.
 """
 
+import contextvars
+import json
 import logging
 import math
+import queue
+import threading
+from collections.abc import Iterator
+from dataclasses import dataclass
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Form, Request
-from fastapi.responses import HTMLResponse, RedirectResponse, Response
+from fastapi.responses import HTMLResponse, RedirectResponse, Response, StreamingResponse
 from sqlalchemy.orm import Session
 
-from roost.agent.conversation import ask, transcript, waiting_for_confirmation
+from roost.agent.conversation import ask, waiting_for_confirmation
 from roost.api import sessions as web_sessions
 from roost.api.common import TEMPLATES, Db, client_address
 from roost.api.common import language_of as _language
@@ -24,6 +36,13 @@ from roost.core.enums import Channel, EmploymentStatus, Language
 from roost.db.models import Employee, WebSession
 from roost.notifications.outbox import take_kiosk_notices
 from roost.notifications.render import render
+from roost.observability.turns import TurnStats
+from roost.transcripts.service import (
+    conversation_for,
+    messages_for_thread,
+    rate_message,
+    record_turn,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +71,17 @@ def _page(
         }
         | context,
         status_code=status,
+    )
+
+
+def _render(request: Request, template: str, language: Language, **context: Any) -> str:
+    """A template as text, for the stream's final event."""
+    services = _services(request)
+    return TEMPLATES.env.get_template(template).render(
+        request=request,
+        t=lambda key, **f: services.ui.get(key, language).format(**f),
+        lang=language,
+        **context,
     )
 
 
@@ -195,13 +225,63 @@ def change_pin_submit(
 # --- chat ---------------------------------------------------------------------------
 
 
-def _conversation_context(services: Services, session: WebSession) -> dict[str, Any]:
-    thread = str(session.thread_id)
+@dataclass(frozen=True, slots=True)
+class KioskLine:
+    from_employee: bool
+    text: str
+    message_id: int
+    rateable: bool
+    rating: int | None
+
+
+def _record(
+    db: Session,
+    services: Services,
+    session: WebSession,
+    said: str,
+    reply: str | None,
+    stats: TurnStats | None,
+) -> None:
+    """Add the turn to the transcript (FR-45), as the employee saw it."""
+    now = services.clock()
+    conversation = conversation_for(
+        db,
+        thread_id=session.thread_id,
+        employee_id=session.employee_id,
+        channel=Channel.KIOSK,
+        language=session.language,
+        now=now,
+    )
+    routed = stats is not None and stats.route not in (None, "allowed")
+    record_turn(
+        db,
+        conversation,
+        said=said,
+        reply=reply,
+        kind=stats.reply_kind if stats is not None and reply is not None else "error",
+        category=stats.category if stats is not None and routed else None,
+        resumed=stats.resumed if stats is not None else False,
+        now=now,
+    )
+
+
+def _conversation_context(db: Session, services: Services, session: WebSession) -> dict[str, Any]:
+    """The screen is drawn from the transcript record, so a confirmation question stays
+    visible after it is answered, and the screen and the record never differ."""
+    lines = [
+        KioskLine(
+            from_employee=message.role == "employee",
+            text=message.content,
+            message_id=message.id,
+            # Only real answers are rated (FR-47), not questions or fixed replies.
+            rateable=message.role == "roost" and message.kind == "answer",
+            rating=message.rating,
+        )
+        for message in messages_for_thread(db, session.thread_id)
+    ]
     return {
-        "lines": transcript(
-            services.agent, thread, language=session.language, messages=services.messages
-        ),
-        "awaiting": waiting_for_confirmation(services.agent, thread),
+        "lines": lines,
+        "awaiting": waiting_for_confirmation(services.agent, str(session.thread_id)),
         "csrf": session.csrf_token,
     }
 
@@ -214,7 +294,7 @@ def chat_page(request: Request, db: Db) -> Response:
     if session.must_change_pin:  # FR-41: nothing else until the employee chooses a PIN
         return RedirectResponse("/change-pin", status_code=303)
     services = _services(request)
-    context = _conversation_context(services, session)
+    context = _conversation_context(db, services, session)
     # Kiosk-only employees (no Teams, no email) get their notifications here, once (FR-22).
     notices = take_kiosk_notices(db, session.employee_id, now=services.clock())
     context["notices"] = [render(n, session.language) for n in notices]
@@ -238,26 +318,167 @@ def chat_send(
 
     services = _services(request)
     error = None
-    if text.strip():
+    said = text.strip()
+    streaming = request.headers.get("x-roost-stream") == "1" and _is_htmx(request)
+    if said and streaming:
+        session.pending_text = said  # /chat/stream picks it up and clears it
+        context = _conversation_context(db, services, session)
+        return _page(request, "_conversation.html", session.language, pending=said, **context)
+    if said:
+        finished: list[TurnStats] = []
+
+        def on_turn(stats: TurnStats) -> None:
+            finished.append(stats)
+            if services.record_turn is not None:
+                services.record_turn(stats)
+
+        reply: str | None = None
         try:
-            ask(
+            reply = ask(
                 services.agent,
                 str(session.thread_id),
-                text.strip(),
+                said,
                 language=session.language,
                 channel=Channel.KIOSK,
                 employee_id=session.employee_id,
                 messages=services.messages,
+                on_turn=on_turn,
             )
         except Exception:
             # The agent already falls back on model outages; this is anything else.
             logger.exception("Kiosk turn failed")
             error = "error"
+        _record(db, services, session, said, reply, finished[0] if finished else None)
 
-    if request.headers.get("hx-request") != "true":  # no JavaScript: back to the page
+    if not _is_htmx(request):  # no JavaScript: back to the page
         return RedirectResponse("/chat", status_code=303)
-    context = _conversation_context(services, session)
+    context = _conversation_context(db, services, session)
     return _page(request, "_conversation.html", session.language, error=error, **context)
+
+
+def _is_htmx(request: Request) -> bool:
+    return request.headers.get("hx-request") == "true"
+
+
+class _QueueSink:
+    """Streamed text, handed from the turn's thread to the response."""
+
+    def __init__(self, events: "queue.Queue[tuple[str, str]]") -> None:
+        self._events = events
+
+    def text(self, delta: str) -> None:
+        self._events.put(("token", delta))
+
+    def reset(self) -> None:
+        self._events.put(("reset", ""))
+
+
+def _event(name: str, data: str) -> str:
+    """One server-sent event. JSON keeps the data on a single line."""
+    return f"event: {name}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
+
+
+@router.get("/chat/stream")
+def chat_stream(request: Request) -> Response:
+    """Run the message the POST just held, streaming the answer (server-sent events).
+    204 tells the browser there is nothing to stream, and not to reconnect."""
+    services = _services(request)
+    with services.sessions() as db:
+        session = _current(request, db)
+        said = session.pending_text if session is not None else None
+        if session is None or session.must_change_pin or not said:
+            db.commit()
+            return Response(status_code=204)
+        session.pending_text = None  # taken once: a reconnect does not run it again
+        db.commit()
+        token_hash = session.token_hash
+        thread_id, employee_id, language = session.thread_id, session.employee_id, session.language
+
+    events: queue.Queue[tuple[str, str]] = queue.Queue()
+
+    def run_turn() -> None:
+        finished: list[TurnStats] = []
+
+        def on_turn(stats: TurnStats) -> None:
+            finished.append(stats)
+            if services.record_turn is not None:
+                services.record_turn(stats)
+
+        reply: str | None = None
+        error = None
+        try:
+            reply = ask(
+                services.agent,
+                str(thread_id),
+                said,
+                language=language,
+                channel=Channel.KIOSK,
+                employee_id=employee_id,
+                messages=services.messages,
+                on_turn=on_turn,
+                on_text=_QueueSink(events),
+            )
+        except Exception:
+            logger.exception("Kiosk turn failed")
+            error = "error"
+        try:
+            with services.sessions() as db:
+                current = db.get(WebSession, token_hash)
+                if current is not None:
+                    _record(db, services, current, said, reply, finished[0] if finished else None)
+                    context = _conversation_context(db, services, current)
+                    html = _render(request, "_conversation.html", language, error=error, **context)
+                else:  # signed out while it was answering: the turn is still recorded
+                    html = ""
+                db.commit()
+        except Exception:
+            logger.exception("Could not finish the kiosk turn")
+            html = ""
+        events.put(("done", html))
+
+    # The turn runs in its own thread, in this request's context (so its spans belong to
+    # this request's trace); the response sends whatever it produces as it arrives.
+    worker = threading.Thread(target=contextvars.copy_context().run, args=(run_turn,))
+    worker.start()
+
+    def stream() -> Iterator[str]:
+        while True:
+            name, data = events.get()
+            yield _event(name, data)
+            if name == "done":
+                break
+        worker.join()
+
+    return StreamingResponse(
+        stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"},
+    )
+
+
+@router.post("/chat/rating")
+def chat_rating(
+    request: Request,
+    db: Db,
+    message_id: Annotated[int, Form()] = 0,
+    value: Annotated[str, Form(max_length=4)] = "",
+    csrf: Annotated[str, Form(max_length=100)] = "",
+) -> Response:
+    """FR-47: thumbs up or down on one of Roost's answers in this sign-in's conversation."""
+    session = _current(request, db)
+    if session is None:
+        return _to_sign_in(request=request)
+    if session.must_change_pin:
+        return RedirectResponse("/change-pin", status_code=303)
+    if not web_sessions.csrf_ok(session, csrf):
+        return _page(request, "chat.html", session.language, 403, error="error")
+    rating = {"up": 1, "down": -1}.get(value)
+    if rating is None or not rate_message(db, session.thread_id, message_id, rating):
+        return Response(status_code=404)
+    if not _is_htmx(request):
+        return RedirectResponse("/chat", status_code=303)
+    context = _conversation_context(db, _services(request), session)
+    return _page(request, "_conversation.html", session.language, **context)
 
 
 # --- sign out -----------------------------------------------------------------------

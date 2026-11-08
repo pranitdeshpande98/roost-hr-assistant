@@ -41,7 +41,60 @@
     }
   });
 
-  document.addEventListener("htmx:afterSwap", scrollToLatest);
+  // Streaming (NFR-01): show the answer as it is written, then swap in the finished
+  // conversation from the server, which is the checked text that was recorded.
+  function streamInto(conversation) {
+    var bubble = conversation && conversation.querySelector("[data-stream-url]");
+    if (!bubble || !window.EventSource) {
+      return;
+    }
+    var out = bubble.querySelector("p");
+    var text = "";
+    var source = new EventSource(bubble.dataset.streamUrl);
+    source.addEventListener("token", function (event) {
+      text += JSON.parse(event.data);
+      // Rough markdown clean-up while streaming; the final text is cleaned properly.
+      out.textContent = text.replace(/\*\*|__/g, "").replace(/^#+\s*/gm, "");
+      restart();
+      scrollToLatest();
+    });
+    source.addEventListener("reset", function () {
+      text = "";
+      out.textContent = "";
+    });
+    source.addEventListener("done", function (event) {
+      source.close();
+      var html = JSON.parse(event.data);
+      if (!html) {
+        window.location.reload();
+        return;
+      }
+      var template = document.createElement("template");
+      template.innerHTML = html.trim();
+      var fresh = template.content.firstElementChild;
+      conversation.replaceWith(fresh);
+      if (window.htmx) {
+        window.htmx.process(fresh);
+      }
+      scrollToLatest();
+      var input = document.querySelector("form[data-reset-after-send] input[name=text]");
+      if (input) {
+        input.focus();
+      }
+    });
+    source.onerror = function () {
+      // Lost the stream: the turn still finishes and is recorded; reload to show it.
+      source.close();
+      window.setTimeout(function () {
+        window.location.reload();
+      }, 1500);
+    };
+  }
+
+  document.addEventListener("htmx:afterSwap", function () {
+    scrollToLatest();
+    streamInto(document.getElementById("conversation"));
+  });
   document.addEventListener("htmx:afterRequest", function (event) {
     var form = event.target.closest && event.target.closest("form[data-reset-after-send]");
     if (form && event.detail.successful) {

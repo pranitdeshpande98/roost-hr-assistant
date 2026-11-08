@@ -71,3 +71,10 @@ button[disabled] { opacity: 0.6; }
 .choices { display: flex; gap: 0.5rem; }
 textarea { font: inherit; padding: 0.4rem; }
 .words { white-space: pre-line; border-left: 4px solid var(--muted); margin: 0.5rem 0; padding: 0.5rem 0.9rem; background: var(--roost); }
+.filters { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+.transcript { max-height: none; }
+.line.streaming p { min-height: 1.5em; }
+.line.streaming[aria-busy="true"] p:empty::after { content: "…"; }
+.rating { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin-top: 0.4rem; font-size: 0.8rem; color: var(--muted); }
+.rating button { padding: 0.15rem 0.6rem; font-size: 0.8rem; }
+.rating button[aria-pressed="true"] { outline: 2px solid var(--accent); font-weight: bold; }

@@ -59,6 +59,16 @@ class ChatResult(BaseModel):
     latency_ms: float
 
 
+class TextSink(Protocol):
+    """Receives an answer while the model writes it (kiosk streaming, NFR-01)."""
+
+    def text(self, delta: str) -> None:
+        """More of the answer."""
+
+    def reset(self) -> None:
+        """Forget what was sent: another model (a fallback) starts over."""
+
+
 class ChatModel(Protocol):
     """Anything that can answer a conversation: a real provider, a fallback pair, a fake."""
 
@@ -72,4 +82,8 @@ class ChatModel(Protocol):
         tools: list[ToolSpec] | None = None,
         temperature: float = 0.0,
         max_tokens: int | None = None,
-    ) -> ChatResult: ...
+        on_text: TextSink | None = None,
+    ) -> ChatResult:
+        """With `on_text`, the answer's text is also streamed to it as it arrives; the
+        returned ChatResult is the same either way."""
+        ...

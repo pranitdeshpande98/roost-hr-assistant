@@ -34,7 +34,7 @@ from roost.evals.agent_dataset import AgentCase, EmployeeProfile
 from roost.evals.llm_eval import parse_citations
 from roost.guardrails.classifier import GuardrailDecision
 from roost.llm.errors import LLMUnavailableError
-from roost.llm.types import ChatMessage, ChatModel, ChatResult, ToolSpec
+from roost.llm.types import ChatMessage, ChatModel, ChatResult, TextSink, ToolSpec
 
 Sessions = Callable[[], AbstractContextManager[Session]]
 Agent = CompiledStateGraph[AgentState, Any, Any, Any]
@@ -109,10 +109,15 @@ class RecordingChatModel:
         tools: list[ToolSpec] | None = None,
         temperature: float = 0.0,
         max_tokens: int | None = None,
+        on_text: TextSink | None = None,
     ) -> ChatResult:
         try:
             result = self._inner.chat(
-                messages, tools=tools, temperature=temperature, max_tokens=max_tokens
+                messages,
+                tools=tools,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                on_text=on_text,
             )
         except LLMUnavailableError as error:
             self.outages.append(error)

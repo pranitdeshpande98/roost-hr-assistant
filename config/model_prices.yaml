@@ -1,0 +1,19 @@
+# Public list prices in USD per million tokens, for the *estimated* cost of each turn
+# (NFR-08). The free tier is billed $0; these show what the same traffic would cost on
+# a paid plan. Keys are model names as the client reports them: "provider/model".
+# Source: GroqCloud pricing, checked 2026-11-07 (gpt-oss-120b $0.15/$0.60,
+# gpt-oss-20b $0.075/$0.30, Qwen3.8-27B preview $0.80/$4.00). OpenRouter ":free"
+# models cost nothing. A model missing here is costed at $0 and logged once.
+
+groq/openai/gpt-oss-120b:
+  input: 0.15
+  output: 0.60
+groq/openai/gpt-oss-20b:
+  input: 0.075
+  output: 0.30
+groq/qwen/qwen3.8-27b:
+  input: 0.80
+  output: 4.00
+openrouter/nvidia/nemotron-3-ultra-550b-a55b:free:
+  input: 0
+  output: 0

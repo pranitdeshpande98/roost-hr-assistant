@@ -12,6 +12,8 @@ from langgraph.errors import GraphBubbleUp
 from roost.agent.confirmation import ConfirmationReply
 from roost.core.enums import Language
 from roost.llm.types import ChatMessage, ToolCall, ToolSpec
+from roost.observability import turns
+from roost.observability.tracing import set_attributes, span
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +38,19 @@ class Tool(Protocol):
     def run(self, arguments: dict[str, Any], context: ToolContext) -> str: ...
 
 
+SEARCH_TOOL = "search_handbook"  # counted for the "I don't know" signal (FR-51)
+
+
+def tool_outcome(result: str) -> str:
+    """How a tool call ended, for telemetry: an error, a refusal (a rule failed or the
+    employee said no), or done."""
+    if result.startswith("Error"):
+        return "error"
+    if result.startswith("NOT "):
+        return "refused"
+    return "ok"
+
+
 class ToolRegistry:
     """Looks tools up by name and turns each model tool call into a tool message."""
 
@@ -56,14 +71,23 @@ class ToolRegistry:
         """Run one call. Failures become a short tool message, never an exception:
         the model can recover (retry, apologise), and internals are not leaked to it."""
         tool = self._tools.get(call.name)
-        if tool is None:
-            content = f"Error: unknown tool '{call.name}'."
-        else:
-            try:
-                content = tool.run(call.arguments, context)
-            except GraphBubbleUp:
-                raise  # LangGraph's own signals (e.g. pausing for confirmation) must pass
-            except Exception:
-                logger.exception("Tool %s failed", call.name)
-                content = f"Error: the {call.name} tool failed. Do not retry it."
+        name = call.name if tool is not None else "unknown"
+        with span("tool.call", {"roost.tool.name": name}, passthrough=(GraphBubbleUp,)) as current:
+            if tool is None:
+                content = f"Error: unknown tool '{call.name}'."
+            else:
+                try:
+                    content = tool.run(call.arguments, context)
+                except GraphBubbleUp:
+                    raise  # LangGraph's own signals (e.g. pausing for confirmation) must pass
+                except Exception:
+                    logger.exception("Tool %s failed", call.name)
+                    content = f"Error: the {call.name} tool failed. Do not retry it."
+            outcome = tool_outcome(content)
+            set_attributes(current, {"roost.tool.outcome": outcome})
+            stats = turns.current()
+            if stats is not None:
+                stats.tools.append(turns.ToolUse(name, outcome))
+                if name == SEARCH_TOOL and outcome == "ok":
+                    stats.searches += 1
         return ChatMessage(role="tool", content=content, tool_call_id=call.id)

@@ -9,7 +9,7 @@ from typing import Any, cast
 import openai
 from openai.types.chat import ChatCompletionMessageParam, ChatCompletionToolParam
 
-from roost.llm.errors import LLMRequestError, LLMResponseError, LLMUnavailableError
+from roost.llm.errors import LLMError, LLMRequestError, LLMResponseError, LLMUnavailableError
 from roost.llm.providers import (
     PROVIDERS,
     LLMSettings,
@@ -17,7 +17,17 @@ from roost.llm.providers import (
     get_llm_settings,
     parse_model_ref,
 )
-from roost.llm.types import ChatMessage, ChatModel, ChatResult, ToolCall, ToolSpec, Usage
+from roost.llm.types import (
+    ChatMessage,
+    ChatModel,
+    ChatResult,
+    TextSink,
+    ToolCall,
+    ToolSpec,
+    Usage,
+)
+from roost.observability import turns
+from roost.observability.tracing import set_attributes, span
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +64,17 @@ def _to_openai_tool(tool: ToolSpec) -> ChatCompletionToolParam:
             "description": tool.description,
             "parameters": tool.parameters,
         },
+    }
+
+
+def _call_attributes(call: turns.ModelCall, *, outcome: str) -> dict[str, object]:
+    return {
+        "gen_ai.usage.input_tokens": call.input_tokens,
+        "gen_ai.usage.output_tokens": call.output_tokens,
+        "roost.llm.purpose": call.purpose,
+        "roost.llm.fallback_position": call.fallback_position,
+        "roost.llm.cost_usd": float(call.cost_usd),
+        "roost.llm.outcome": outcome,
     }
 
 
@@ -116,8 +137,48 @@ class OpenAICompatibleChatModel:
         tools: list[ToolSpec] | None = None,
         temperature: float = 0.0,
         max_tokens: int | None = None,
+        on_text: TextSink | None = None,
     ) -> ChatResult:
-        started = time.perf_counter()
+        # One span per call, with the model, tokens and estimated cost; never the messages.
+        with span(
+            "llm.chat",
+            {"gen_ai.system": self._provider.key, "gen_ai.request.model": self._model},
+        ) as current:
+            started = time.perf_counter()
+            try:
+                if on_text is None:
+                    result = self._call(messages, tools, temperature, max_tokens, started)
+                else:
+                    result = self._stream(
+                        messages, tools, temperature, max_tokens, started, on_text
+                    )
+            except LLMError as error:
+                elapsed = (time.perf_counter() - started) * 1000
+                call = turns.record_model_call(self.name, 0, 0, elapsed, ok=False)
+                set_attributes(current, _call_attributes(call, outcome=type(error).__name__))
+                raise
+            call = turns.record_model_call(
+                self.name,
+                result.usage.prompt_tokens,
+                result.usage.completion_tokens,
+                result.latency_ms,
+                ok=True,
+            )
+            set_attributes(
+                current,
+                _call_attributes(call, outcome="ok")
+                | {"gen_ai.response.finish_reasons": (result.finish_reason or "unknown",)},
+            )
+            return result
+
+    def _call(
+        self,
+        messages: list[ChatMessage],
+        tools: list[ToolSpec] | None,
+        temperature: float,
+        max_tokens: int | None,
+        started: float,
+    ) -> ChatResult:
         try:
             completion = self._client.chat.completions.create(
                 model=self._model,
@@ -159,6 +220,80 @@ class OpenAICompatibleChatModel:
             latency_ms=latency_ms,
         )
 
+    def _stream(
+        self,
+        messages: list[ChatMessage],
+        tools: list[ToolSpec] | None,
+        temperature: float,
+        max_tokens: int | None,
+        started: float,
+        on_text: TextSink,
+    ) -> ChatResult:
+        """The same call, streamed: text goes to `on_text` as it arrives, and the pieces are
+        put back together into the ChatResult a normal call returns (tool calls included)."""
+        content: list[str] = []
+        calls: dict[int, dict[str, str]] = {}
+        finish_reason: str | None = None
+        usage = Usage()
+        try:
+            stream = self._client.chat.completions.create(
+                model=self._model,
+                messages=[_to_openai_message(m) for m in messages],
+                tools=[_to_openai_tool(t) for t in tools] if tools else openai.omit,
+                temperature=temperature,
+                max_tokens=max_tokens if max_tokens is not None else openai.omit,
+                stream=True,
+                stream_options={"include_usage": True},
+            )
+            for chunk in stream:
+                if chunk.usage is not None:
+                    usage = Usage(
+                        prompt_tokens=chunk.usage.prompt_tokens,
+                        completion_tokens=chunk.usage.completion_tokens,
+                    )
+                if not chunk.choices:
+                    detail = (chunk.model_extra or {}).get("error")
+                    if detail:  # OpenRouter: an upstream failure inside the stream
+                        raise LLMUnavailableError(f"{self.name}: stream error ({detail})")
+                    continue
+                choice = chunk.choices[0]
+                finish_reason = choice.finish_reason or finish_reason
+                delta = choice.delta
+                if delta.content:
+                    content.append(delta.content)
+                    on_text.text(delta.content)
+                for piece in delta.tool_calls or []:
+                    call = calls.setdefault(piece.index, {"id": "", "name": "", "arguments": ""})
+                    if piece.id:
+                        call["id"] = piece.id
+                    if piece.function is not None:
+                        call["name"] += piece.function.name or ""
+                        call["arguments"] += piece.function.arguments or ""
+        except _TRANSIENT as exc:
+            raise LLMUnavailableError(f"{self.name}: {type(exc).__name__}") from exc
+        except openai.APIStatusError as exc:
+            raise LLMRequestError(f"{self.name}: HTTP {exc.status_code}") from exc
+        if finish_reason is None and not content and not calls:
+            raise LLMUnavailableError(f"{self.name}: the stream ended without an answer")
+        return ChatResult(
+            message=ChatMessage(
+                role="assistant",
+                content="".join(content) or None,
+                tool_calls=tuple(
+                    ToolCall(
+                        id=call["id"],
+                        name=call["name"],
+                        arguments=_parse_arguments(call["name"], call["arguments"]),
+                    )
+                    for _, call in sorted(calls.items())
+                ),
+            ),
+            model=self.name,
+            finish_reason=finish_reason,
+            usage=usage,
+            latency_ms=(time.perf_counter() - started) * 1000,
+        )
+
 
 class FallbackChatModel:
     """Try each model in order; move to the next only when one is unavailable.
@@ -183,16 +318,28 @@ class FallbackChatModel:
         tools: list[ToolSpec] | None = None,
         temperature: float = 0.0,
         max_tokens: int | None = None,
+        on_text: TextSink | None = None,
     ) -> ChatResult:
         last_error: LLMUnavailableError | None = None
-        for model in self._models:
+        for position, model in enumerate(self._models):
             try:
-                return model.chat(
-                    messages, tools=tools, temperature=temperature, max_tokens=max_tokens
-                )
+                with turns.fallback_position(position):
+                    if on_text is None:
+                        return model.chat(
+                            messages, tools=tools, temperature=temperature, max_tokens=max_tokens
+                        )
+                    return model.chat(
+                        messages,
+                        tools=tools,
+                        temperature=temperature,
+                        max_tokens=max_tokens,
+                        on_text=on_text,
+                    )
             except LLMUnavailableError as exc:
                 logger.warning("%s unavailable (%s); trying the next model", model.name, exc)
                 last_error = exc
+                if on_text is not None:
+                    on_text.reset()  # a half-written answer from a failed model is dropped
         logger.error("Every model in %s is unavailable", self.name)
         raise last_error or LLMUnavailableError(f"{self.name}: no model answered")
 

@@ -1,6 +1,6 @@
 # Roost: Multilingual AI HR Assistant
 
-> **Status:** ✅ Phase 8 complete · 🚧 Phase 9: Observability
+> **Status:** ✅ Phase 9 complete · 🚧 Phase 10: CI/CD
 
 Roost is a production-style AI assistant for **Hollow Creek Poultry Co.**, a
 fictional poultry processor with three plants and a corporate office. It helps
@@ -147,6 +147,37 @@ Console /console ◄── supervisor: approve/deny ◄── notice (Teams, ema
 Design and trade-offs, including the one exception to "never show balances":
 [ADR-0013](docs/adr/0013-api-layer.md).
 
+## Observability (Phase 9)
+
+Every request is one trace, with a span per agent step, model call and tool call. Each
+turn also leaves a row of numbers, and its words go only into the transcript.
+
+```text
+GET /chat/stream
+└── roost.turn        language, reply kind, guardrail category, tokens, cost
+    ├── agent.screen  ─ llm.chat (classifier)
+    ├── agent.call_model ─ llm.chat (model, tokens, cost, fallback used)
+    ├── agent.run_tools  ─ tool.call (name, outcome, handbook sections)
+    └── agent.finalize
+```
+
+| What | Where | Kept |
+|---|---|---|
+| Traces | OpenTelemetry to Jaeger at <http://localhost:16686> | in Jaeger's memory |
+| Per-turn numbers (tokens, estimated cost, latency, time to first word, guardrail category) | `turn_metric`, the console's **Quality** page | 30 days |
+| What was said, exactly as shown | `conversation`, `message`, the console's **Transcripts** page (HR admins, every view audited) | 45 days, or until a legal hold is released |
+
+- **Nothing anyone wrote** reaches a trace or a log line: one filter allows only listed
+  keys and short token values, and a test checks a sensitive message leaves no trace.
+- **Streaming:** the kiosk shows Roost's words as the model writes them, then swaps in
+  the checked text (citations verified, footer added).
+- **Ratings:** employees rate answers 👍 or 👎; the Quality page shows the helpful rate by
+  language, the "no handbook answer" rate, fallbacks, latency against the 3-second target,
+  and estimated cost at list price. It warns when the guardrail's backup check had to
+  decide.
+
+Design and trade-offs: [ADR-0014](docs/adr/0014-observability.md).
+
 ## Model selection (Phase 4)
 
 Chosen by evaluation, not leaderboards: 90 questions (30 intents x English, Spanish, Vietnamese).
@@ -172,6 +203,7 @@ Reproduce: `uv run python scripts/eval_retrieval.py` and `uv run python scripts/
 | Agent orchestration | LangGraph (Postgres checkpointer) |
 | Web | FastAPI, Jinja2 templates, htmx (vendored), uvicorn |
 | Password and PIN hashing | argon2-cffi (Argon2id) |
+| Observability | OpenTelemetry (OTLP), Jaeger (Docker), JSON logs |
 | Embeddings | sentence-transformers (`BAAI/bge-m3`, CPU) |
 | LLM providers | Groq and OpenRouter free tiers, via the OpenAI Python SDK |
 | Lint and format | Ruff |
@@ -191,7 +223,7 @@ uv sync                          # Python 3.12 + all dependencies
 uv run pre-commit install        # git hooks
 cp .env.example .env             # then set POSTGRES_PASSWORD (and LLM keys, below)
 
-docker compose up -d             # Postgres + pgvector
+docker compose up -d             # Postgres + pgvector, and Jaeger for traces
 uv run alembic upgrade head      # create the schema
 uv run python scripts/seed_db.py # 4,500 synthetic employees
 uv run python scripts/ingest_handbook.py data/raw/handbook/handbook-v1.0.md \
@@ -268,6 +300,8 @@ or an HR admin. Console passwords are only for supervisors and HR.
 | FR-23 reminders (daily) | `uv run python scripts/send_reminders.py` |
 | Deliver email and Teams notices to `var/outbox/` | `uv run python scripts/deliver_outbox.py` |
 | Erase referral texts 90 days after handling (daily) | `uv run python scripts/delete_old_referrals.py` |
+| Daily retention: transcripts after 45 days (unless held), metrics after 30, referral texts | `uv run python scripts/apply_retention.py` |
+| See traces | <http://localhost:16686> (service `roost`) |
 
 ## Project structure
 
@@ -285,10 +319,11 @@ src/roost/        application package
   audit/          the append-only audit log
   notifications/  outbox, wording and delivery (Teams, email, kiosk)
   referrals/      the consented note to HR (FR-32)
+  observability/  tracing, safe attributes, JSON logs, per-turn metrics, quality report
+  transcripts/    the conversation record, legal holds and retention
   db/             data models
   seed/           synthetic employee data
   adapters/       HR system, email, notifications (mocked)
-  observability/  logging and tracing
   evals/          evaluation dataset loading and scoring
 tests/            unit and integration tests
 evals/            evaluation datasets and committed results
@@ -309,7 +344,7 @@ docs/             requirements, architecture and decision records
 - [x] Phase 6: Evaluations
 - [x] Phase 7: Guardrails
 - [x] Phase 8: API layer
-- [ ] Phase 9: Observability
+- [x] Phase 9: Observability
 - [ ] Phase 10: Containers and CI/CD
 - [ ] Phase 11: Deployment
 - [ ] Phase 12: Teams integration and post-launch

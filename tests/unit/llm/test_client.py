@@ -225,3 +225,125 @@ def test_build_chat_model_with_several_refs_returns_a_chain() -> None:
 def test_build_chat_model_needs_at_least_one_ref() -> None:
     with pytest.raises(LLMRequestError, match="no models configured"):
         build_chat_model([], settings=LLMSettings(_env_file=None))
+
+
+def test_each_call_is_a_span_with_tokens_and_cost_but_no_messages(spans: Any) -> None:
+    model = _model(_reply_with(_completion({"role": "assistant", "content": "Hola"})))
+
+    model.chat([ChatMessage(role="user", content="My secret question about my lead")])
+
+    span = spans.one("llm.chat")
+    assert span.attributes["gen_ai.system"] == "groq"
+    assert span.attributes["gen_ai.request.model"] == "test-model"
+    assert span.attributes["gen_ai.usage.input_tokens"] == 12
+    assert span.attributes["gen_ai.usage.output_tokens"] == 5
+    assert span.attributes["roost.llm.outcome"] == "ok"
+    assert span.attributes["gen_ai.response.finish_reasons"] == ("stop",)
+    assert "secret" not in str(dict(span.attributes)).lower()
+
+
+def test_a_failed_call_records_only_the_error_type(spans: Any) -> None:
+    model = _model(lambda _: httpx2.Response(503, json={"error": {"message": "busy"}}))
+
+    with pytest.raises(LLMUnavailableError):
+        model.chat([ChatMessage(role="user", content="Hi")])
+
+    span = spans.one("llm.chat")
+    assert span.attributes["roost.llm.outcome"] == "LLMUnavailableError"
+    assert span.attributes["roost.error.type"] == "LLMUnavailableError"
+    assert span.events == ()  # no exception message or stack trace
+
+
+def _sse(*chunks: dict[str, Any]) -> httpx2.Response:
+    body = "".join(f"data: {json.dumps(c)}\n\n" for c in chunks) + "data: [DONE]\n\n"
+    return httpx2.Response(200, text=body, headers={"content-type": "text/event-stream"})
+
+
+def _chunk(delta: dict[str, Any], finish: str | None = None) -> dict[str, Any]:
+    return {
+        "id": "c1",
+        "object": "chat.completion.chunk",
+        "created": 0,
+        "model": "test-model",
+        "choices": [{"index": 0, "delta": delta, "finish_reason": finish}],
+    }
+
+
+class Collect:
+    def __init__(self) -> None:
+        self.pieces: list[str] = []
+        self.resets = 0
+
+    def text(self, delta: str) -> None:
+        self.pieces.append(delta)
+
+    def reset(self) -> None:
+        self.resets += 1
+
+
+def test_streaming_sends_text_as_it_arrives_and_returns_the_same_result() -> None:
+    usage = {
+        "id": "c1",
+        "object": "chat.completion.chunk",
+        "created": 0,
+        "model": "test-model",
+        "choices": [],
+        "usage": {"prompt_tokens": 30, "completion_tokens": 4, "total_tokens": 34},
+    }
+    seen: list[dict[str, Any]] = []
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        seen.append(json.loads(request.content))
+        return _sse(
+            _chunk({"role": "assistant", "content": "Catorce "}),
+            _chunk({"content": "días [§6.4]."}),
+            _chunk({}, finish="stop"),
+            usage,
+        )
+
+    sink = Collect()
+    result = _model(handler).chat([ChatMessage(role="user", content="¿Aviso?")], on_text=sink)
+
+    assert sink.pieces == ["Catorce ", "días [§6.4]."]
+    assert result.message.content == "Catorce días [§6.4]."
+    assert result.finish_reason == "stop"
+    assert (result.usage.prompt_tokens, result.usage.completion_tokens) == (30, 4)
+    assert seen[0]["stream"] is True
+    assert seen[0]["stream_options"] == {"include_usage": True}
+
+
+def test_streamed_tool_calls_are_put_back_together() -> None:
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        return _sse(
+            _chunk(
+                {
+                    "tool_calls": [
+                        {
+                            "index": 0,
+                            "id": "call_1",
+                            "type": "function",
+                            "function": {"name": "search_handbook", "arguments": '{"que'},
+                        }
+                    ]
+                }
+            ),
+            _chunk({"tool_calls": [{"index": 0, "function": {"arguments": 'ry": "notice"}'}}]}),
+            _chunk({}, finish="tool_calls"),
+        )
+
+    sink = Collect()
+    result = _model(handler).chat(
+        [ChatMessage(role="user", content="notice?")], tools=[LOOKUP_TOOL], on_text=sink
+    )
+
+    assert sink.pieces == []
+    assert result.message.tool_calls == (
+        ToolCall(id="call_1", name="search_handbook", arguments={"query": "notice"}),
+    )
+
+
+def test_a_stream_that_says_nothing_is_an_outage() -> None:
+    model = _model(lambda _: _sse())
+
+    with pytest.raises(LLMUnavailableError, match="without an answer"):
+        model.chat([ChatMessage(role="user", content="Hi")], on_text=Collect())

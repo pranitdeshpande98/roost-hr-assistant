@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Status | v0.2: Phase 8 tables built |
+| Status | v0.3: Phase 9 tables built |
 | Last updated | 2026-11-07 |
-| Decisions | [ADR-0005](adr/0005-embeddings-and-vector-store.md), [ADR-0007](adr/0007-relational-database.md), [ADR-0013](adr/0013-api-layer.md) |
+| Decisions | [ADR-0005](adr/0005-embeddings-and-vector-store.md), [ADR-0007](adr/0007-relational-database.md), [ADR-0013](adr/0013-api-layer.md), [ADR-0014](adr/0014-observability.md) |
 
 All tables live in one PostgreSQL database. Tables are built in the phase that
 first needs them; this document shows the full target model so each migration
@@ -168,6 +168,7 @@ erDiagram
         uuid thread_id "agent conversation"
         text csrf_token
         bool must_change_pin "PIN or password"
+        text pending_text "kiosk streaming: until the stream takes it"
         timestamptz last_seen_at "idle limit"
     }
     notification {
@@ -192,18 +193,46 @@ erDiagram
     }
     conversation {
         uuid id PK
+        uuid thread_id "agent memory thread, unique"
         uuid employee_id FK
         text channel
         text language
+        timestamptz started_at
+        timestamptz last_activity_at "45-day clock"
         bool legal_hold
-        timestamptz last_activity_at
+        uuid held_by_id FK "HR admin"
+        timestamptz held_at
+        text hold_reason "e.g. a case number"
     }
     message {
         bigint id PK
-        uuid conversation_id FK
-        text role "user, assistant"
-        text content
-        text sensitive_category "nullable"
+        uuid conversation_id FK "cascade"
+        text role "employee, roost"
+        text kind "message, answer, routed, question, fallback, error"
+        text content "exactly as shown"
+        text category "routed turns only"
+        text_array cited_sections
+        smallint rating "1, -1 or null (FR-47)"
+    }
+    turn_metric {
+        bigint id PK
+        timestamptz occurred_at "30 days"
+        text channel
+        text language
+        text reply_kind
+        text route
+        text category
+        text guardrail_source "keyword, llm, similarity"
+        text_array tools
+        smallint tool_errors
+        bool unanswered "searched, cited nothing"
+        text model
+        bool fallback_used
+        int input_tokens
+        int output_tokens
+        numeric cost_usd "at list price"
+        int latency_ms
+        int first_token_ms
     }
     audit_log {
         bigint id PK
@@ -230,7 +259,8 @@ the audit log must survive even if the rows it describes change.
 | 8 (API) | `approval`, `audit_log`, `kiosk_credential` | Supervisor and HR approvals, audit trail, kiosk sign-in |
 | 8 (API) | `web_session`, `console_credential` | Server-side sessions for the kiosk and the approver console; console passwords |
 | 8 (API) | `notification`, `hr_referral` | Notification outbox (Teams, email, kiosk); the consented note to HR (FR-32) |
-| 9 (observability) | `conversation`, `message` | Transcripts for the 45-day record policy and legal holds |
+| 9 (observability) | `conversation`, `message` | Transcripts for the 45-day record policy, legal holds and ratings |
+| 9 (observability) | `turn_metric` | Per-turn numbers: tokens, cost, latency, guardrail category; never text (30 days) |
 
 LangGraph's checkpoint tables are created and managed by its own library, not by our
 migrations. An Alembic migration creates the `agent_memory` schema they live in, so
@@ -257,5 +287,7 @@ autogenerate and `alembic check` never see them (ADR-0010).
 | Only one handbook version `published` at a time | Enforced with a partial unique index; publishing is one transaction (FR-44). |
 | `audit_log` insert-only | Triggers reject `UPDATE`, `DELETE` and `TRUNCATE` (ADR-0007, FR-24). The writer refuses detail keys such as `text` or `message`, so no conversation content is ever recorded. |
 | `birth_date` marked as PII | Used only to block birth-date PINs (FR-40); never sent to the LLM or shown in the UI (NFR-05). |
-| `message.sensitive_category` | Lets analytics count sensitive topics by category without reading content (FR-49). |
+| `message.category` | Lets analytics count sensitive topics by category without reading content (FR-49). |
+| `message` is what the employee saw, not the model's history | The kiosk draws its screen from it, so the record and the screen cannot differ; the agent's working memory (LangGraph checkpoints) is deleted with the conversation. |
+| `turn_metric` has no employee column and no text | Quality numbers for HR and engineering must not become a record of who asked what (FR-49, NFR-05). |
 | Times stored as `timestamptz` | Plants span Eastern and Central time zones; all timestamps are stored in UTC and converted for display using the location's time zone. |

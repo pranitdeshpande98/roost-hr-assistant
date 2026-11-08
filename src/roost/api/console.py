@@ -11,11 +11,11 @@ exception to FR-06). Supervisors decide on dates and team coverage, never balanc
 
 import math
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Form, Request
+from fastapi import APIRouter, Form, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -39,7 +39,15 @@ from roost.leave.approvals import (
     pending_for,
 )
 from roost.leave.repository import format_hours, load_leave_facts
+from roost.observability.quality import FIRST_TOKEN_TARGET_MS, quality_report
 from roost.referrals.service import mark_handled, may_read_referrals, referral_for, referrals_for
+from roost.transcripts.service import (
+    list_conversations,
+    may_read_transcripts,
+    place_hold,
+    release_hold,
+    view_conversation,
+)
 
 PREFIX = "/console"
 HISTORY_LIMIT = 50
@@ -69,6 +77,7 @@ def _page(
             "sign_out_action": f"{PREFIX}/sign-out",
             # Set by _current: whether the Referrals page is in the menu.
             "is_hr": getattr(request.state, "is_hr", False),
+            "is_hr_admin": getattr(request.state, "is_hr_admin", False),
         }
         | context,
         status_code=status,
@@ -88,6 +97,7 @@ def _current(request: Request, db: Session) -> WebSession | None:
         return None
     if session is not None:
         request.state.is_hr = may_read_referrals(db, session.employee_id)
+        request.state.is_hr_admin = may_read_transcripts(db, session.employee_id)
     return session
 
 
@@ -439,6 +449,170 @@ def referral_handled(
     if key is None or not mark_handled(db, session.employee_id, key, now=now):
         return _page(request, "console/message.html", session.language, 404, message="not_found")
     return RedirectResponse(f"{PREFIX}/referrals?done=handled", status_code=303)
+
+
+# --- transcripts: HR admins only (FR-46, FR-48) ------------------------------------------
+
+
+def _uuid(value: str) -> uuid.UUID | None:
+    try:
+        return uuid.UUID(value)
+    except ValueError:
+        return None
+
+
+def _when(moment: datetime | None) -> str:
+    return moment.strftime("%Y-%m-%d %H:%M UTC") if moment else ""
+
+
+@router.get("/transcripts")
+def transcripts_page(
+    request: Request,
+    db: Db,
+    employee: Annotated[str, Query(max_length=20)] = "",
+    held: Annotated[str, Query(max_length=1)] = "",
+) -> Response:
+    session = _ready(request, db)
+    if isinstance(session, Response):
+        return session
+    if not may_read_transcripts(db, session.employee_id):
+        return _page(request, "console/message.html", session.language, 404, message="not_found")
+    rows = list_conversations(
+        db, session.employee_id, employee_number=employee or None, held_only=held == "1"
+    )
+    return _page(
+        request,
+        "console/transcripts.html",
+        session.language,
+        rows=[
+            {
+                "id": row.conversation.id,
+                "employee": (
+                    f"{row.employee.first_name} {row.employee.last_name}" if row.employee else ""
+                ),
+                "employee_number": row.employee.employee_number if row.employee else "",
+                "channel": row.conversation.channel.value,
+                "language": row.conversation.language.value,
+                "last": _when(row.conversation.last_activity_at),
+                "messages": row.messages,
+                "routed": row.sensitive,
+                "held": row.conversation.legal_hold,
+            }
+            for row in rows
+        ],
+        employee=employee,
+        held=held == "1",
+        nav="transcripts",
+    )
+
+
+@router.get("/transcripts/{conversation_id}")
+def transcript_page(
+    request: Request, db: Db, conversation_id: str, done: str | None = None
+) -> Response:
+    session = _ready(request, db)
+    if isinstance(session, Response):
+        return session
+    key = _uuid(conversation_id)
+    found = view_conversation(db, session.employee_id, key) if key else None
+    if found is None:
+        return _page(request, "console/message.html", session.language, 404, message="not_found")
+    conversation, employee = found
+    return _page(
+        request,
+        "console/transcript.html",
+        session.language,
+        conversation=conversation,
+        employee=employee,
+        started=_when(conversation.started_at),
+        last=_when(conversation.last_activity_at),
+        held_at=_when(conversation.held_at),
+        messages=conversation.messages,
+        csrf=session.csrf_token,
+        done={"held": "hold_placed", "released": "hold_released"}.get(done or ""),
+        nav="transcripts",
+    )
+
+
+def _hold_action(
+    request: Request, db: Session, conversation_id: str, csrf: str, act: Any
+) -> Response:
+    session = _ready(request, db)
+    if isinstance(session, Response):
+        return session
+    if not web_sessions.csrf_ok(session, csrf):
+        return _page(request, "console/message.html", session.language, 403, message="error")
+    key = _uuid(conversation_id)
+    if key is None or not act(session.employee_id, key):
+        return _page(request, "console/message.html", session.language, 404, message="not_found")
+    return Response(status_code=204)
+
+
+@router.post("/transcripts/{conversation_id}/hold")
+def transcript_hold(
+    request: Request,
+    db: Db,
+    conversation_id: str,
+    reason: Annotated[str, Form(max_length=200)] = "",
+    csrf: Annotated[str, Form(max_length=100)] = "",
+) -> Response:
+    now = services_of(request).clock()
+    result = _hold_action(
+        request,
+        db,
+        conversation_id,
+        csrf,
+        lambda viewer, key: place_hold(db, viewer, key, reason=reason, now=now),
+    )
+    if result.status_code != 204:
+        return result
+    return RedirectResponse(f"{PREFIX}/transcripts/{conversation_id}?done=held", status_code=303)
+
+
+@router.post("/transcripts/{conversation_id}/release")
+def transcript_release(
+    request: Request,
+    db: Db,
+    conversation_id: str,
+    csrf: Annotated[str, Form(max_length=100)] = "",
+) -> Response:
+    result = _hold_action(
+        request,
+        db,
+        conversation_id,
+        csrf,
+        lambda viewer, key: release_hold(db, viewer, key),
+    )
+    if result.status_code != 204:
+        return result
+    return RedirectResponse(
+        f"{PREFIX}/transcripts/{conversation_id}?done=released", status_code=303
+    )
+
+
+# --- quality: HR admins only (FR-51) --------------------------------------------------------
+
+
+@router.get("/quality")
+def quality_page(
+    request: Request, db: Db, days: Annotated[int, Query(ge=1, le=30)] = 7
+) -> Response:
+    session = _ready(request, db)
+    if isinstance(session, Response):
+        return session
+    if not may_read_transcripts(db, session.employee_id):  # HR admins (FR-51)
+        return _page(request, "console/message.html", session.language, 404, message="not_found")
+    now = services_of(request).clock()
+    report = quality_report(db, since=now - timedelta(days=days), now=now)
+    return _page(
+        request,
+        "console/quality.html",
+        session.language,
+        report=report,
+        days=days,
+        target_ms=FIRST_TOKEN_TARGET_MS,
+        nav="quality",
+    )
 
 
 # --- sign out -----------------------------------------------------------------------

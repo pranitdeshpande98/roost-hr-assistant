@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block header %}{% include "console/_nav.html" %}{% endblock %}
+{% block main %}
+<h2>{{ t('transcript_title') }}</h2>
+{% if done %}<p class="done" role="status">{{ t(done) }}</p>{% endif %}
+<p class="muted">{{ t('transcript_viewed_notice') }}</p>
+<dl class="facts">
+  <dt>{{ t('col_employee') }}</dt><dd>{% if employee %}{{ employee.first_name }} {{ employee.last_name }} ({{ employee.employee_number }}){% endif %}</dd>
+  <dt>{{ t('col_language') }}</dt><dd>{{ t('language_' ~ conversation.language.value) }}</dd>
+  <dt>{{ t('col_started') }}</dt><dd>{{ started }}</dd>
+  <dt>{{ t('col_last_message') }}</dt><dd>{{ last }}</dd>
+  <dt>{{ t('col_hold') }}</dt><dd>{% if conversation.legal_hold %}{{ t('hold_since', when=held_at) }}{% if conversation.hold_reason %}: {{ conversation.hold_reason }}{% endif %}{% else %}{{ t('hold_none') }}{% endif %}</dd>
+</dl>
+<section class="conversation transcript" lang="{{ conversation.language.value }}">
+  {% for message in messages %}
+  <article class="line {{ 'employee' if message.role == 'employee' else 'roost' }}">
+    <h3>{{ t('transcript_employee') if message.role == 'employee' else t('roost') }} · {{ message.created_at.strftime('%H:%M') }}{% if message.category %} · {{ t('topic_' ~ message.category) }}{% endif %}</h3>
+    <p>{{ message.content | kiosk_text }}</p>
+  </article>
+  {% endfor %}
+</section>
+{% if conversation.legal_hold %}
+<form class="card" method="post" action="/console/transcripts/{{ conversation.id }}/release">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <p>{{ t('release_help') }}</p>
+  <button type="submit" class="secondary">{{ t('release_hold') }}</button>
+</form>
+{% else %}
+<form class="card" method="post" action="/console/transcripts/{{ conversation.id }}/hold">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <label for="reason">{{ t('hold_reason') }}</label>
+  <input id="reason" name="reason" maxlength="200">
+  <button type="submit">{{ t('place_hold') }}</button>
+</form>
+{% endif %}
+<p><a href="/console/transcripts">{{ t('back_to_transcripts') }}</a></p>
+{% endblock %}

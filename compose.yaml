@@ -19,5 +19,14 @@ services:
       timeout: 3s
       retries: 10
 
+  # Traces (ADR-0014). UI: http://localhost:16686. Kept in memory: gone on restart.
+  jaeger:
+    image: cr.jaegertracing.io/jaegertracing/jaeger:2.21.0
+    container_name: roost-jaeger
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:16686:16686" # web UI
+      - "127.0.0.1:4318:4318" # OTLP over HTTP, where Roost sends spans
+
 volumes:
   roost_pgdata:

@@ -29,6 +29,8 @@ class Settings(BaseSettings):
 
     environment: Environment = "local"
     log_level: LogLevel = "INFO"
+    # OpenTelemetry over OTLP/HTTP, e.g. http://127.0.0.1:4318 (local Jaeger). Unset: off.
+    otel_exporter_otlp_endpoint: str | None = None
 
     # Option A: one full connection string (typical for hosted Postgres)
     database_url: SecretStr | None = None
