@@ -148,7 +148,7 @@ class World:
         for person in (self.supervisor, self.hr, self.admin):
             set_password(db, person.employee_number, TEMP_PASSWORD, by=admin.id)
         self.clock = Clock()
-        self.own_password: set[uuid.UUID] = set()  # who already chose their own
+        self.own_password: set[uuid.UUID] = set()  # who already chose their own PIN/password
         self.model = QueueModel()
         agent = build_graph(
             self.model,
@@ -181,11 +181,17 @@ class World:
 
     def kiosk(self, person: Employee, *, choose_pin: bool = True) -> TestClient:
         client = self.client()
+        changed = person.id in self.own_password
         client.post(
             "/sign-in",
-            data={"employee_number": person.employee_number, "pin": TEMP_PIN, "language": "en"},
+            data={
+                "employee_number": person.employee_number,
+                "pin": OWN_PIN if changed else TEMP_PIN,
+                "language": "en",
+            },
         )
-        if choose_pin:
+        if choose_pin and not changed:
+            self.own_password.add(person.id)
             client.post(
                 "/change-pin",
                 data={
@@ -324,6 +330,7 @@ def test_every_form_needs_the_sessions_csrf_token(world: World) -> None:
     forms: dict[str, tuple[Callable[[], TestClient], dict[str, str]]] = {
         "/change-pin": (lambda: world.kiosk(world.alice, choose_pin=False), {}),
         "/chat/messages": (lambda: world.kiosk(world.bob), {"text": "hello"}),
+        "/chat/rating": (lambda: world.kiosk(world.bob), {"message_id": "1", "value": "up"}),
         "/console/change-password": (
             lambda: world.console(world.supervisor, choose_password=False),
             {},

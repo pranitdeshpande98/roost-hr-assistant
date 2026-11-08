@@ -20,7 +20,7 @@ from roost.agent.state import AgentState
 from roost.agent.streaming import current_sink
 from roost.agent.tools import ToolContext, ToolRegistry
 from roost.guardrails.citations import remove_unsupported_citations
-from roost.guardrails.classifier import GuardrailDecision
+from roost.guardrails.classifier import GuardrailDecision, Source
 from roost.guardrails.routing import HRContact, routed_reply
 from roost.guardrails.types import Route
 from roost.llm.errors import LLMError
@@ -76,6 +76,13 @@ def _record_guardrail(decision: GuardrailDecision) -> None:
         "roost.route": decision.route.value,
     }
     set_attributes(trace.get_current_span(), attributes)
+    if decision.source is Source.SIMILARITY:
+        # Only reached when every classifier model failed: worth an alert (ADR-0014).
+        logger.warning(
+            "Guardrail decided by the similarity fallback (category %s): "
+            "the LLM classifier did not answer",
+            decision.category.value,
+        )
     stats = turns.current()
     if stats is not None:
         stats.category = decision.category.value

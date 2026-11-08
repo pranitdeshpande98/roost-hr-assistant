@@ -1,6 +1,7 @@
 """Every turn traced (NFR-11) with numbers and categories only (FR-49, NFR-05)."""
 
 import io
+import json
 import logging
 import uuid
 from collections.abc import Iterator
@@ -229,3 +230,18 @@ def test_json_logs_carry_the_trace_id(spans: Any, json_logs: io.StringIO) -> Non
     line = json_logs.getvalue().strip().splitlines()[-1]
     assert f'"trace_id": "{current.get_span_context().trace_id:032x}"' in line
     assert '"message": "Removed 1 unsupported citation(s)"' in line
+
+
+def test_a_similarity_fallback_decision_is_logged_as_a_warning(json_logs: io.StringIO) -> None:
+    class DownScreen:
+        def classify(self, text: str) -> GuardrailDecision:
+            return GuardrailDecision(Category.HARASSMENT, Source.SIMILARITY, "bge-m3")
+
+    agent = _agent(ScriptedChatModel([]), DownScreen())  # type: ignore[arg-type]
+
+    _ask(agent, SECRET)
+
+    lines = [json.loads(line) for line in json_logs.getvalue().splitlines()]
+    warnings = [line for line in lines if line["level"] == "WARNING"]
+    assert any("similarity fallback (category harassment)" in w["message"] for w in warnings)
+    assert "freezer" not in json_logs.getvalue().lower()  # the category, never the words

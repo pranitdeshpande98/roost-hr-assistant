@@ -575,3 +575,153 @@ back_to_transcripts:
   en: "Back to transcripts"
   es: "Volver a las transcripciones"
   vi: "Quay lại danh sách bản ghi"
+# ── Ratings (FR-47) ───────────────────────────────────────────────────────────────
+rate_question:
+  en: "Was this helpful?"
+  es: "¿Le sirvió?"
+  vi: "Câu trả lời có hữu ích không?"
+rate_up:
+  en: "Yes"
+  es: "Sí"
+  vi: "Có"
+rate_down:
+  en: "No"
+  es: "No"
+  vi: "Không"
+# ── Quality: HR admins only (FR-51) ──────────────────────────────────────────────
+nav_quality:
+  en: "Quality"
+  es: "Calidad"
+  vi: "Chất lượng"
+quality_title:
+  en: "How Roost is doing"
+  es: "Cómo funciona Roost"
+  vi: "Roost đang hoạt động thế nào"
+quality_help:
+  en: "Counts and timings only, never what anyone wrote. Kept 30 days."
+  es: "Solo conteos y tiempos, nunca lo que alguien escribió. Se guardan 30 días."
+  vi: "Chỉ có số đếm và thời gian, không bao giờ có nội dung ai đã viết. Lưu 30 ngày."
+quality_period:
+  en: "Period"
+  es: "Periodo"
+  vi: "Khoảng thời gian"
+quality_day:
+  en: "Last 24 hours"
+  es: "Últimas 24 horas"
+  vi: "24 giờ qua"
+quality_week:
+  en: "Last 7 days"
+  es: "Últimos 7 días"
+  vi: "7 ngày qua"
+quality_month:
+  en: "Last 30 days"
+  es: "Últimos 30 días"
+  vi: "30 ngày qua"
+warning_similarity:
+  en: "The guardrail's backup check decided {count} message(s) in the last 24 hours: the AI classifier did not answer. Check the model provider."
+  es: "La comprobación de respaldo decidió {count} mensaje(s) en las últimas 24 horas: el clasificador de IA no respondió. Revise el proveedor del modelo."
+  vi: "Bộ kiểm tra dự phòng đã quyết định {count} tin nhắn trong 24 giờ qua: bộ phân loại AI không phản hồi. Hãy kiểm tra nhà cung cấp mô hình."
+warning_first_token:
+  en: "The first words take longer than {target} s for 1 in 20 replies (the target, NFR-01)."
+  es: "Las primeras palabras tardan más de {target} s en 1 de cada 20 respuestas (el objetivo, NFR-01)."
+  vi: "Những chữ đầu tiên mất hơn {target} giây ở 1 trong 20 câu trả lời (mục tiêu NFR-01)."
+warning_fallbacks:
+  en: "More than 1 in 5 replies came from a fallback model: the main model is often unavailable."
+  es: "Más de 1 de cada 5 respuestas vino de un modelo de respaldo: el modelo principal suele no estar disponible."
+  vi: "Hơn 1 trong 5 câu trả lời đến từ mô hình dự phòng: mô hình chính thường không khả dụng."
+q_turns:
+  en: "Messages"
+  es: "Mensajes"
+  vi: "Tin nhắn"
+q_latency:
+  en: "Reply time, typical / slowest 1 in 20"
+  es: "Tiempo de respuesta, habitual / 1 de cada 20 más lentas"
+  vi: "Thời gian trả lời, thông thường / chậm nhất 1 trên 20"
+q_first_token:
+  en: "First words, slowest 1 in 20"
+  es: "Primeras palabras, 1 de cada 20 más lentas"
+  vi: "Những chữ đầu tiên, chậm nhất 1 trên 20"
+q_target:
+  en: "target {target} s"
+  es: "objetivo {target} s"
+  vi: "mục tiêu {target} giây"
+q_fallback_turns:
+  en: "Answered by a fallback model"
+  es: "Respondidas por un modelo de respaldo"
+  vi: "Trả lời bởi mô hình dự phòng"
+q_model_failures:
+  en: "Model calls that failed"
+  es: "Llamadas al modelo que fallaron"
+  vi: "Lần gọi mô hình bị lỗi"
+q_tool_errors:
+  en: "Tool errors"
+  es: "Errores de herramientas"
+  vi: "Lỗi công cụ"
+q_cost:
+  en: "Estimated cost at list price"
+  es: "Costo estimado a precio de lista"
+  vi: "Chi phí ước tính theo giá niêm yết"
+q_by_language:
+  en: "By language"
+  es: "Por idioma"
+  vi: "Theo ngôn ngữ"
+q_answers:
+  en: "Answers"
+  es: "Respuestas"
+  vi: "Câu trả lời"
+q_unanswered:
+  en: "No handbook answer found"
+  es: "Sin respuesta en el manual"
+  vi: "Không tìm thấy trong sổ tay"
+q_routed:
+  en: "Sent to HR or 911"
+  es: "Derivadas a RR. HH. o al 911"
+  vi: "Chuyển cho Nhân sự hoặc 911"
+q_helpful:
+  en: "Rated helpful"
+  es: "Valoradas como útiles"
+  vi: "Được đánh giá hữu ích"
+q_guardrail:
+  en: "Guardrail decisions"
+  es: "Decisiones de la protección"
+  vi: "Quyết định của bộ bảo vệ"
+q_decided_by:
+  en: "Decided by"
+  es: "Decidido por"
+  vi: "Quyết định bởi"
+q_category_none:
+  en: "Ordinary question"
+  es: "Pregunta normal"
+  vi: "Câu hỏi thông thường"
+q_source_empty:
+  en: "Empty message"
+  es: "Mensaje vacío"
+  vi: "Tin nhắn trống"
+q_source_keyword:
+  en: "Keyword rules"
+  es: "Reglas de palabras clave"
+  vi: "Quy tắc từ khóa"
+q_source_llm:
+  en: "AI classifier"
+  es: "Clasificador de IA"
+  vi: "Bộ phân loại AI"
+q_source_similarity:
+  en: "Backup check (AI classifier down)"
+  es: "Comprobación de respaldo (clasificador de IA caído)"
+  vi: "Kiểm tra dự phòng (bộ phân loại AI không hoạt động)"
+q_models:
+  en: "Models"
+  es: "Modelos"
+  vi: "Mô hình"
+q_model:
+  en: "Model"
+  es: "Modelo"
+  vi: "Mô hình"
+q_tokens:
+  en: "Tokens in / out"
+  es: "Tokens de entrada / salida"
+  vi: "Token vào / ra"
+q_none:
+  en: "Nothing in this period."
+  es: "Nada en este periodo."
+  vi: "Không có gì trong khoảng thời gian này."

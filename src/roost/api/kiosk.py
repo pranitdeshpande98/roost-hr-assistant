@@ -18,13 +18,14 @@ import math
 import queue
 import threading
 from collections.abc import Iterator
+from dataclasses import dataclass
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response, StreamingResponse
 from sqlalchemy.orm import Session
 
-from roost.agent.conversation import TranscriptLine, ask, waiting_for_confirmation
+from roost.agent.conversation import ask, waiting_for_confirmation
 from roost.api import sessions as web_sessions
 from roost.api.common import TEMPLATES, Db, client_address
 from roost.api.common import language_of as _language
@@ -36,7 +37,12 @@ from roost.db.models import Employee, WebSession
 from roost.notifications.outbox import take_kiosk_notices
 from roost.notifications.render import render
 from roost.observability.turns import TurnStats
-from roost.transcripts.service import conversation_for, messages_for_thread, record_turn
+from roost.transcripts.service import (
+    conversation_for,
+    messages_for_thread,
+    rate_message,
+    record_turn,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -219,6 +225,15 @@ def change_pin_submit(
 # --- chat ---------------------------------------------------------------------------
 
 
+@dataclass(frozen=True, slots=True)
+class KioskLine:
+    from_employee: bool
+    text: str
+    message_id: int
+    rateable: bool
+    rating: int | None
+
+
 def _record(
     db: Session,
     services: Services,
@@ -254,7 +269,14 @@ def _conversation_context(db: Session, services: Services, session: WebSession) 
     """The screen is drawn from the transcript record, so a confirmation question stays
     visible after it is answered, and the screen and the record never differ."""
     lines = [
-        TranscriptLine(message.role == "employee", message.content)
+        KioskLine(
+            from_employee=message.role == "employee",
+            text=message.content,
+            message_id=message.id,
+            # Only real answers are rated (FR-47), not questions or fixed replies.
+            rateable=message.role == "roost" and message.kind == "answer",
+            rating=message.rating,
+        )
         for message in messages_for_thread(db, session.thread_id)
     ]
     return {
@@ -432,6 +454,31 @@ def chat_stream(request: Request) -> Response:
         media_type="text/event-stream",
         headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"},
     )
+
+
+@router.post("/chat/rating")
+def chat_rating(
+    request: Request,
+    db: Db,
+    message_id: Annotated[int, Form()] = 0,
+    value: Annotated[str, Form(max_length=4)] = "",
+    csrf: Annotated[str, Form(max_length=100)] = "",
+) -> Response:
+    """FR-47: thumbs up or down on one of Roost's answers in this sign-in's conversation."""
+    session = _current(request, db)
+    if session is None:
+        return _to_sign_in(request=request)
+    if session.must_change_pin:
+        return RedirectResponse("/change-pin", status_code=303)
+    if not web_sessions.csrf_ok(session, csrf):
+        return _page(request, "chat.html", session.language, 403, error="error")
+    rating = {"up": 1, "down": -1}.get(value)
+    if rating is None or not rate_message(db, session.thread_id, message_id, rating):
+        return Response(status_code=404)
+    if not _is_htmx(request):
+        return RedirectResponse("/chat", status_code=303)
+    context = _conversation_context(db, _services(request), session)
+    return _page(request, "_conversation.html", session.language, **context)
 
 
 # --- sign out -----------------------------------------------------------------------

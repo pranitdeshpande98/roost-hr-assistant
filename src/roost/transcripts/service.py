@@ -110,6 +110,26 @@ def messages_for_thread(session: Session, thread_id: uuid.UUID) -> list[Transcri
     )
 
 
+def rate_message(session: Session, thread_id: uuid.UUID, message_id: int, rating: int) -> bool:
+    """FR-47: the employee rates one of Roost's answers in their own conversation (the
+    thread of their current sign-in). False if it is not theirs or not an answer."""
+    message = session.scalars(
+        select(TranscriptMessage)
+        .join(Conversation)
+        .where(
+            TranscriptMessage.id == message_id,
+            Conversation.thread_id == thread_id,
+            TranscriptMessage.role == "roost",
+            TranscriptMessage.kind == "answer",
+        )
+    ).first()
+    if message is None or rating not in (1, -1):
+        return False
+    message.rating = rating
+    session.flush()
+    return True
+
+
 # --- HR admins: read and hold (FR-46, FR-48) -----------------------------------------------
 
 

@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% macro pct(value) %}{% if value is none %}–{% else %}{{ '%.0f' % (value * 100) }} %{% endif %}{% endmacro %}
+{% macro ms(value) %}{% if value is none %}–{% else %}{{ '%.1f' % (value / 1000) }} s{% endif %}{% endmacro %}
+{% block header %}{% include "console/_nav.html" %}{% endblock %}
+{% block main %}
+<h2>{{ t('quality_title') }}</h2>
+<p class="muted">{{ t('quality_help') }}</p>
+<nav class="filters" aria-label="{{ t('quality_period') }}">
+  <a href="/console/quality?days=1"{% if days == 1 %} aria-current="page"{% endif %}>{{ t('quality_day') }}</a>
+  <a href="/console/quality?days=7"{% if days == 7 %} aria-current="page"{% endif %}>{{ t('quality_week') }}</a>
+  <a href="/console/quality?days=30"{% if days == 30 %} aria-current="page"{% endif %}>{{ t('quality_month') }}</a>
+</nav>
+
+{% for warning in report.warnings %}
+<p class="error" role="alert">{{ t(warning, count=report.similarity_recent, target=(target_ms / 1000) | int) }}</p>
+{% endfor %}
+
+<dl class="facts">
+  <dt>{{ t('q_turns') }}</dt><dd>{{ report.turns }}</dd>
+  <dt>{{ t('q_latency') }}</dt><dd>{{ ms(report.latency_p50_ms) }} / {{ ms(report.latency_p95_ms) }}</dd>
+  <dt>{{ t('q_first_token') }}</dt><dd>{{ ms(report.first_token_p95_ms) }} ({{ t('q_target', target=(target_ms / 1000) | int) }})</dd>
+  <dt>{{ t('q_fallback_turns') }}</dt><dd>{{ report.fallback_turns }}</dd>
+  <dt>{{ t('q_model_failures') }}</dt><dd>{{ report.model_failures }}</dd>
+  <dt>{{ t('q_tool_errors') }}</dt><dd>{{ report.tool_errors }}</dd>
+  <dt>{{ t('q_cost') }}</dt><dd>${{ '%.4f' % report.cost_usd }}</dd>
+</dl>
+
+<h3>{{ t('q_by_language') }}</h3>
+{% if report.languages %}
+<table class="requests">
+  <thead>
+    <tr>
+      <th scope="col">{{ t('col_language') }}</th>
+      <th scope="col">{{ t('q_turns') }}</th>
+      <th scope="col">{{ t('q_answers') }}</th>
+      <th scope="col">{{ t('q_unanswered') }}</th>
+      <th scope="col">{{ t('q_routed') }}</th>
+      <th scope="col">{{ t('q_helpful') }}</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in report.languages %}
+    <tr>
+      <td>{{ t('language_' ~ row.language) }}</td>
+      <td>{{ row.turns }}</td>
+      <td>{{ row.answers }}</td>
+      <td>{{ row.unanswered }} ({{ pct(row.unanswered_rate) }})</td>
+      <td>{{ row.routed }}</td>
+      <td>{{ pct(row.helpful_rate) }} <span class="muted">(👍 {{ row.rated_up }} · 👎 {{ row.rated_down }})</span></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}<p>{{ t('q_none') }}</p>{% endif %}
+
+<h3>{{ t('q_guardrail') }}</h3>
+{% if report.guardrail %}
+<table class="requests">
+  <thead><tr><th scope="col">{{ t('col_topic') }}</th><th scope="col">{{ t('q_decided_by') }}</th><th scope="col">{{ t('q_turns') }}</th></tr></thead>
+  <tbody>
+    {% for row in report.guardrail %}
+    <tr>
+      <td>{% if row.category == 'none' %}{{ t('q_category_none') }}{% else %}{{ t('topic_' ~ row.category) }}{% endif %}</td>
+      <td>{{ t('q_source_' ~ row.source) }}</td>
+      <td>{{ row.turns }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}<p>{{ t('q_none') }}</p>{% endif %}
+
+<h3>{{ t('q_models') }}</h3>
+{% if report.models %}
+<table class="requests">
+  <thead><tr><th scope="col">{{ t('q_model') }}</th><th scope="col">{{ t('q_turns') }}</th><th scope="col">{{ t('q_tokens') }}</th><th scope="col">{{ t('q_cost') }}</th></tr></thead>
+  <tbody>
+    {% for row in report.models %}
+    <tr>
+      <td><code>{{ row.model }}</code></td>
+      <td>{{ row.turns }}</td>
+      <td>{{ row.input_tokens }} / {{ row.output_tokens }}</td>
+      <td>${{ '%.4f' % row.cost_usd }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}<p>{{ t('q_none') }}</p>{% endif %}
+{% endblock %}

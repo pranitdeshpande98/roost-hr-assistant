@@ -11,7 +11,7 @@ exception to FR-06). Supervisors decide on dates and team coverage, never balanc
 
 import math
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Annotated, Any
 
@@ -39,6 +39,7 @@ from roost.leave.approvals import (
     pending_for,
 )
 from roost.leave.repository import format_hours, load_leave_facts
+from roost.observability.quality import FIRST_TOKEN_TARGET_MS, quality_report
 from roost.referrals.service import mark_handled, may_read_referrals, referral_for, referrals_for
 from roost.transcripts.service import (
     list_conversations,
@@ -586,6 +587,31 @@ def transcript_release(
         return result
     return RedirectResponse(
         f"{PREFIX}/transcripts/{conversation_id}?done=released", status_code=303
+    )
+
+
+# --- quality: HR admins only (FR-51) --------------------------------------------------------
+
+
+@router.get("/quality")
+def quality_page(
+    request: Request, db: Db, days: Annotated[int, Query(ge=1, le=30)] = 7
+) -> Response:
+    session = _ready(request, db)
+    if isinstance(session, Response):
+        return session
+    if not may_read_transcripts(db, session.employee_id):  # HR admins (FR-51)
+        return _page(request, "console/message.html", session.language, 404, message="not_found")
+    now = services_of(request).clock()
+    report = quality_report(db, since=now - timedelta(days=days), now=now)
+    return _page(
+        request,
+        "console/quality.html",
+        session.language,
+        report=report,
+        days=days,
+        target_ms=FIRST_TOKEN_TARGET_MS,
+        nav="quality",
     )
 
 
