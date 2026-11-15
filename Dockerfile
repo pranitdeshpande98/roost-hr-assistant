@@ -6,7 +6,7 @@
 # into /models, a volume, and is reused after that.
 
 # ── Build: install the locked dependencies into /app/.venv ─────────────────────────
-FROM python:3.12-slim AS build
+FROM python:3.15-slim AS build
 COPY --from=ghcr.io/astral-sh/uv:0.11.32 /uv /bin/uv
 ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
@@ -24,7 +24,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev
 
 # ── Run: the same Python, the venv and the code; no build tools, not root ───────────
-FROM python:3.12-slim
+FROM python:3.15-slim
 RUN useradd --create-home --uid 10001 roost \
     && mkdir /models \
     && chown roost:roost /models
